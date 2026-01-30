@@ -97,13 +97,13 @@
         // CONFIGURATION
         // ==========================================
         
-        // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL BELOW
-        const SCRIPT_URL = "PASTE_YOUR_WEB_APP_URL_HERE";
+        // YOUR INTEGRATED URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
 
         // CACHE SETTINGS
-        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v1';
-        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v1';
-        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch';
+        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v3'; // Incremented to v3 to force fresh load
+        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v3';
+        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v3';
         const CACHE_DURATION = 1000 * 60 * 60; // 1 Hour Cache
 
         // ==========================================
@@ -144,9 +144,10 @@
             QrCode: (p) => <Icon {...p} path={<><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></>} />,
             PlusCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></>} />,
             AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></>} />,
-            CheckCircle: (p) => <Icon {...p} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
+            CheckCircle: (p) => <Icon {...p} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
+            RefreshCw: (p) => <Icon {...p} path={<><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></>} />
         };
-        const { Search, X, ChevronRight, SearchX, ExternalLink, QrCode, PlusCircle, AlertCircle, ClipboardCheck, Shield, CheckCircle } = Icons;
+        const { Search, X, ChevronRight, SearchX, ExternalLink, QrCode, PlusCircle, AlertCircle, ClipboardCheck, Shield, CheckCircle, RefreshCw } = Icons;
 
         // --- UTILS ---
         const levenshtein = (a, b) => {
@@ -177,47 +178,67 @@
             const [notification, setNotification] = useState(null);
             const searchInputRef = useRef(null);
 
-            // OPTIMIZED DATA FETCHING (WITH CACHING)
+            // DATA FETCHING FUNCTION
+            const fetchData = async (force = false) => {
+                setLoading(true);
+                setError(null);
+                
+                try {
+                    const now = Date.now();
+                    const cachedDepts = localStorage.getItem(CACHE_KEY_DEPTS);
+                    const cachedTools = localStorage.getItem(CACHE_KEY_TOOLS);
+                    const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+
+                    // Use Cache if available and not forced
+                    if (!force && cachedDepts && cachedTools && (now - cacheTime < CACHE_DURATION)) {
+                        setDepartments(JSON.parse(cachedDepts));
+                        setTools(JSON.parse(cachedTools));
+                        setLoading(false);
+                        return;
+                    }
+
+                    // Fetch Fresh Data
+                    const [deptRes, toolRes] = await Promise.all([
+                        fetch(`${SCRIPT_URL}?action=getDepartments`),
+                        fetch(`${SCRIPT_URL}?action=getTools`)
+                    ]);
+
+                    const deptData = await deptRes.json();
+                    const toolData = await toolRes.json();
+
+                    // Validation: If sheet is empty/error, don't break the app
+                    if (!Array.isArray(deptData) || !Array.isArray(toolData)) {
+                        throw new Error("Invalid data structure from Sheet");
+                    }
+
+                    setDepartments(deptData);
+                    setTools(toolData);
+                    
+                    // Update Cache
+                    localStorage.setItem(CACHE_KEY_DEPTS, JSON.stringify(deptData));
+                    localStorage.setItem(CACHE_KEY_TOOLS, JSON.stringify(toolData));
+                    localStorage.setItem(CACHE_TIME_KEY, now);
+                    
+                    if (force) showNotification('success', 'Database Synced Successfully!');
+
+                } catch (err) {
+                    console.error(err);
+                    setError("Unable to connect to the database. Please check internet or script permissions.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            // Initial Load
             useEffect(() => {
-                if (SCRIPT_URL.includes("PASTE_YOUR")) {
-                    setError("Setup Required: Please link your Google Sheet.");
-                    setLoading(false);
-                    return;
-                }
-
-                const cachedDepts = localStorage.getItem(CACHE_KEY_DEPTS);
-                const cachedTools = localStorage.getItem(CACHE_KEY_TOOLS);
-                const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
-                const now = Date.now();
-
-                if (cachedDepts && cachedTools) {
-                    setDepartments(JSON.parse(cachedDepts));
-                    setTools(JSON.parse(cachedTools));
-                    setLoading(false);
-                }
-
-                if (!cachedDepts || !cachedTools || (now - cacheTime > CACHE_DURATION)) {
-                    Promise.all([
-                        fetch(`${SCRIPT_URL}?action=getDepartments`).then(res => res.json()),
-                        fetch(`${SCRIPT_URL}?action=getTools`).then(res => res.json())
-                    ]).then(([deptData, toolData]) => {
-                        setDepartments(deptData);
-                        setTools(toolData);
-                        localStorage.setItem(CACHE_KEY_DEPTS, JSON.stringify(deptData));
-                        localStorage.setItem(CACHE_KEY_TOOLS, JSON.stringify(toolData));
-                        localStorage.setItem(CACHE_TIME_KEY, now);
-                        setLoading(false);
-                    }).catch(err => {
-                        console.error(err);
-                        if (!cachedDepts) setError("Unable to connect to the database.");
-                        setLoading(false);
-                    });
-                }
+                fetchData(false);
             }, []);
 
             // Filter Logic
             const filteredDepartments = useMemo(() => {
-                if (!searchTerm || searchTerm.length < 1) return departments; // Show ALL by default
+                // If search is empty, SHOW ALL
+                if (!searchTerm || searchTerm.length < 1) return departments;
+                
                 const lowerTerm = searchTerm.toLowerCase();
                 
                 return departments.filter(d => 
@@ -320,7 +341,7 @@
                             
                             {/* Centered Logo Area */}
                             <div className="flex flex-col items-center gap-3 z-10 animate-enter">
-                                {/* Logo with White Background & Rounded Corners */}
+                                {/* Logo RESTORED with White Background & Rounded Corners */}
                                 <div className="bg-white rounded-xl p-3 shadow-lg hover:scale-105 transition-transform duration-300">
                                     <img src="./images%20logo/tdmh-logo.png" alt="TDMH Logo" className="h-20 sm:h-24 md:h-32 w-auto object-contain" />
                                 </div>
@@ -585,8 +606,17 @@
                         </div>
                     )}
 
-                    <footer className="glass-dark border-t border-white/10 text-white/80 text-center py-8 text-[10px] sm:text-xs uppercase tracking-widest mt-auto">
+                    <footer className="glass-dark border-t border-white/10 text-white/80 text-center py-8 text-[10px] sm:text-xs uppercase tracking-widest mt-auto flex flex-col md:flex-row justify-center items-center gap-4">
                         <p>&copy; {new Date().getFullYear()} Taytay Doctors Multispecialty Hospital. All Rights Reserved.</p>
+                        
+                        {/* MANUAL SYNC BUTTON */}
+                        <button 
+                            onClick={() => fetchData(true)}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold transition-all border border-white/10"
+                        >
+                            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                            Sync Database
+                        </button>
                     </footer>
                 </div>
             );
