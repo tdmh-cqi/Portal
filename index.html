@@ -324,10 +324,12 @@
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative flex justify-center items-center min-h-[90px]">
                             
                             {/* Centered Logo Area */}
-                            <div className="flex flex-col items-center gap-2 z-10 animate-enter">
-                                {/* Updated Logo to .png and removed URL encoding for folder space (browser handles it, or rename folder to no spaces if issues persist) */}
-                                <img src="./images%20logo/tdmh-logo.png" alt="TDMH Logo" className="h-24 sm:h-32 md:h-40 w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300" />
-                                <h1 className="text-white text-[10px] sm:text-xs font-extrabold tracking-[0.25em] uppercase leading-tight mt-1 text-center drop-shadow-md opacity-90">CQI PORTAL</h1>
+                            <div className="flex flex-col items-center gap-3 z-10 animate-enter">
+                                {/* Logo RESTORED with White Background & Rounded Corners */}
+                                <div className="bg-white rounded-xl p-3 shadow-lg hover:scale-105 transition-transform duration-300">
+                                    <img src="./images%20logo/tdmh-logo.png" alt="TDMH Logo" className="h-20 sm:h-24 md:h-32 w-auto object-contain" />
+                                </div>
+                                <h1 className="text-white text-base sm:text-lg font-extrabold tracking-[0.25em] uppercase leading-tight mt-2 text-center drop-shadow-md opacity-90">CQI PORTAL</h1>
                             </div>
                             
                             {/* Request Button */}
@@ -520,48 +522,50 @@
                     {/* --- REQUEST MODAL --- */}
                     {showRequestModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop">
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-pop border border-white/20">
-                                <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-100">
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-pop border border-white/20">
+                                <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-100 shrink-0">
                                     <div>
                                         <h3 className="font-bold text-xl text-slate-800">Request New Tool</h3>
                                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">CQI Department</p>
                                     </div>
                                     <button onClick={() => setShowRequestModal(false)} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full border border-slate-200 hover:border-slate-300 transition-colors shadow-sm"><X className="w-5 h-5" /></button>
                                 </div>
-                                <form onSubmit={handleRequestSubmit} className="p-8 space-y-6">
-                                    <div className="space-y-1">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Your Department</label>
-                                        <div className="relative group">
-                                            <select name="dept" required className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none appearance-none transition-all cursor-pointer text-slate-700">
-                                                {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
-                                            </select>
-                                            <ChevronRight className="w-4 h-4 text-slate-400 absolute right-4 top-4 rotate-90 pointer-events-none group-hover:text-tdmh-blue transition-colors" />
+                                <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                                    <form onSubmit={handleRequestSubmit} className="space-y-6">
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Your Department</label>
+                                            <div className="relative group">
+                                                <select name="dept" required className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none appearance-none transition-all cursor-pointer text-slate-700">
+                                                    {departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}
+                                                </select>
+                                                <ChevronRight className="w-4 h-4 text-slate-400 absolute right-4 top-4 rotate-90 pointer-events-none group-hover:text-tdmh-blue transition-colors" />
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tool / Form Name</label>
-                                        <input name="toolName" required placeholder="e.g. New IV Checklist" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Short Description</label>
-                                        <textarea name="description" required placeholder="Describe what this tool does..." rows="2" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700 resize-none"></textarea>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Link (Optional)</label>
-                                        <input name="link" placeholder="https://..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Scope</label>
-                                        <div className="relative group">
-                                            <select name="scope" className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none appearance-none transition-all cursor-pointer text-slate-700">
-                                                <option value="Dept Only">My Department Only</option>
-                                                <option value="Universal">Universal (All Staff)</option>
-                                            </select>
-                                            <ChevronRight className="w-4 h-4 text-slate-400 absolute right-4 top-4 rotate-90 pointer-events-none group-hover:text-tdmh-blue transition-colors" />
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tool / Form Name</label>
+                                            <input name="toolName" required placeholder="e.g. New IV Checklist" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700" />
                                         </div>
-                                    </div>
-                                    <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-4 rounded-xl hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 mt-4 active:scale-95 transform">Submit Request</button>
-                                </form>
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Short Description</label>
+                                            <textarea name="description" required placeholder="Describe what this tool does..." rows="2" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700 resize-none"></textarea>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Link (Optional)</label>
+                                            <input name="link" placeholder="https://..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Scope</label>
+                                            <div className="relative group">
+                                                <select name="scope" className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none appearance-none transition-all cursor-pointer text-slate-700">
+                                                    <option value="Dept Only">My Department Only</option>
+                                                    <option value="Universal">Universal (All Staff)</option>
+                                                </select>
+                                                <ChevronRight className="w-4 h-4 text-slate-400 absolute right-4 top-4 rotate-90 pointer-events-none group-hover:text-tdmh-blue transition-colors" />
+                                            </div>
+                                        </div>
+                                        <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-4 rounded-xl hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 mt-4 active:scale-95 transform">Submit Request</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     )}
