@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TDMH CQI Portal</title>
     
-    <!-- Fonts: Plus Jakarta Sans for a modern, medical-tech look -->
+    <!-- Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -45,7 +45,6 @@
     <style>
         body { background-color: #f8fafc; }
         
-        /* Custom Scrollbar */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
@@ -54,14 +53,14 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Animations */
         @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes scale-pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slide-down { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
         
         .animate-enter { animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-pop { animation: scale-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .animate-toast { animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
-        /* Glass Morphism */
         .glass-panel {
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(20px);
@@ -76,7 +75,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Loading Spinner */
         .spinner {
             border: 3px solid rgba(30, 58, 138, 0.1);
             border-left-color: #1e3a8a;
@@ -145,9 +143,10 @@
             ExternalLink: (p) => <Icon {...p} path={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
             QrCode: (p) => <Icon {...p} path={<><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></>} />,
             PlusCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></>} />,
-            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></>} />
+            AlertCircle: (p) => <Icon {...p} path={<><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></>} />,
+            CheckCircle: (p) => <Icon {...p} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />
         };
-        const { Search, X, ChevronRight, SearchX, ExternalLink, QrCode, PlusCircle, AlertCircle, ClipboardCheck, Shield } = Icons;
+        const { Search, X, ChevronRight, SearchX, ExternalLink, QrCode, PlusCircle, AlertCircle, ClipboardCheck, Shield, CheckCircle } = Icons;
 
         // --- UTILS ---
         const levenshtein = (a, b) => {
@@ -175,6 +174,7 @@
             const [showRequestModal, setShowRequestModal] = useState(false);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
+            const [notification, setNotification] = useState(null);
             const searchInputRef = useRef(null);
 
             // OPTIMIZED DATA FETCHING (WITH CACHING)
@@ -240,6 +240,12 @@
                 });
             }, [selectedDept, tools]);
 
+            // Helper for notifications
+            const showNotification = (type, message) => {
+                setNotification({ type, message });
+                setTimeout(() => setNotification(null), 4000);
+            };
+
             // Request Form Handler
             const handleRequestSubmit = async (e) => {
                 e.preventDefault();
@@ -247,6 +253,7 @@
                 const data = {
                     dept: form.dept.value,
                     toolName: form.toolName.value,
+                    description: form.description.value, // Added Description
                     link: form.link.value,
                     scope: form.scope.value
                 };
@@ -261,10 +268,12 @@
                         method: "POST",
                         body: JSON.stringify(data)
                     });
-                    alert("Request Sent! CQI will review it shortly.");
+                    
                     setShowRequestModal(false);
+                    showNotification('success', 'Request Sent! CQI will review it shortly.');
+                    
                 } catch (err) {
-                    alert("Error sending request.");
+                    showNotification('error', 'Error sending request. Please try again.');
                 } finally {
                     btn.innerText = originalText;
                     btn.disabled = false;
@@ -279,12 +288,11 @@
             return (
                 <div className="min-h-screen font-sans text-slate-900 flex flex-col relative overflow-hidden bg-[#f0f4f8]">
                     
-                    {/* Visual Background Elements (Blobs) */}
+                    {/* Visual Background Elements */}
                     <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                         <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] bg-blue-300/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse"></div>
                         <div className="absolute bottom-[-10%] left-[-5%] w-[40vw] h-[40vw] bg-teal-300/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse" style={{animationDelay: '1s'}}></div>
                         
-                        {/* Subtle Grid */}
                         <svg className="absolute inset-0 w-full h-full opacity-[0.4]" xmlns="http://www.w3.org/2000/svg">
                             <defs>
                                 <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
@@ -295,16 +303,31 @@
                         </svg>
                     </div>
 
+                    {/* --- CUSTOM NOTIFICATION TOAST --- */}
+                    {notification && (
+                        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-toast w-full max-w-md px-4">
+                            <div className={`glass-panel flex items-center gap-4 px-6 py-4 rounded-2xl shadow-2xl border-l-8 ${notification.type === 'success' ? 'border-l-tdmh-green text-green-900' : 'border-l-red-500 text-red-900'}`}>
+                                <div className={`p-2 rounded-full ${notification.type === 'success' ? 'bg-green-100 text-tdmh-green' : 'bg-red-100 text-red-500'}`}>
+                                    {notification.type === 'success' ? <CheckCircle className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-sm uppercase tracking-wider mb-0.5">{notification.type === 'success' ? 'Success' : 'Error'}</h4>
+                                    <p className="font-medium text-sm opacity-90">{notification.message}</p>
+                                </div>
+                                <button onClick={() => setNotification(null)} className="ml-auto opacity-50 hover:opacity-100"><X className="w-5 h-5" /></button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* --- HEADER --- */}
                     <header className="glass-dark shadow-xl z-30 sticky top-0">
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative flex justify-center items-center">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative flex justify-center items-center min-h-[90px]">
                             
-                            {/* Centered Logo Area (BIGGER) */}
+                            {/* Centered Logo Area */}
                             <div className="flex flex-col items-center gap-2 z-10 animate-enter">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-2xl shadow-glow flex items-center justify-center overflow-hidden border-4 border-white/20 p-1 transform hover:scale-105 transition-transform duration-300">
-                                    <img src="./images%20logo/tdmh-logo.png" alt="TDMH Logo" className="w-full h-full object-contain" />
-                                </div>
-                                <h1 className="text-white text-xs sm:text-sm font-extrabold tracking-[0.25em] uppercase leading-tight mt-1 text-center drop-shadow-md">CQI PORTAL</h1>
+                                {/* Updated Logo to .png and removed URL encoding for folder space (browser handles it, or rename folder to no spaces if issues persist) */}
+                                <img src="./images%20logo/tdmh-logo.png" alt="TDMH Logo" className="h-24 sm:h-32 md:h-40 w-auto object-contain drop-shadow-xl hover:scale-105 transition-transform duration-300" />
+                                <h1 className="text-white text-[10px] sm:text-xs font-extrabold tracking-[0.25em] uppercase leading-tight mt-1 text-center drop-shadow-md opacity-90">CQI PORTAL</h1>
                             </div>
                             
                             {/* Request Button */}
@@ -343,7 +366,7 @@
                             </div>
                         ) : (
                             <div className="w-full max-w-2xl relative animate-enter" style={{animationDelay: '0.2s'}}>
-                                {/* Search Bar (BIGGER) */}
+                                {/* Search Bar */}
                                 <div className="relative group z-20">
                                     <div className="absolute inset-y-0 left-0 pl-6 sm:pl-8 flex items-center pointer-events-none">
                                         <Search className={`h-7 w-7 sm:h-8 sm:w-8 transition-colors ${searchTerm ? 'text-tdmh-green' : 'text-slate-400'}`} />
@@ -518,6 +541,10 @@
                                     <div className="space-y-1">
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tool / Form Name</label>
                                         <input name="toolName" required placeholder="e.g. New IV Checklist" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Short Description</label>
+                                        <textarea name="description" required placeholder="Describe what this tool does..." rows="2" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue focus:bg-white outline-none transition-all placeholder-slate-400 text-slate-700 resize-none"></textarea>
                                     </div>
                                     <div className="space-y-1">
                                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Link (Optional)</label>
