@@ -46,10 +46,9 @@
         .animate-pop { animation: scale-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         
         .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
         }
         .glass-header {
             background: rgba(30, 58, 138, 0.95);
@@ -82,9 +81,9 @@
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit"; 
         const ADMIN_PIN = "TDMHCQI2025"; 
 
-        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v13';
-        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v13';
-        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v13';
+        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v14';
+        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v14';
+        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v14';
         const CACHE_DURATION = 1000 * 60 * 60; 
 
         // ==========================================
@@ -274,7 +273,7 @@
                         {/* 3-Column Grid for Perfect Centering */}
                         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 relative grid grid-cols-3 items-center min-h-[90px]">
                             
-                            {/* LEFT: Admin Button */}
+                            {/* LEFT: Admin Button (FAR LEFT - SHIELD ICON) */}
                             <div className="flex justify-start">
                                 <button onClick={() => setShowAdminModal(true)} className="group relative p-2" title="Admin Login">
                                     <div className="w-10 h-10 rounded-full border border-white/40 flex items-center justify-center bg-transparent backdrop-blur-sm shadow-md group-hover:bg-white/10 group-hover:border-white transition-all duration-300">
@@ -296,7 +295,7 @@
                                 <h1 className="text-white text-lg sm:text-xl font-extrabold tracking-[0.25em] uppercase leading-tight mt-2 text-center drop-shadow-md opacity-100 whitespace-nowrap">CQI CENTRAL PORTAL</h1>
                             </div>
                             
-                            {/* RIGHT: Request Button */}
+                            {/* RIGHT: Request Button (FAR RIGHT) */}
                             <div className="flex justify-end items-center">
                                 <button onClick={() => setShowRequestModal(true)} className="flex items-center gap-2 px-4 py-3 bg-transparent hover:bg-white/10 text-white rounded-full text-xs font-bold transition-all border border-white/40 shadow-lg backdrop-blur-md group relative overflow-hidden">
                                     <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
@@ -313,22 +312,21 @@
                     <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 py-8 md:py-12 flex flex-col items-center">
                         
                         {/* 1. Hero Text & Secure Badge */}
-                        <div className="text-center mb-10 animate-enter">
+                        <div className="text-center mb-8 animate-enter">
                             <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-slate-900 mb-4 tracking-tight drop-shadow-sm leading-tight">
                                 Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-tdmh-blue to-tdmh-green">Department</span>
                             </h2>
-                            <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed mb-8">
+                            <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl mx-auto leading-relaxed mb-6">
                                 Access your designated forms, protocols, and digital tools securely.
                             </p>
-                            
-                            <div className="inline-flex items-center gap-3 text-sm font-semibold text-slate-500 bg-white/70 px-6 py-3 rounded-full border border-white shadow-lg backdrop-blur-md">
-                                <div className="w-3 h-3 rounded-full bg-tdmh-green animate-pulse shadow-[0_0_10px_#16a34a] shrink-0"></div>
+                             <div className="inline-flex items-center gap-3 text-sm font-semibold text-slate-500 bg-white/70 px-6 py-2 rounded-full border border-white shadow-sm backdrop-blur-md">
+                                <div className="w-2.5 h-2.5 rounded-full bg-tdmh-green animate-pulse shadow-[0_0_10px_#16a34a] shrink-0"></div>
                                 <div><span className="text-tdmh-green text-xs uppercase tracking-wider font-bold">Secure Access Area</span> <span className="text-xs font-normal opacity-70 ml-1">| Authorized Personnel Only</span></div>
                             </div>
                         </div>
 
                         {/* 2. Search Bar */}
-                        <div className="w-full max-w-2xl relative group z-30 mb-12 animate-enter" style={{animationDelay: '0.2s'}}>
+                        <div className="w-full max-w-2xl relative group z-30 mb-8 animate-enter" style={{animationDelay: '0.2s'}}>
                              <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none text-tdmh-green"><Search className="w-7 h-7" /></div>
                              <input 
                                 ref={searchInputRef} 
@@ -355,29 +353,22 @@
                                     <span className="text-sm text-slate-400 font-bold animate-pulse">Loading Department Database...</span>
                                 </div>
                             ) : filteredDepartments.length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 w-full">
                                     {filteredDepartments.map((dept) => {
                                         const colorClasses = getCategoryColor(dept.category);
                                         return (
                                             <button 
                                                 key={dept.id} 
                                                 onClick={() => setSelectedDept(dept)} 
-                                                className="text-left p-5 rounded-2xl bg-white shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group flex flex-col gap-4 relative overflow-hidden"
+                                                className="text-left p-3 rounded-xl bg-white shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 hover:border-blue-200 transition-all duration-300 group flex items-start gap-3 relative overflow-hidden"
                                             >
-                                                <div className="flex items-center justify-between w-full relative z-10">
-                                                    <div className={`p-3 rounded-xl transition-all duration-300 ${colorClasses}`}>
-                                                        <DeptIcon name={dept.iconName} category={dept.category} className="w-6 h-6" />
-                                                    </div>
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-0 translate-x-2">
-                                                        <ChevronRight className="w-5 h-5 text-tdmh-blue" />
-                                                    </div>
+                                                <div className={`p-2 rounded-lg transition-all duration-300 shrink-0 ${colorClasses}`}>
+                                                    <DeptIcon name={dept.iconName} category={dept.category} className="w-5 h-5" />
                                                 </div>
-                                                <div className="relative z-10">
-                                                    <div className="font-bold text-slate-800 text-lg leading-tight mb-1 group-hover:text-tdmh-blue transition-colors">{dept.name}</div>
-                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{dept.category}</div>
+                                                <div className="min-w-0 flex-grow">
+                                                    <div className="font-bold text-slate-800 text-xs leading-tight mb-0.5 group-hover:text-tdmh-blue transition-colors truncate">{dept.name}</div>
+                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider truncate">{dept.category}</div>
                                                 </div>
-                                                {/* Subtle Background Decoration */}
-                                                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
                                             </button>
                                         );
                                     })}
@@ -399,9 +390,8 @@
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-lg animate-enter">
                             <div className="bg-[#f8fafc] rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden transform transition-all animate-pop border border-white/50 max-h-[90vh] flex flex-col ring-1 ring-black/5">
                                 <div className="bg-gradient-to-r from-[#1e3a8a] to-[#0f172a] p-6 sm:p-8 flex justify-between items-start text-white relative shrink-0">
-                                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
-                                    <div className="flex items-center gap-5 sm:gap-6 relative z-10">
-                                        <div className="bg-white/10 p-4 sm:p-5 rounded-3xl backdrop-blur-md border border-white/20 shadow-2xl"><DeptIcon name={selectedDept.iconName} category={selectedDept.category} className="w-10 h-10 text-white" /></div>
+                                    <div className="flex items-center gap-5 relative z-10">
+                                        <div className="bg-white/10 p-4 rounded-3xl backdrop-blur-md border border-white/20 shadow-2xl"><DeptIcon name={selectedDept.iconName} category={selectedDept.category} className="w-10 h-10 text-white" /></div>
                                         <div><h3 className="font-bold text-2xl sm:text-4xl leading-none tracking-tight">{selectedDept.name}</h3><span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-tdmh-green text-white shadow-lg mt-2 inline-block">{selectedDept.category}</span></div>
                                     </div>
                                     <button onClick={() => setSelectedDept(null)} className="hover:bg-white/10 p-3 rounded-full transition-colors relative z-10 text-white/70 hover:text-white group"><X className="w-6 h-6 sm:w-8 sm:h-8 group-hover:rotate-90 transition-transform duration-300" /></button>
