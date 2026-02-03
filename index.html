@@ -49,7 +49,6 @@
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
         }
         .glass-header {
             background: rgba(30, 58, 138, 0.98);
@@ -82,9 +81,9 @@
         const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit"; 
         const ADMIN_PIN = "TDMHCQI2025"; 
 
-        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v15';
-        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v15';
-        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v15';
+        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v16';
+        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v16';
+        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v16';
         const CACHE_DURATION = 1000 * 60 * 60; 
 
         // ==========================================
@@ -138,57 +137,17 @@
             }} return matrix[b.length][a.length];
         };
         
-        // Color Translator (Human Name -> Tailwind Class)
-        const getColorClass = (colorName) => {
-            if (!colorName) return 'bg-slate-50 text-slate-600 border-slate-100'; // Default
-            const c = colorName.toLowerCase().trim();
-            switch (c) {
-                case 'red': return 'bg-red-50 text-red-600 border-red-100';
-                case 'blue': return 'bg-blue-50 text-blue-600 border-blue-100';
-                case 'green': return 'bg-green-50 text-green-600 border-green-100';
-                case 'orange': return 'bg-orange-50 text-orange-600 border-orange-100';
-                case 'purple': return 'bg-purple-50 text-purple-600 border-purple-100';
-                case 'yellow': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
-                case 'teal': return 'bg-teal-50 text-teal-600 border-teal-100';
-                case 'pink': return 'bg-pink-50 text-pink-600 border-pink-100';
-                case 'indigo': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-                case 'light blue': return 'bg-sky-50 text-sky-600 border-sky-100';
-                case 'dark blue': return 'bg-blue-900 text-white border-blue-900';
-                case 'light brown': return 'bg-amber-100 text-amber-800 border-amber-200';
-                case 'dark brown': return 'bg-amber-900 text-white border-amber-900';
-                case 'yellow green': return 'bg-lime-100 text-lime-700 border-lime-200';
-                case 'red orange': return 'bg-orange-100 text-red-600 border-orange-200';
-                case 'maroon': return 'bg-red-900 text-white border-red-900';
-                case 'dark green': return 'bg-emerald-900 text-white border-emerald-900';
-                case 'slate': return 'bg-slate-100 text-slate-600 border-slate-200';
-                default: return 'bg-slate-50 text-slate-600 border-slate-100';
-            }
-        };
-
-        // Icon Detective (Guess Icon from Name)
-        const getToolIcon = (toolName) => {
-            if (!toolName) return <Icons.Box className="w-8 h-8" />;
-            const n = toolName.toLowerCase();
-            if (n.includes('report') || n.includes('form') || n.includes('census')) return <Icons.FileText className="w-8 h-8" />;
-            if (n.includes('request') || n.includes('order') || n.includes('requisition')) return <Icons.Box className="w-8 h-8" />;
-            if (n.includes('it') || n.includes('ticketing') || n.includes('system') || n.includes('digital')) return <Icons.Monitor className="w-8 h-8" />;
-            if (n.includes('nurse') || n.includes('staff') || n.includes('hr') || n.includes('personnel')) return <Icons.Users className="w-8 h-8" />;
-            if (n.includes('maintenance') || n.includes('repair')) return <Icons.Wrench className="w-8 h-8" />;
-            if (n.includes('checklist') || n.includes('evaluation')) return <Icons.ClipboardCheck className="w-8 h-8" />;
-            return <Icons.Box className="w-8 h-8" />;
-        };
-        
-        // Department Color Logic
+        // Color Helper based on Categories
         const getCategoryColor = (category) => {
-            if (!category) return 'text-slate-500 bg-slate-50 group-hover:bg-slate-100 group-hover:text-slate-600';
+            if (!category) return 'text-slate-500 bg-slate-50 border-slate-100 group-hover:border-slate-300';
             const cat = category.toLowerCase();
-            if (cat.includes('medical')) return 'text-emerald-500 bg-emerald-50 group-hover:bg-emerald-100 group-hover:text-emerald-600'; 
-            if (cat.includes('admin')) return 'text-purple-500 bg-purple-50 group-hover:bg-purple-100 group-hover:text-purple-600'; 
-            if (cat.includes('finance')) return 'text-blue-500 bg-blue-50 group-hover:bg-blue-100 group-hover:text-blue-600'; 
-            if (cat.includes('support')) return 'text-orange-500 bg-orange-50 group-hover:bg-orange-100 group-hover:text-orange-600'; 
-            if (cat.includes('ward')) return 'text-teal-500 bg-teal-50 group-hover:bg-teal-100 group-hover:text-teal-600'; 
-            if (cat.includes('ancillary')) return 'text-indigo-500 bg-indigo-50 group-hover:bg-indigo-100 group-hover:text-indigo-600'; 
-            return 'text-slate-500 bg-slate-50 group-hover:bg-slate-100 group-hover:text-slate-600'; 
+            if (cat.includes('medical')) return 'text-emerald-600 bg-slate-50 border-emerald-100 group-hover:border-emerald-300'; 
+            if (cat.includes('admin')) return 'text-purple-600 bg-slate-50 border-purple-100 group-hover:border-purple-300'; 
+            if (cat.includes('finance')) return 'text-blue-600 bg-slate-50 border-blue-100 group-hover:border-blue-300'; 
+            if (cat.includes('support')) return 'text-orange-600 bg-slate-50 border-orange-100 group-hover:border-orange-300'; 
+            if (cat.includes('ward')) return 'text-teal-600 bg-slate-50 border-teal-100 group-hover:border-teal-300'; 
+            if (cat.includes('ancillary')) return 'text-indigo-600 bg-slate-50 border-indigo-100 group-hover:border-indigo-300'; 
+            return 'text-slate-600 bg-slate-50 border-slate-100 group-hover:border-slate-300'; 
         };
 
         // --- MAIN APP ---
@@ -287,6 +246,46 @@
             const DeptIcon = ({ name, category, className }) => {
                 const IconComp = Icons[name] || Icons.Box; 
                 return <IconComp className={className} />;
+            };
+            
+             // Color Translator (Human Name -> Tailwind Class)
+            const getColorClass = (colorName) => {
+                if (!colorName) return 'bg-slate-50 text-slate-600 border-slate-100'; // Default
+                const c = colorName.toLowerCase().trim();
+                switch (c) {
+                    case 'red': return 'bg-red-50 text-red-600 border-red-100';
+                    case 'blue': return 'bg-blue-50 text-blue-600 border-blue-100';
+                    case 'green': return 'bg-green-50 text-green-600 border-green-100';
+                    case 'orange': return 'bg-orange-50 text-orange-600 border-orange-100';
+                    case 'purple': return 'bg-purple-50 text-purple-600 border-purple-100';
+                    case 'yellow': return 'bg-yellow-50 text-yellow-600 border-yellow-100';
+                    case 'teal': return 'bg-teal-50 text-teal-600 border-teal-100';
+                    case 'pink': return 'bg-pink-50 text-pink-600 border-pink-100';
+                    case 'indigo': return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+                    case 'light blue': return 'bg-sky-50 text-sky-600 border-sky-100';
+                    case 'dark blue': return 'bg-blue-900 text-white border-blue-900';
+                    case 'light brown': return 'bg-amber-100 text-amber-800 border-amber-200';
+                    case 'dark brown': return 'bg-amber-900 text-white border-amber-900';
+                    case 'yellow green': return 'bg-lime-100 text-lime-700 border-lime-200';
+                    case 'red orange': return 'bg-orange-100 text-red-600 border-orange-200';
+                    case 'maroon': return 'bg-red-900 text-white border-red-900';
+                    case 'dark green': return 'bg-emerald-900 text-white border-emerald-900';
+                    case 'slate': return 'bg-slate-100 text-slate-600 border-slate-200';
+                    default: return 'bg-slate-50 text-slate-600 border-slate-100';
+                }
+            };
+            
+            // Icon Detective (Guess Icon from Name)
+            const getToolIcon = (toolName) => {
+                if (!toolName) return <Icons.Box className="w-8 h-8" />;
+                const n = toolName.toLowerCase();
+                if (n.includes('report') || n.includes('form') || n.includes('census')) return <Icons.FileText className="w-8 h-8" />;
+                if (n.includes('request') || n.includes('order') || n.includes('requisition')) return <Icons.Box className="w-8 h-8" />;
+                if (n.includes('it') || n.includes('ticketing') || n.includes('system') || n.includes('digital')) return <Icons.Monitor className="w-8 h-8" />;
+                if (n.includes('nurse') || n.includes('staff') || n.includes('hr') || n.includes('personnel')) return <Icons.Users className="w-8 h-8" />;
+                if (n.includes('maintenance') || n.includes('repair')) return <Icons.Wrench className="w-8 h-8" />;
+                if (n.includes('checklist') || n.includes('evaluation')) return <Icons.ClipboardCheck className="w-8 h-8" />;
+                return <Icons.Box className="w-8 h-8" />;
             };
 
             // Confirmation Handler
@@ -591,7 +590,7 @@
                                         <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Description</label><textarea name="description" required placeholder="Describe tool..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none resize-none"></textarea></div>
                                         <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Link (Optional)</label><input name="link" placeholder="https://..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none" /></div>
                                         <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Scope</label><div className="relative group"><select name="scope" className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none"><option value="Dept Only">My Department Only</option><option value="Universal">Universal</option></select></div></div>
-                                        <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-4 rounded-xl hover:bg-blue-900 shadow-lg mt-4 active:scale-95 transform">Submit Request</button>
+                                        <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-4 rounded-xl hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 mt-4 active:scale-95 transform">Submit Request</button>
                                     </form>
                                 </div>
                             </div>
