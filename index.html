@@ -73,7 +73,8 @@
             Edit: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>,
             Trash: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
             ChevronLeft: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
-            ChevronRight: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            ChevronRight: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+            Maximize: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
         };
 
         function App() {
@@ -81,24 +82,20 @@
             const [isSyncing, setIsSyncing] = useState(true);
             const [globalPinRequired, setGlobalPinRequired] = useState(false);
             
-            // FULL FALLBACK MOCK DATA (Ensures the site works perfectly offline during preview)
-            const [departments, setDepartments] = useState([{ id: "HR01", Name: "Human Resources", Category: "Admin", IconName: "Users" }, { id: "IT02", Name: "IT Operations", Category: "Support", IconName: "Activity" }, { id: "MED03", Name: "Internal Medicine", Category: "Medical", IconName: "Stethoscope" }, { id: "NUR04", Name: "Nursing Ward", Category: "Medical", IconName: "Shield" }]);
-            
+            // FULL FALLBACK MOCK DATA
+            const [departments, setDepartments] = useState([{ id: "HR01", Name: "Human Resources", Category: "Admin", IconName: "Users" }, { id: "IT02", Name: "IT Operations", Category: "Support", IconName: "Activity" }]);
             const [universalForms, setUniversalForms] = useState([{ 'Form Title': "DERF (Digitalized)", Description: "Report defective equipment", Link: "#" }]);
             const [isoRequirements, setIsoRequirements] = useState([{ 'Form Title': "Reference Copy Request Form", Description: "Request an official copy.", Link: "#" }]);
-            
             const [census, setCensus] = useState([{Department: 'Station 3', 'Patient Count': 12}, {Department: 'Station 4B', 'Patient Count': 28}, {Department: 'Station 5A', 'Patient Count': 15}, {Department: 'Station 5B', 'Patient Count': 9}, {Department: 'NICU', 'Patient Count': 4}]);
-            const [memos, setMemos] = useState([{ id: 1, Date: '2026-03-01', From: 'CQI', For: 'All Depts', Subject: 'V2 Portal Launch', 'Ref No': 'CQI-03-2026-01', urgency: 'High' }, { id: 2, Date: '2026-02-28', From: 'HR', For: 'All Depts', Subject: 'Updated Leave Policy 2026', 'Ref No': 'HR-02-2026-05', urgency: 'Normal' }]);
-            
-            const [newsList, setNewsList] = useState([{ id: 1, Date: 'Today', Type: 'System Update', Title: 'TDMH CQI Portal V2 is Live!', Content: 'Welcome to your upgraded administrative command center. We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs.'}]);
-            
-            const [calendar, setCalendar] = useState([{ DateText: 'Mar 15', time: '10:00 AM', Title: 'Department Heads Meeting', dayNum: 15 }, { DateText: 'Mar 22', time: '09:00 AM', Title: 'ISO Pre-Audit Check', dayNum: 22 }]);
+            const [memos, setMemos] = useState([{ id: 1, Date: '2026-03-01', From: 'CQI', For: 'All Depts', Subject: 'V2 Portal Launch', 'Ref No': 'CQI-03-2026-01', urgency: 'High' }]);
+            const [newsList, setNewsList] = useState([{ id: 1, Date: 'Today', Type: 'System Update', Title: 'TDMH CQI Portal V2 is Live!', Content: 'Welcome to your upgraded administrative command center.'}]);
+            const [calendar, setCalendar] = useState([{ DateText: 'Mar 15', time: '10:00 AM', Title: 'Department Heads Meeting', dayNum: 15 }]);
             const [slideshow, setSlideshow] = useState([{ 'Image URL': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop', 'Title': 'Welcome to TDMH CQI Portal V2', 'Subtitle': 'Continuous Quality Improvement', 'Active (Yes/No)': 'Yes' }]);
             const [agimat, setAgimat] = useState([
                 { 'Module Number': 'Module 1', 'Video Title': 'How to make Clinical Abstract', 'Description': 'Step-by-step guide.', 'Video URL (Embed)': '' },
                 { 'Module Number': 'Module 2', 'Video Title': 'How to make Discharge Summary', 'Description': 'Step-by-step guide.', 'Video URL (Embed)': '' }
             ]);
-            const [monitors, setMonitors] = useState([]); // ADDED: Missing Monitoring state
+            const [monitors, setMonitors] = useState([]); 
 
             // Tracking States
             const [trackQuery, setTrackQuery] = useState('');
@@ -115,7 +112,10 @@
             const [activeTab, setActiveTab] = useState('home');
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
             const [dccActiveCategory, setDccActiveCategory] = useState('universal');
+            
+            // --- SLIDESHOW STATES ---
             const [currentSlide, setCurrentSlide] = useState(0);
+            const [lightboxImg, setLightboxImg] = useState(null); 
             
             // --- MODAL STATES ---
             const [showNewsFlyer, setShowNewsFlyer] = useState(true);
@@ -145,15 +145,15 @@
             ];
 
             useEffect(() => {
-                if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews) document.body.classList.add('modal-open');
+                if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews || lightboxImg) document.body.classList.add('modal-open');
                 else document.body.classList.remove('modal-open');
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews, lightboxImg]);
 
             useEffect(() => {
-                if (slideshow.length <= 1) return;
+                if (slideshow.length <= 1 || lightboxImg) return;
                 const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % slideshow.length); }, 5000);
                 return () => clearInterval(timer);
-            }, [slideshow.length]);
+            }, [slideshow.length, lightboxImg]);
 
             // --- TAB SCROLL FUNCTIONS ---
             useEffect(() => {
@@ -178,8 +178,6 @@
                             setGlobalPinRequired(result.data.globalPinRequired === true);
                             if (!result.data.globalPinRequired) setGlobalUnlocked(true);
                             
-                            // The OR || [] guarantees that if your spreadsheet tab is totally blank, 
-                            // it actively deletes the fake mock data so it doesn't show up on your site!
                             if (result.data.census) setCensus(result.data.census || []);
                             if (result.data.news) setNewsList(result.data.news || []);
                             if (result.data.memos) setMemos(result.data.memos || []);
@@ -188,7 +186,7 @@
                             if (result.data.universalForms) setUniversalForms(result.data.universalForms || []);
                             if (result.data.isoRequirements) setIsoRequirements(result.data.isoRequirements || []);
                             if (result.data.agimat) setAgimat(result.data.agimat || []);
-                            if (result.data.monitoring) setMonitors(result.data.monitoring || []); // ADDED: Fetching monitoring logic
+                            if (result.data.monitoring) setMonitors(result.data.monitoring || []);
                             if (result.data.slideshow) setSlideshow((result.data.slideshow || []).filter(s => String(s['Active (Yes/No)']).toUpperCase() === 'YES'));
                         }
                     } else { setGlobalUnlocked(true); }
@@ -321,19 +319,40 @@
                             </div>
                             
                             {slideshow.length > 0 && (
-                                <div className="structured-card p-0 overflow-hidden relative h-56 md:h-72 flex items-center justify-center bg-slate-900 group">
+                                /* UPDATED SLIDESHOW: Taller (h-[600px]), clear images, un-cropped, and clickable! */
+                                <div className="structured-card p-0 overflow-hidden relative h-80 md:h-[600px] flex items-center justify-center bg-slate-900 group shadow-lg cursor-pointer hover:shadow-xl transition-shadow border-2 border-slate-100">
+                                    
+                                    {/* View Photo Prompt (Appears on hover) */}
+                                    <div className="absolute top-4 right-4 z-30 bg-black/70 backdrop-blur text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setLightboxImg(slideshow[currentSlide]['Image URL'])}>
+                                        <Icons.Maximize className="w-5 h-5" /> View Fullscreen
+                                    </div>
+
                                     {slideshow.map((slide, index) => (
-                                        <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
-                                            <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-60" alt={slide['Title']} />
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-8 bg-gradient-to-t from-slate-900/80 to-transparent">
-                                                <h3 className="text-3xl md:text-4xl font-black mb-2 shadow-sm transform transition-transform duration-700 translate-y-0">{slide['Title']}</h3>
-                                                <p className="font-bold tracking-widest uppercase text-sm md:text-base text-blue-200">{slide['Subtitle']}</p>
+                                        <div 
+                                            key={index} 
+                                            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                                            onClick={() => setLightboxImg(slide['Image URL'])}
+                                        >
+                                            {/* Cinematic Blurred Background */}
+                                            <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
+                                                <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
+                                            </div>
+                                            
+                                            {/* The Real Image: object-contain prevents any cropping so awards are fully visible */}
+                                            <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl" alt={slide['Title']} />
+                                            
+                                            {/* Minimal soft gradient strictly at the bottom just to make text readable */}
+                                            <div className="absolute inset-x-0 bottom-0 pt-32 pb-8 px-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex flex-col items-center justify-end text-center text-white pointer-events-none">
+                                                <h3 className="text-3xl md:text-5xl font-black mb-2 drop-shadow-xl">{slide['Title']}</h3>
+                                                <p className="font-bold tracking-widest uppercase text-sm md:text-base text-blue-200 drop-shadow-md">{slide['Subtitle']}</p>
                                             </div>
                                         </div>
                                     ))}
-                                    <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
+                                    
+                                    {/* Dot Navigation */}
+                                    <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2" onClick={e => e.stopPropagation()}>
                                         {slideshow.map((_, index) => (
-                                            <button key={index} onClick={() => setCurrentSlide(index)} className={`h-2.5 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-tdmh-green w-8' : 'bg-white/50 w-2.5 hover:bg-white'}`}></button>
+                                            <button key={index} onClick={(e) => { e.stopPropagation(); setCurrentSlide(index); }} className={`h-2.5 rounded-full transition-all duration-300 shadow-sm ${index === currentSlide ? 'bg-tdmh-green w-8' : 'bg-white/70 w-2.5 hover:bg-white'}`}></button>
                                         ))}
                                     </div>
                                 </div>
@@ -669,7 +688,19 @@
                     );
                     case 'agimat': return (
                         <div className="animate-fade-in max-w-5xl mx-auto py-6">
-                            <div className="flex flex-col items-center justify-center mb-10 text-center"><h2 className="text-[4rem] text-slate-900 font-serif leading-none tracking-tight">Agimat</h2><p className="text-slate-500 font-medium text-base mt-2">Standardized video training and continuous quality improvement resources.</p></div>
+                            <div className="flex flex-col items-center justify-center mb-10 text-center">
+                                {/* UPDATED: The new Agimat Logo Image */}
+                                <img 
+                                    src="./images%20logo/agimat-logo.png" 
+                                    alt="Agimat" 
+                                    className="h-16 md:h-24 object-contain mb-4" 
+                                    onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} 
+                                />
+                                {/* Fallback text if the image fails to load */}
+                                <h2 className="text-[4rem] text-slate-900 font-serif leading-none tracking-tight hidden">Agimat</h2>
+                                <p className="text-slate-500 font-medium text-base mt-2">Standardized video training and continuous quality improvement resources.</p>
+                            </div>
+                            
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {agimat.map((vid, i) => (
                                     <div key={i} className="structured-card p-5 group hover:border-tdmh-blue transition-colors shadow-sm">
@@ -719,6 +750,18 @@
             return (
                 <div className="flex flex-col min-h-screen bg-pattern">
                     
+                    {/* PHOTO VIEWER (LIGHTBOX) OVERLAY */}
+                    {lightboxImg && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in" onClick={() => setLightboxImg(null)}>
+                            <div className="relative max-w-7xl w-full max-h-[90vh] flex flex-col items-center justify-center animate-slide-up" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setLightboxImg(null)} className="absolute -top-12 right-0 md:-right-12 text-white hover:text-slate-300 transition-colors bg-white/10 p-2 rounded-full">
+                                    <Icons.X className="w-8 h-8"/>
+                                </button>
+                                <img src={lightboxImg} className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl" alt="Enlarged View" />
+                            </div>
+                        </div>
+                    )}
+
                     {/* NEWS WELCOME FLYER */}
                     {showNewsFlyer && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -808,7 +851,6 @@
                                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
                                         </div>
                                         
-                                        {/* RESTORED: Admin System Monitoring List */}
                                         {monitors.length > 0 && (
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                                                 <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4">
@@ -885,13 +927,12 @@
                         </div>
                     )}
 
-                    {/* TOP NAVIGATION: UPDATED LOGO CONTAINER */}
+                    {/* TOP NAVIGATION: FIXED LOGO - REMOVED CONTAINER AND TEXT */}
                     <nav className="bg-tdmh-blue text-white shadow-xl z-40 sticky top-0 border-b-2 border-blue-900">
                         <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-16 md:h-20 gap-4">
                                 
                                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
-                                    {/* CLICKABLE LOGO LINK WITH WHITE BACKGROUND */}
                                     <a href="#" onClick={(e) => { e.preventDefault(); window.location.reload(); }} className="cursor-pointer hover:opacity-90 transition-transform hover:scale-105 flex items-center bg-white px-3 py-1.5 md:py-2 rounded-xl shadow-md border border-slate-200">
                                         <img 
                                             src="./images%20logo/tdmh-logo.png" 
@@ -901,7 +942,6 @@
                                         />
                                     </a>
 
-                                    {/* ADMIN SHIELD */}
                                     <button onClick={() => handleSecureAction('admin')} className="p-2 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors shadow-sm" title="Admin Control Center">
                                         <Icons.Shield className="w-5 h-5" />
                                     </button>
