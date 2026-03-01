@@ -79,7 +79,7 @@
             Link: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         };
 
-        // Department UI Colors Array
+        // Department UI Colors Array (To give variety to the department grid icons)
         const DEPT_COLORS = [
             { bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-600', hover: 'group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600' },
             { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-600', hover: 'group-hover:bg-emerald-600 group-hover:text-white group-hover:border-emerald-600' },
@@ -118,9 +118,13 @@
             // --- UI & AUTH STATES ---
             const [globalUnlocked, setGlobalUnlocked] = useState(false);
             const [globalPinInput, setGlobalPinInput] = useState('');
+            const [globalPinFeedback, setGlobalPinFeedback] = useState(null); // Custom alert for Global PIN
+
             const [userRole, setUserRole] = useState('guest');
             const [showRoleLogin, setShowRoleLogin] = useState(false);
             const [rolePinInput, setRolePinInput] = useState('');
+            const [roleLoginFeedback, setRoleLoginFeedback] = useState(null); // Custom alert for Role PIN
+            const [pendingAction, setPendingAction] = useState(null); // Remembers what user clicked before logging in
             
             const [activeTab, setActiveTab] = useState('home');
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -222,7 +226,24 @@
             };
 
             // --- SECURITY HANDLERS ---
-            const handleGlobalUnlock = (e) => { e.preventDefault(); if (globalPinInput === 'Wherecaringcomesfirst') { setGlobalUnlocked(true); } else { alert('Incorrect Site PIN.'); } };
+            
+            // Fixed Global PIN UI Feedback
+            const handleGlobalUnlock = (e) => { 
+                e.preventDefault(); 
+                if (globalPinInput === 'Wherecaringcomesfirst') { 
+                    setGlobalPinFeedback({ type: 'success', text: 'Verification Successful. Unlocking...' });
+                    setTimeout(() => {
+                        setGlobalUnlocked(true); 
+                        setGlobalPinFeedback(null);
+                    }, 1000);
+                } else { 
+                    setGlobalPinFeedback({ type: 'error', text: 'Invalid Site PIN. Please check your credentials.' });
+                    setGlobalPinInput('');
+                    setTimeout(() => setGlobalPinFeedback(null), 3000);
+                } 
+            };
+
+            // Fixed Role PIN UI Feedback & Action Resumption
             const submitRoleLogin = (e) => {
                 e.preventDefault();
                 let newRole = 'guest';
@@ -230,26 +251,48 @@
                 else if (rolePinInput === 'TDMH-HEADS') newRole = 'dept_head';
                 else if (rolePinInput === 'TDMH-CENSUS-ADMITTING') newRole = 'admitting';
                 
-                if (newRole !== 'guest') { setUserRole(newRole); setShowRoleLogin(false); setRolePinInput(''); } else { alert('Invalid PIN.'); }
+                if (newRole !== 'guest') { 
+                    setRoleLoginFeedback({ type: 'success', text: 'Access Granted! Unlocking module...' });
+                    setTimeout(() => {
+                        setUserRole(newRole); 
+                        setShowRoleLogin(false); 
+                        setRolePinInput(''); 
+                        setRoleLoginFeedback(null);
+                        
+                        // Automatically open the tab/modal the user originally clicked before the PIN prompt!
+                        if (pendingAction === 'census' && (newRole === 'admin' || newRole === 'admitting')) { setActiveTab('census'); setMobileMenuOpen(false); setSelectedDept(null); }
+                        else if (pendingAction === 'admin' && newRole === 'admin') { setShowAdminConsole(true); setMobileMenuOpen(false); }
+                        else if (pendingAction === 'memo_gen' && (newRole === 'admin' || newRole === 'dept_head')) { setShowAddMemo(true); setMobileMenuOpen(false); }
+                        else if (pendingAction === 'add_event' && (newRole === 'admin' || newRole === 'dept_head')) { setShowAddEvent(true); }
+                        else if (pendingAction === 'add_news' && (newRole === 'admin' || newRole === 'dept_head')) { setShowAddNews(true); }
+                        setPendingAction(null);
+                    }, 1000);
+                } else { 
+                    setRoleLoginFeedback({ type: 'error', text: 'Invalid PIN. Please check your credentials.' });
+                    setRolePinInput('');
+                    setTimeout(() => setRoleLoginFeedback(null), 3000);
+                }
             };
 
             const handleSecureAction = (actionType) => {
                 if (actionType === 'census') {
                     if (userRole === 'admin' || userRole === 'admitting') { setActiveTab('census'); setMobileMenuOpen(false); setSelectedDept(null); }
-                    else { setShowRoleLogin(true); }
+                    else { setPendingAction('census'); setShowRoleLogin(true); }
                 } else if (actionType === 'admin') {
                     if (userRole === 'admin') { setShowAdminConsole(true); setMobileMenuOpen(false); }
-                    else { alert("Master Admin access required."); setShowRoleLogin(true); }
+                    else { setPendingAction('admin'); setShowRoleLogin(true); }
                 } else if (actionType === 'memo_gen') {
                     if (userRole === 'admin' || userRole === 'dept_head') { setShowAddMemo(true); setMobileMenuOpen(false); }
-                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
+                    else { setPendingAction('memo_gen'); setShowRoleLogin(true); }
                 } else if (actionType === 'add_event') {
                     if (userRole === 'admin' || userRole === 'dept_head') { setShowAddEvent(true); }
-                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
+                    else { setPendingAction('add_event'); setShowRoleLogin(true); }
                 } else if (actionType === 'add_news') {
                     if (userRole === 'admin' || userRole === 'dept_head') { setShowAddNews(true); }
-                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
-                } else { setActiveTab(actionType); setMobileMenuOpen(false); setSelectedDept(null); }
+                    else { setPendingAction('add_news'); setShowRoleLogin(true); }
+                } else { 
+                    setActiveTab(actionType); setMobileMenuOpen(false); setSelectedDept(null); 
+                }
             };
 
             const handleDccUpload = async (e) => {
@@ -312,10 +355,18 @@
                         <div className="bg-white p-10 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative z-10 border border-slate-200 animate-slide-up">
                             <div className="w-20 h-20 bg-blue-50 text-tdmh-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-blue-100"><Icons.Lock className="w-10 h-10" /></div>
                             <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">TDMH CQI Portal</h1>
-                            <p className="text-slate-500 font-medium mb-8 text-sm">Restricted Intranet. Enter global access key.</p>
+                            <p className="text-slate-500 font-medium mb-6 text-sm">Restricted Intranet. Enter global access key.</p>
+                            
+                            {/* CUSTOM GLOBAL PIN ERROR/SUCCESS MESSAGE */}
+                            {globalPinFeedback && (
+                                <div className={`mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all ${globalPinFeedback.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                                    {globalPinFeedback.text}
+                                </div>
+                            )}
+
                             <form onSubmit={handleGlobalUnlock}>
-                                <input type="password" value={globalPinInput} onChange={(e) => setGlobalPinInput(e.target.value)} className="w-full px-6 py-4 border-2 border-slate-200 rounded-xl focus:border-tdmh-blue mb-4 text-center text-xl tracking-widest font-bold outline-none" placeholder="••••••••••••" autoFocus />
-                                <button type="submit" className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg">Enter System</button>
+                                <input type="password" value={globalPinInput} onChange={(e) => setGlobalPinInput(e.target.value)} className="w-full px-6 py-4 border-2 border-slate-200 rounded-xl focus:border-tdmh-blue mb-4 text-center text-xl tracking-widest font-bold outline-none transition-colors" placeholder="••••••••••••" autoFocus />
+                                <button type="submit" className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg transition-colors">Enter System</button>
                             </form>
                         </div>
                     </div>
@@ -335,10 +386,8 @@
                             </div>
                             
                             {slideshow.length > 0 && (
-                                /* UPDATED SLIDESHOW: Taller (h-[600px]), clear images, un-cropped, and clickable! */
                                 <div className="structured-card p-0 overflow-hidden relative h-80 md:h-[600px] flex items-center justify-center bg-slate-900 group shadow-lg cursor-pointer hover:shadow-xl transition-shadow border-2 border-slate-100">
                                     
-                                    {/* View Photo Prompt (Appears on hover) */}
                                     <div className="absolute top-4 right-4 z-30 bg-black/70 backdrop-blur text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setLightboxImg(slideshow[currentSlide]['Image URL'])}>
                                         <Icons.Maximize className="w-5 h-5" /> View Fullscreen
                                     </div>
@@ -349,15 +398,12 @@
                                             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                                             onClick={() => setLightboxImg(slide['Image URL'])}
                                         >
-                                            {/* Cinematic Blurred Background */}
                                             <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
                                                 <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
                                             </div>
                                             
-                                            {/* The Real Image: object-contain prevents any cropping so awards are fully visible */}
                                             <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl" alt={slide['Title']} />
                                             
-                                            {/* Minimal soft gradient strictly at the bottom just to make text readable */}
                                             <div className="absolute inset-x-0 bottom-0 pt-32 pb-8 px-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex flex-col items-center justify-end text-center text-white pointer-events-none">
                                                 <h3 className="text-3xl md:text-5xl font-black mb-2 drop-shadow-xl">{slide['Title']}</h3>
                                                 <p className="font-bold tracking-widest uppercase text-sm md:text-base text-blue-200 drop-shadow-md">{slide['Subtitle']}</p>
@@ -365,7 +411,6 @@
                                         </div>
                                     ))}
                                     
-                                    {/* Dot Navigation */}
                                     <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2" onClick={e => e.stopPropagation()}>
                                         {slideshow.map((_, index) => (
                                             <button key={index} onClick={(e) => { e.stopPropagation(); setCurrentSlide(index); }} className={`h-2.5 rounded-full transition-all duration-300 shadow-sm ${index === currentSlide ? 'bg-tdmh-green w-8' : 'bg-white/70 w-2.5 hover:bg-white'}`}></button>
@@ -607,10 +652,11 @@
                     case 'departments': 
                         // SUB-VIEW: Show tools for a specific department if one is clicked
                         if (selectedDept) {
-                            // Filter tools from Google Sheet that belong to this department ID
+                            // FIXED: Robust filtering checks if "Target Dept ID" comma list includes the selected ID
                             const deptTools = tools.filter(t => {
-                                const tId = String(t.TargetID || t['Target ID'] || t.targetID || '').trim();
-                                return tId === String(selectedDept.id || selectedDept.ID).trim();
+                                const targetIdsStr = String(t['Target Dept ID'] || t['Target ID'] || t.TargetID || t.targetID || '').toLowerCase();
+                                const selectedId = String(selectedDept.id || selectedDept.ID || selectedDept.Name || selectedDept.name || '').toLowerCase().trim();
+                                return targetIdsStr.split(',').map(s => s.trim()).includes(selectedId);
                             });
 
                             return (
@@ -640,7 +686,7 @@
                                                     <Icons.Link className="w-5 h-5" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-slate-800 text-sm group-hover:text-tdmh-blue leading-tight transition-colors">{t['Name'] || t.name || t['Tool Name'] || t[0]}</h4>
+                                                    <h4 className="font-bold text-slate-800 text-sm group-hover:text-tdmh-blue leading-tight transition-colors">{t['Tool Name'] || t['Name'] || t.name || t[0]}</h4>
                                                     <p className="text-xs text-slate-500 mt-1">{t.Description || t.description || t[1]}</p>
                                                 </div>
                                             </a>
@@ -660,24 +706,23 @@
                                     </div>
                                 </div>
                                 
-                                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-8 flex gap-4 items-start">
-                                    <Icons.Users className="w-6 h-6 text-tdmh-blue shrink-0 mt-0.5" />
+                                <div className="bg-red-50 border border-red-200 p-4 rounded-xl mb-8 flex gap-4 items-start">
+                                    <Icons.Shield className="w-6 h-6 text-red-600 shrink-0 mt-0.5" />
                                     <div>
-                                        <strong className="text-sm text-blue-900 block mb-1">Public Directory Notice</strong>
-                                        <p className="text-xs text-blue-800 leading-relaxed">
-                                            Viewing the directory and clicking into departments to access standard forms is <strong>open to all staff</strong>. Logging in is only required if you are a Department Head updating restricted portal content via the Master Admin Console.
+                                        <strong className="text-sm text-red-900 block mb-1">Strict Usage Policy</strong>
+                                        <p className="text-xs text-red-800 leading-relaxed">
+                                            Viewing the directory is open to all staff. However, please select <strong>only your designated department</strong> to access forms. Accessing clinical tools outside of your authorized unit is strictly monitored.
                                         </p>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                                     {departments.map((dept, i) => {
                                         // 1. Smart Icon Matching
-                                        const iconKeyStr = String(dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
+                                        const iconKeyStr = String(dept['IconName'] || dept['Icon Name'] || dept.iconName || 'Box').trim();
                                         const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
-                                        let IconCmp = Icons.Box; // Default Fallback
+                                        let IconCmp = Icons.Box; 
                                         
-                                        // If no specific icon is found, smartly guess based on Category
                                         if (matchedKey) {
                                             IconCmp = Icons[matchedKey];
                                         } else {
@@ -694,9 +739,10 @@
                                             <div 
                                                 key={dept.id || i} 
                                                 onClick={() => setSelectedDept(dept)}
-                                                className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all group bg-white shadow-sm hover:shadow-md ${colorTheme.border}`}
+                                                className={`flex items-center gap-3 p-3 border border-slate-200 rounded-xl cursor-pointer transition-all group bg-white shadow-sm hover:shadow-md hover:border-tdmh-blue`}
                                             >
-                                                <div className={`p-2.5 rounded-lg shrink-0 transition-colors ${colorTheme.bg} ${colorTheme.text} ${colorTheme.hover}`}>
+                                                {/* FIXED: Applied the dynamic color classes to the icon background */}
+                                                <div className={`p-2.5 rounded-lg shrink-0 transition-colors ${colorTheme.bg} ${colorTheme.text} group-hover:bg-tdmh-blue group-hover:text-white`}>
                                                     <IconCmp className="w-6 h-6" />
                                                 </div>
                                                 <div className="flex flex-col min-w-0">
@@ -877,10 +923,18 @@
                     {showRoleLogin && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 m-auto">
-                                <button onClick={() => setShowRoleLogin(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
+                                <button onClick={() => {setShowRoleLogin(false); setPendingAction(null);}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
                                 <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"><Icons.Shield className="w-8 h-8" /></div>
                                 <h3 className="text-xl font-black text-slate-800 mb-2">Role Verification</h3>
                                 <p className="text-xs text-slate-500 mb-6 font-medium">Enter your specific PIN to continue.</p>
+                                
+                                {/* CUSTOM UI FEEDBACK BOX FOR ROLE PIN */}
+                                {roleLoginFeedback && (
+                                    <div className={`mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all animate-fade-in ${roleLoginFeedback.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                                        {roleLoginFeedback.text}
+                                    </div>
+                                )}
+
                                 <form onSubmit={submitRoleLogin}>
                                     <input type="password" value={rolePinInput} onChange={(e)=>setRolePinInput(e.target.value)} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all" placeholder="••••••••" />
                                     <button type="submit" className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors">Unlock Access</button>
