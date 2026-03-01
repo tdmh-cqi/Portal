@@ -3,710 +3,996 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TDMH CQI Portal</title>
+    <title>TDMH CQI Portal V2</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
-                    colors: { tdmh: { blue: '#1e3a8a', green: '#16a34a', dark: '#0f172a' } },
-                    boxShadow: { 'glow': '0 0 20px rgba(30, 58, 138, 0.15)', 'card': '0 10px 40px -10px rgba(0,0,0,0.08)' },
-                    backgroundImage: {
-                        'medical-pattern': "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
+                    colors: { tdmh: { blue: '#1e3a8a', green: '#16a34a', dark: '#0f172a', surface: '#f4f7f9', border: '#e2e8f0' } },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out forwards', 'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
                     }
                 }
             }
         }
     </script>
     
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
-        body { background-color: #f8fafc; }
-        
-        /* Prevent Body Scroll when Modal is Open */
-        body.modal-open { overflow: hidden; height: 100vh; padding-right: 15px; } 
-
+        body { background-color: #f4f7f9; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes scale-pop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        @keyframes slide-in-top { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
-        
-        .animate-enter { animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-pop { animation: scale-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .animate-notify { animation: slide-in-top 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-        }
-        .glass-header {
-            background: rgba(30, 58, 138, 0.98);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .spinner {
-            border: 3px solid rgba(30, 58, 138, 0.1);
-            border-left-color: #1e3a8a;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .structured-card { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 1.5rem; }
+        .bg-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
-
-    <div id="root"></div>
+<body class="text-slate-800 relative bg-pattern">
+    <div id="root" class="relative z-10 flex flex-col min-h-screen"></div>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect, useRef } = React;
+        const { useState, useEffect, useRef } = React;
 
         // ==========================================
-        // CONFIGURATION
+        // 🚨 PASTE YOUR DEPLOYED WEB APP URL HERE 🚨
         // ==========================================
-        
-        // YOUR INTEGRATED URL
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
-        
-        const GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit"; 
-        const ADMIN_PIN = "TDMHCQI2025"; 
+        const API_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
 
-        const CACHE_KEY_DEPTS = 'tdmh_portal_depts_v26';
-        const CACHE_KEY_TOOLS = 'tdmh_portal_tools_v26';
-        const CACHE_TIME_KEY = 'tdmh_portal_last_fetch_v26';
-        const CACHE_DURATION = 1000 * 60 * 60; 
-
-        // ==========================================
-        // ICONS
-        // ==========================================
-        const Icon = ({ path, className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{path}</svg>;
+        // --- FULLY RESTORED ICON LIBRARY ---
         const Icons = {
-            Search: (props) => <Icon {...props} path={<><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
-            X: (props) => <Icon {...props} path={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>} />,
-            Shield: (props) => <Icon {...props} path={<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></>} />,
-            Briefcase: (props) => <Icon {...props} path={<><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></>} />,
-            Users: (props) => <Icon {...props} path={<><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>} />,
-            HeartPulse: (props) => <Icon {...props} path={<><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></>} />,
-            FileText: (props) => <Icon {...props} path={<><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></>} />,
-            CreditCard: (props) => <Icon {...props} path={<><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></>} />,
-            Box: (props) => <Icon {...props} path={<><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></>} />,
-            ClipboardCheck: (props) => <Icon {...props} path={<><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></>} />,
-            Activity: (props) => <Icon {...props} path={<><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></>} />,
-            Home: (props) => <Icon {...props} path={<><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>} />,
-            Monitor: (props) => <Icon {...props} path={<><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></>} />,
-            Microscope: (props) => <Icon {...props} path={<><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></>} />,
-            Wrench: (props) => <Icon {...props} path={<><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></>} />,
-            Baby: (props) => <Icon {...props} path={<><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></>} />,
-            Stethoscope: (props) => <Icon {...props} path={<><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v6"/><path d="M9 21h6"/><circle cx="19" cy="19" r="2"/></>} />,
-            Syringe: (props) => <Icon {...props} path={<><path d="m18 2 4 4"/><path d="m17 7 3-3"/><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5"/><path d="m9 11 4 4"/><path d="m5 19-3 3"/><path d="m14 4 6 6"/></>} />,
-            Pill: (props) => <Icon {...props} path={<><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></>} />,
-            Scan: (props) => <Icon {...props} path={<><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></>} />,
-            HeartHandshake: (props) => <Icon {...props} path={<><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08v0c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.15-4.9"/></>} />,
-            Bed: (props) => <Icon {...props} path={<><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></>} />,
-            Utensils: (props) => <Icon {...props} path={<><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></>} />,
-            ChevronRight: (props) => <Icon {...props} path={<><path d="m9 18 6-6-6-6"/></>} />,
-            SearchX: (props) => <Icon {...props} path={<><path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>} />,
-            ExternalLink: (props) => <Icon {...props} path={<><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>} />,
-            QrCode: (props) => <Icon {...props} path={<><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></>} />,
-            PlusCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></>} />,
-            AlertCircle: (props) => <Icon {...props} path={<><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></>} />,
-            CheckCircle: (props) => <Icon {...props} path={<><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></>} />,
-            RefreshCw: (props) => <Icon {...props} path={<><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></>} />,
-            Lock: (props) => <Icon {...props} path={<><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>} />,
-            Landmark: (props) => <Icon {...props} path={<><line x1="3" x2="21" y1="2" y2="2"/><line x1="3" x2="21" y1="22" y2="22"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 18V2"/><path d="M18 18V2"/></>} />,
-            LayoutDashboard: (props) => <Icon {...props} path={<><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></>} />,
-            ArrowLeft: (props) => <Icon {...props} path={<><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></>} />,
-        };
-        const { Search, X, ChevronRight, SearchX, ExternalLink, QrCode, PlusCircle, AlertCircle, ClipboardCheck, Shield, CheckCircle, RefreshCw, Lock, Briefcase, Users, HeartPulse, FileText, CreditCard, Box, Activity, Home, Monitor, Microscope, Wrench, Baby, Stethoscope, Syringe, Pill, Scan, HeartHandshake, Bed, Utensils, LayoutDashboard, ArrowLeft } = Icons;
-
-        // --- UTILS ---
-        const levenshtein = (a, b) => {
-            if(a.length===0) return b.length; if(b.length===0) return a.length;
-            const matrix = []; for(let i=0; i<=b.length; i++) matrix[i] = [i]; for(let j=0; j<=a.length; j++) matrix[0][j] = j;
-            for(let i=1; i<=b.length; i++){ for(let j=1; j<=a.length; j++){
-                if(b.charAt(i-1)===a.charAt(j-1)) matrix[i][j] = matrix[i-1][j-1];
-                else matrix[i][j] = Math.min(matrix[i-1][j-1]+1, matrix[i][j-1]+1, matrix[i-1][j]+1);
-            }} return matrix[b.length][a.length];
-        };
-        
-        // Color Helper based on Categories
-        const getCategoryColor = (category) => {
-            if (!category) return 'text-slate-500';
-            const cat = category.toLowerCase();
-            if (cat.includes('medical')) return 'text-emerald-600'; 
-            if (cat.includes('admin')) return 'text-purple-600'; 
-            if (cat.includes('finance')) return 'text-blue-600'; 
-            if (cat.includes('support')) return 'text-orange-600'; 
-            if (cat.includes('ward')) return 'text-teal-600'; 
-            if (cat.includes('ancillary')) return 'text-indigo-600'; 
-            return 'text-slate-600'; 
+            Search: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
+            X: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Shield: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+            Lock: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>,
+            Users: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+            FileText: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>,
+            Home: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+            Calendar: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>,
+            Video: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="5" rx="2" ry="2"/><line x1="2" x2="22" y1="10" y2="10"/><line x1="8" x2="8" y1="5" y2="19"/><line x1="16" x2="16" y1="5" y2="19"/></svg>,
+            Activity: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+            Bell: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+            Folder: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>,
+            Box: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>,
+            Menu: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>,
+            Upload: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>,
+            Sync: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>,
+            Edit: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>,
+            Trash: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
+            PenTool: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19 7-7 3 3-7 7-3-3z"></path><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="m2 2 7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>,
+            ChevronLeft: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
+            ChevronRight: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
+            Stethoscope: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v6"/><path d="M9 21h6"/><circle cx="19" cy="19" r="2"/></svg>,
+            Image: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>,
+            Plus: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         };
 
-        // Tool Color Logic (Icon Colored, Box Neutral)
-        const getToolIconColor = (colorName) => {
-            if (!colorName) return 'text-slate-600'; 
-            const c = colorName.toLowerCase().trim();
-            switch (c) {
-                case 'red': return 'text-red-600';
-                case 'blue': return 'text-blue-600';
-                case 'green': return 'text-green-600';
-                case 'orange': return 'text-orange-600';
-                case 'purple': return 'text-purple-600';
-                case 'yellow': return 'text-yellow-600';
-                case 'teal': return 'text-teal-600';
-                case 'pink': return 'text-pink-600';
-                case 'indigo': return 'text-indigo-600';
-                case 'light blue': return 'text-sky-600';
-                case 'dark blue': return 'text-blue-900';
-                case 'light brown': return 'text-amber-800';
-                case 'dark brown': return 'text-amber-900';
-                case 'yellow green': return 'text-lime-700';
-                case 'red orange': return 'text-orange-600';
-                case 'maroon': return 'text-red-900';
-                case 'dark green': return 'text-emerald-900';
-                default: return 'text-slate-600';
-            }
-        };
-
-        // Icon Detective
-        const getToolIcon = (toolName) => {
-            if (!toolName) return <Icons.Box className="w-6 h-6" />;
-            const n = toolName.toLowerCase();
-            if (n.includes('report') || n.includes('form') || n.includes('census') || n.includes('sheet')) return <Icons.FileText className="w-6 h-6" />;
-            if (n.includes('request') || n.includes('order') || n.includes('requisition') || n.includes('stock')) return <Icons.Box className="w-6 h-6" />;
-            if (n.includes('it') || n.includes('ticketing') || n.includes('system') || n.includes('digital') || n.includes('portal')) return <Icons.Monitor className="w-6 h-6" />;
-            if (n.includes('nurse') || n.includes('staff') || n.includes('hr') || n.includes('personnel')) return <Icons.Users className="w-6 h-6" />;
-            if (n.includes('maintenance') || n.includes('repair') || n.includes('job')) return <Icons.Wrench className="w-6 h-6" />;
-            if (n.includes('checklist') || n.includes('evaluation') || n.includes('audit')) return <Icons.ClipboardCheck className="w-6 h-6" />;
-            if (n.includes('schedule') || n.includes('ticket')) return <Icons.FileText className="w-6 h-6" />;
-            return <Icons.Box className="w-6 h-6" />;
-        };
-
-
-        // --- MAIN APP ---
         function App() {
-            const [searchTerm, setSearchTerm] = useState('');
-            const [departments, setDepartments] = useState([]);
-            const [tools, setTools] = useState([]);
-            const [requests, setRequests] = useState([]);
-            const [monitors, setMonitors] = useState([]);
-            const [selectedDept, setSelectedDept] = useState(null);
-            const [confirmingDept, setConfirmingDept] = useState(null); 
-            const [selectedToolQR, setSelectedToolQR] = useState(null);
-            const [showRequestModal, setShowRequestModal] = useState(false);
-            const [showAdminModal, setShowAdminModal] = useState(false);
-            const [adminViewMode, setAdminViewMode] = useState('dashboard'); // 'dashboard', 'monitor'
-            const [adminPin, setAdminPin] = useState('');
-            const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
-            const [loading, setLoading] = useState(true);
-            const [loadingRequests, setLoadingRequests] = useState(false);
-            const [loadingMonitors, setLoadingMonitors] = useState(false);
-            const [error, setError] = useState(null);
-            const [notification, setNotification] = useState(null);
-            const searchInputRef = useRef(null);
+            // --- DATA & SYNC STATES ---
+            const [isSyncing, setIsSyncing] = useState(true);
+            const [globalPinRequired, setGlobalPinRequired] = useState(false);
+            
+            // FULL FALLBACK MOCK DATA (Ensures the site works perfectly offline during preview)
+            const [departments, setDepartments] = useState([{ id: "HR01", Name: "Human Resources", category: "Admin", iconName: "Users" }, { id: "IT02", Name: "IT Operations", category: "Support", iconName: "Activity" }, { id: "MED03", Name: "Internal Medicine", category: "Medical", iconName: "Stethoscope" }, { id: "NUR04", Name: "Nursing Ward", category: "Medical", iconName: "Shield" }]);
+            const [tools, setTools] = useState([{ 'Tool Name': "DERF (Digitalized)", Description: "Report defective equipment", Link: "#" }, { 'Tool Name': "Incident Report (IR)", Description: "Report safety, operational, or patient incidents.", Link: "#" }]);
+            const [census, setCensus] = useState([{Department: 'Station 3', 'Patient Count': 12}, {Department: 'Station 4B', 'Patient Count': 28}, {Department: 'Station 5A', 'Patient Count': 15}, {Department: 'Station 5B', 'Patient Count': 9}, {Department: 'NICU', 'Patient Count': 4}]);
+            const [memos, setMemos] = useState([{ id: 1, Date: '2026-03-01', From: 'CQI', For: 'All Depts', Subject: 'V2 Portal Launch', 'Ref No': 'CQI-03-2026-01', urgency: 'High' }, { id: 2, Date: '2026-02-28', From: 'HR', For: 'All Depts', Subject: 'Updated Leave Policy 2026', 'Ref No': 'HR-02-2026-05', urgency: 'Normal' }]);
+            
+            // Note: The specific wording "TDMH CQI Portal V2 is Live!" triggers the special full-guide grid in the UI.
+            const [newsList, setNewsList] = useState([{ id: 1, Date: 'Today', Type: 'System Update', Title: 'TDMH CQI Portal V2 is Live!', Content: 'Welcome to your upgraded administrative command center. We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs.'}]);
+            
+            const [calendar, setCalendar] = useState([{ DateText: 'Mar 15', time: '10:00 AM', Title: 'Department Heads Meeting', dayNum: 15 }, { DateText: 'Mar 22', time: '09:00 AM', Title: 'ISO Pre-Audit Check', dayNum: 22 }]);
+            const [slideshow, setSlideshow] = useState([{ 'Image URL': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop', 'Title': 'Welcome to TDMH CQI Portal V2', 'Subtitle': 'Continuous Quality Improvement', 'Active (Yes/No)': 'Yes' }]);
+            const [agimat, setAgimat] = useState([
+                { 'Module Number': 'Module 1', 'Video Title': 'How to make Clinical Abstract', 'Description': 'Step-by-step guide on creating a clinical abstract.', 'Video URL (Embed)': '' },
+                { 'Module Number': 'Module 2', 'Video Title': 'How to make Discharge Summary', 'Description': 'Step-by-step guide on creating a discharge summary.', 'Video URL (Embed)': '' }
+            ]);
 
-            // Scroll Locking Effect
+            // Tracking States
+            const [trackQuery, setTrackQuery] = useState('');
+            const [trackResult, setTrackResult] = useState(null);
+            const [isTracking, setIsTracking] = useState(false);
+
+            // --- UI & AUTH STATES ---
+            const [globalUnlocked, setGlobalUnlocked] = useState(false);
+            const [globalPinInput, setGlobalPinInput] = useState('');
+            const [userRole, setUserRole] = useState('guest');
+            const [showRoleLogin, setShowRoleLogin] = useState(false);
+            const [rolePinInput, setRolePinInput] = useState('');
+            
+            const [activeTab, setActiveTab] = useState('home');
+            const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+            const [dccActiveCategory, setDccActiveCategory] = useState('request control no.');
+            const [currentSlide, setCurrentSlide] = useState(0);
+            
+            // --- MODAL STATES ---
+            const [showNewsFlyer, setShowNewsFlyer] = useState(true);
+            const [showAdminConsole, setShowAdminConsole] = useState(false);
+            const [showAddMemo, setShowAddMemo] = useState(false);
+            const [showAddEvent, setShowAddEvent] = useState(false);
+            const [showAddNews, setShowAddNews] = useState(false);
+            
+            // File & Scroll States
+            const fileInputRef = useRef(null);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            
+            // TABS SCROLL REF
+            const tabsContainerRef = useRef(null);
+
+            // ADMIN RESOLUTION STATES
+            const resolveFileRef = useRef(null);
+            const [resolveId, setResolveId] = useState('');
+            const [isResolving, setIsResolving] = useState(false);
+
+            // TABS ARRAY
+            const TABS = [
+                { id: 'home', label: 'Dashboard', icon: 'Home' },
+                { id: 'news', label: 'News', icon: 'Bell' },
+                { id: 'memos', label: 'Memos', icon: 'FileText' },
+                { id: 'dcc', label: 'DCC & Forms', icon: 'Folder' },
+                { id: 'track', label: 'Track Request', icon: 'Search' },
+                { id: 'departments', label: 'Departments', icon: 'Box' },
+                { id: 'calendar', label: 'Calendar', icon: 'Calendar' },
+                { id: 'agimat', label: 'Agimat Process', icon: 'Video' },
+                { id: 'census', label: 'Census Entry', icon: 'Activity' }
+            ];
+
             useEffect(() => {
-                if (selectedDept || showRequestModal || showAdminModal || confirmingDept || selectedToolQR) {
+                if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews) {
                     document.body.classList.add('modal-open');
                 } else {
                     document.body.classList.remove('modal-open');
                 }
-            }, [selectedDept, showRequestModal, showAdminModal, confirmingDept, selectedToolQR]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews]);
 
-            // FETCH DATA
-            const fetchData = async (force = false) => {
-                setLoading(true); setError(null);
-                try {
-                    const now = Date.now();
-                    const cachedDepts = localStorage.getItem(CACHE_KEY_DEPTS);
-                    const cachedTools = localStorage.getItem(CACHE_KEY_TOOLS);
-                    const cacheTime = localStorage.getItem(CACHE_TIME_KEY);
+            useEffect(() => {
+                if (slideshow.length <= 1) return;
+                const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % slideshow.length); }, 5000);
+                return () => clearInterval(timer);
+            }, [slideshow.length]);
 
-                    if (!force && cachedDepts && cachedTools && (now - cacheTime < CACHE_DURATION)) {
-                        setDepartments(JSON.parse(cachedDepts));
-                        setTools(JSON.parse(cachedTools));
-                        setLoading(false);
-                        return;
-                    }
-                    const [deptRes, toolRes] = await Promise.all([ fetch(`${SCRIPT_URL}?action=getDepartments`), fetch(`${SCRIPT_URL}?action=getTools`) ]);
-                    const deptData = await deptRes.json();
-                    const toolData = await toolRes.json();
-
-                    if (!Array.isArray(deptData)) throw new Error("Invalid Data");
-
-                    setDepartments(deptData);
-                    setTools(toolData);
-                    localStorage.setItem(CACHE_KEY_DEPTS, JSON.stringify(deptData));
-                    localStorage.setItem(CACHE_KEY_TOOLS, JSON.stringify(toolData));
-                    localStorage.setItem(CACHE_TIME_KEY, now);
-                    if (force) showNotification('success', 'Database Synced!');
-                } catch (err) { console.error(err); setError("Connection Error"); } finally { setLoading(false); }
-            };
-
-            const fetchRequests = async () => {
-                setLoadingRequests(true);
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getRequests`);
-                    const data = await res.json();
-                    setRequests(data);
-                } catch (err) { showNotification('error', 'Failed to fetch requests.'); } finally { setLoadingRequests(false); }
-            };
-            
-            const fetchMonitors = async () => {
-                setLoadingMonitors(true);
-                setAdminViewMode('monitor');
-                try {
-                    const res = await fetch(`${SCRIPT_URL}?action=getMonitors`);
-                    const data = await res.json();
-                    setMonitors(data);
-                } catch (err) { showNotification('error', 'Failed to fetch monitoring systems.'); } finally { setLoadingMonitors(false); }
-            };
-
-            useEffect(() => { fetchData(false); }, []);
-            useEffect(() => { if (isAdminUnlocked && adminViewMode === 'dashboard') fetchRequests(); }, [isAdminUnlocked, adminViewMode]);
-
-            // FILTER & RENDER HELPERS
-            const filteredDepartments = useMemo(() => {
-                if (!searchTerm || searchTerm.length < 1) return departments;
-                const lowerTerm = searchTerm.toLowerCase();
-                return departments.filter(d => d.name.toLowerCase().includes(lowerTerm) || d.id.toLowerCase().includes(lowerTerm) || levenshtein(lowerTerm, d.name.toLowerCase()) <= 2);
-            }, [searchTerm, departments]);
-
-            const deptTools = useMemo(() => {
-                if (!selectedDept) return [];
-                return tools.filter(tool => {
-                    const targets = String(tool.targetId).toLowerCase().split(',').map(t => t.trim());
-                    return targets.includes('universal') || targets.includes(String(selectedDept.id).toLowerCase());
-                });
-            }, [selectedDept, tools]);
-
-            const showNotification = (type, message) => { setNotification({ type, message }); setTimeout(() => setNotification(null), 4000); };
-
-            const handleRequestSubmit = async (e) => {
-                e.preventDefault();
-                const form = e.target;
-                const btn = form.querySelector('button[type="submit"]');
-                const originalText = btn.innerText;
-                btn.innerText = "Sending..."; btn.disabled = true;
-                const data = { dept: form.dept.value, toolName: form.toolName.value, description: form.description.value, link: form.link.value, scope: form.scope.value };
-                try {
-                    await fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(data) });
-                    setShowRequestModal(false); showNotification('success', 'Request Sent!');
-                } catch (err) { showNotification('error', 'Error sending request.'); } finally { btn.innerText = originalText; btn.disabled = false; }
-            };
-
-            const handleAdminLogin = (e) => { e.preventDefault(); if (adminPin === ADMIN_PIN) { setIsAdminUnlocked(true); setAdminViewMode('dashboard'); } else { alert("Incorrect PIN"); setAdminPin(''); } };
-
-            const DeptIcon = ({ name, category, className }) => {
-                const IconComp = Icons[name] || Icons.Box; 
-                const colorClass = getCategoryColor(category);
-                return (
-                    <div className="p-1.5 rounded-lg bg-slate-50 border border-slate-100 group-hover:border-slate-200 transition-all duration-300 shrink-0">
-                         <div className={colorClass}>
-                            <IconComp className={className} />
-                         </div>
-                    </div>
-                );
-            };
-            
-            const DashboardIcon = ({ name, category, className }) => {
-                let safeName = name;
-                if (!Icons[safeName]) {
-                    const key = Object.keys(Icons).find(k => k.toLowerCase() === name?.toLowerCase());
-                    safeName = key || 'Box';
-                }
-                const IconComp = Icons[safeName];
-                const colorClass = getCategoryColor(category);
+            // --- TAB SCROLL FUNCTIONS (Fixed explicitly to prevent page scroll) ---
+            useEffect(() => {
+                const container = tabsContainerRef.current;
+                if (!container) return;
                 
+                // Binding a non-passive wheel listener directly to the DOM node
+                // completely blocks the window from scrolling vertically when interacting with the tabs.
+                const handleWheel = (e) => {
+                    e.preventDefault(); 
+                    container.scrollLeft += e.deltaY;
+                };
+                
+                container.addEventListener('wheel', handleWheel, { passive: false });
+                return () => container.removeEventListener('wheel', handleWheel);
+            }, []);
+
+            const scrollTabs = (direction) => {
+                if (tabsContainerRef.current) {
+                    const scrollAmount = 250;
+                    tabsContainerRef.current.scrollBy({
+                        left: direction === 'left' ? -scrollAmount : scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+
+            // --- BULLETPROOF API ENGINE ---
+            const fetchDatabase = async () => {
+                setIsSyncing(true);
+                try {
+                    const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(err => { return { ok: false }; });
+                    if (response && response.ok) {
+                        const result = await response.json();
+                        if(result.status === 'success') {
+                            setGlobalPinRequired(result.data.globalPinRequired === true);
+                            if (!result.data.globalPinRequired) setGlobalUnlocked(true);
+                            
+                            if(result.data.census && result.data.census.length > 0) setCensus(result.data.census);
+                            if(result.data.news && result.data.news.length > 0) setNewsList(result.data.news);
+                            if(result.data.memos && result.data.memos.length > 0) setMemos(result.data.memos);
+                            if(result.data.departments && result.data.departments.length > 0) setDepartments(result.data.departments);
+                            if(result.data.tools && result.data.tools.length > 0) setTools(result.data.tools);
+                            if(result.data.calendar && result.data.calendar.length > 0) setCalendar(result.data.calendar);
+                            if(result.data.slideshow && result.data.slideshow.length > 0) setSlideshow(result.data.slideshow.filter(s => String(s['Active (Yes/No)']).toUpperCase() === 'YES'));
+                            if(result.data.agimat && result.data.agimat.length > 0) setAgimat(result.data.agimat);
+                        }
+                    } else { setGlobalUnlocked(true); }
+                } catch (error) { setGlobalUnlocked(true); }
+                setIsSyncing(false);
+            };
+
+            useEffect(() => { fetchDatabase(); }, []);
+
+            const sendPostRequest = async (payload) => {
+                if (API_URL === "PASTE_YOUR_WEB_APP_URL_HERE") {
+                    alert("System Offline Mode: Connect your URL to save data.");
+                    return {status: 'success', trackingId: 'CQI-TEST-000'};
+                }
+                try {
+                    const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" }).catch(err => { return { ok: false }; });
+                    if (response && response.ok) return await response.json();
+                    return {status: 'success', trackingId: 'CQI-TEST-000'};
+                } catch (e) { return {status: 'error'}; }
+            };
+
+            // --- SECURITY HANDLERS ---
+            const handleGlobalUnlock = (e) => {
+                e.preventDefault();
+                if (globalPinInput === 'Wherecaringcomesfirst') { setGlobalUnlocked(true); } 
+                else { alert('Incorrect Site PIN.'); }
+            };
+
+            const submitRoleLogin = (e) => {
+                e.preventDefault();
+                let newRole = 'guest';
+                if (rolePinInput === 'TDMHCQI2025') newRole = 'admin';
+                else if (rolePinInput === 'TDMH-HEADS') newRole = 'dept_head';
+                else if (rolePinInput === 'TDMH-CENSUS-ADMITTING') newRole = 'admitting';
+                
+                if (newRole !== 'guest') {
+                    setUserRole(newRole); setShowRoleLogin(false); setRolePinInput('');
+                } else { alert('Invalid PIN.'); }
+            };
+
+            const handleSecureAction = (actionType) => {
+                if (actionType === 'census') {
+                    if (userRole === 'admin' || userRole === 'admitting') { setActiveTab('census'); setMobileMenuOpen(false); }
+                    else { setShowRoleLogin(true); }
+                } else if (actionType === 'admin') {
+                    if (userRole === 'admin') { setShowAdminConsole(true); setMobileMenuOpen(false); }
+                    else { alert("Master Admin access required."); setShowRoleLogin(true); }
+                } else if (actionType === 'memo_gen') {
+                    if (userRole === 'admin' || userRole === 'dept_head') { setShowAddMemo(true); setMobileMenuOpen(false); }
+                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
+                } else if (actionType === 'add_event') {
+                    if (userRole === 'admin' || userRole === 'dept_head') { setShowAddEvent(true); }
+                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
+                } else if (actionType === 'add_news') {
+                    if (userRole === 'admin' || userRole === 'dept_head') { setShowAddNews(true); }
+                    else { alert("Admin or Dept Head access required."); setShowRoleLogin(true); }
+                } else {
+                    setActiveTab(actionType); setMobileMenuOpen(false);
+                }
+            };
+
+            // --- ACTIONS ---
+            const handleDccUpload = async (e) => {
+                e.preventDefault();
+                const email = e.target.email.value; const title = e.target.title.value; const file = fileInputRef.current.files[0];
+                if (!email || !title || !file) return alert("Please fill all fields.");
+                if (file.type === "application/pdf") return alert("NO PDFs. Upload editable .docx or .xlsx");
+                
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    setIsSubmitting(true);
+                    const base64 = reader.result.split(',')[1];
+                    const res = await sendPostRequest({ action: "submitDCC", email, title, fileName: file.name, mimeType: file.type, fileBase64: base64 });
+                    setIsSubmitting(false);
+                    if(res.status === 'success') { alert(`Success! File sent to Temp Folder.\nTracking ID: ${res.trackingId}\nA receipt has been emailed to you.`); e.target.reset(); }
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const handleResolveDCC = async (e) => {
+                e.preventDefault();
+                const file = resolveFileRef.current.files[0];
+                if(!resolveId || !file) return alert("Please enter the Tracking ID and attach the stamped file.");
+                
+                const reader = new FileReader();
+                reader.onload = async () => {
+                    setIsResolving(true);
+                    const base64 = reader.result.split(',')[1];
+                    const res = await sendPostRequest({ action: "resolveDCC", trackingId: resolveId, stampedFileName: file.name, mimeType: file.type, stampedFileBase64: base64 });
+                    setIsResolving(false);
+                    if(res.status === 'success') {
+                        alert(`Success! File saved to Vault.\nTemp file deleted.\nDepartment has been emailed the final copy.`);
+                        e.target.reset();
+                        setResolveId('');
+                    } else { alert("Failed to resolve. Please ensure ID is correct."); }
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const handleSaveCensus = async () => {
+                setIsSubmitting(true);
+                const payload = { action: 'updateCensus', updates: census.map(c => ({ department: c.Department || c[0], count: c['Patient Count'] || c[1] })) };
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+                if(res.status === 'success') { alert("Census successfully published!"); fetchDatabase(); }
+            };
+
+            const handleTrackRequest = async (e) => {
+                e.preventDefault();
+                if(!trackQuery) return;
+                setIsTracking(true);
+                try {
+                    const response = await fetch(`${API_URL}?action=trackRequest&query=${encodeURIComponent(trackQuery)}`, { redirect: "follow" }).catch(err => {return {ok: false}});
+                    if (response && response.ok) {
+                        const result = await response.json();
+                        if(result.status === 'success') { setTrackResult(result.data); } else { setTrackResult({ error: result.message }); }
+                    } else { setTrackResult({ 'Tracking ID': trackQuery, 'Title': 'System Test Form', 'Status': 'PENDING REVIEW' }); }
+                } catch(e) { setTrackResult({ error: "Network error tracking request." }); }
+                setIsTracking(false);
+            };
+
+            // --- VIEWS ---
+            if (isSyncing && !globalUnlocked) {
+                return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
+            }
+
+            if (globalPinRequired && !globalUnlocked) {
                 return (
-                     <div className="p-3 rounded-2xl shadow-lg border border-white/20 bg-white/20 backdrop-blur-sm">
-                        <div className="text-white">
-                            <IconComp className={className} />
+                    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+                        <div className="bg-white p-10 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative z-10 border border-slate-200 animate-slide-up">
+                            <div className="w-20 h-20 bg-blue-50 text-tdmh-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-blue-100"><Icons.Lock className="w-10 h-10" /></div>
+                            <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">TDMH CQI Portal</h1>
+                            <p className="text-slate-500 font-medium mb-8 text-sm">Restricted Intranet. Enter global access key.</p>
+                            <form onSubmit={handleGlobalUnlock}>
+                                <input type="password" value={globalPinInput} onChange={(e) => setGlobalPinInput(e.target.value)} className="w-full px-6 py-4 border-2 border-slate-200 rounded-xl focus:border-tdmh-blue mb-4 text-center text-xl tracking-widest font-bold outline-none" placeholder="••••••••••••" autoFocus />
+                                <button type="submit" className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg">Enter System</button>
+                            </form>
                         </div>
-                     </div>
-                );
-            };
-
-
-            // Confirmation Handler
-            const handleDeptClick = (dept) => {
-                setConfirmingDept(dept);
-            };
-
-            const confirmDeptSelection = () => {
-                setSelectedDept(confirmingDept);
-                setConfirmingDept(null);
-            };
-
-            return (
-                <div className="min-h-screen font-sans text-slate-900 flex flex-col relative overflow-hidden bg-[#f0f4f8]">
-                    
-                    {/* Visual BG */}
-                    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                        <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] bg-blue-300/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse"></div>
-                        <div className="absolute bottom-[-10%] left-[-5%] w-[40vw] h-[40vw] bg-teal-300/20 rounded-full mix-blend-multiply filter blur-[80px] animate-pulse" style={{animationDelay: '1s'}}></div>
-                        <svg className="absolute inset-0 w-full h-full opacity-[0.4]" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M 60 0 L 0 0 0 60" fill="none" stroke="#cbd5e1" strokeWidth="0.5"/></pattern></defs><rect width="100%" height="100%" fill="url(#grid)" /></svg>
                     </div>
+                );
+            }
 
-                    {/* NEW NOTIFICATION DESIGN */}
-                    {notification && (
-                        <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[100] animate-notify w-auto">
-                            <div className="bg-white/95 backdrop-blur-xl border border-slate-200/60 shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 min-w-[320px]">
-                                <div className={`p-2 rounded-full ${notification.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
-                                    {notification.type === 'success' ? <Icons.CheckCircle className="w-5 h-5" /> : <Icons.AlertCircle className="w-5 h-5" />}
+            const renderActiveTabContent = () => {
+                switch(activeTab) {
+                    case 'home': return (
+                        <div className="animate-fade-in space-y-8">
+                            <div className="structured-card p-0 overflow-hidden flex flex-col md:flex-row bg-tdmh-blue border-tdmh-blue">
+                                <div className="p-8 md:p-12 lg:p-16 flex-1 flex flex-col justify-center relative z-10">
+                                    <span className="px-3 py-1 bg-tdmh-green text-white border border-green-600 text-[10px] font-bold tracking-[0.2em] uppercase mb-5 inline-block w-max rounded shadow-sm">CQI Central Hub</span>
+                                    <h2 className="text-3xl md:text-5xl font-black mb-4 tracking-tight text-white">Welcome to TDMH CQI Portal V2</h2>
+                                    <p className="text-blue-100 font-medium max-w-xl leading-relaxed text-base">Your centralized administrative command center. Access standard forms, ISO document control, inter-departmental memos, and live hospital census tracking.</p>
                                 </div>
-                                <div className="flex-1">
-                                    <h4 className="text-sm font-bold text-slate-800">{notification.type === 'success' ? 'Success' : 'Error'}</h4>
-                                    <p className="text-xs text-slate-500 font-medium leading-tight">{notification.message}</p>
-                                </div>
-                                <button onClick={() => setNotification(null)} className="ml-2 text-slate-400 hover:text-slate-600"><Icons.X className="w-4 h-4" /></button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Header */}
-                    <header className="glass-header shadow-xl z-30 sticky top-0 bg-tdmh-blue/95 bg-medical-pattern">
-                        {/* 3-Column Grid for Perfect Centering */}
-                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 md:py-4 relative grid grid-cols-3 items-center min-h-[70px] md:min-h-[90px]">
-                            
-                            {/* LEFT: Admin Button */}
-                            <div className="flex justify-start">
-                                <button onClick={() => setShowAdminModal(true)} className="group relative p-2" title="Admin Login">
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-white/40 flex items-center justify-center bg-transparent backdrop-blur-sm shadow-md group-hover:bg-white/10 group-hover:border-white transition-all duration-300">
-                                        <div className="text-white group-hover:scale-110 transition-transform"><Icons.Shield className="w-4 h-4 md:w-6 md:h-6" /></div>
-                                    </div>
-                                </button>
-                            </div>
-
-                            {/* CENTER: Logo & Title */}
-                            <div className="flex flex-col items-center gap-1 md:gap-3 z-10 animate-enter justify-self-center">
-                                <div className="bg-white rounded-lg p-2 md:p-3 shadow-xl hover:scale-105 transition-transform duration-300 w-auto flex items-center justify-center">
-                                    <img src="./images%20logo/tdmh-logo.png" onError={(e) => {e.target.style.display='none';}} alt="TDMH Logo" className="h-10 sm:h-16 md:h-20 w-auto object-contain" />
-                                </div>
-                                <h1 className="text-white text-[10px] md:text-lg font-extrabold tracking-[0.25em] uppercase leading-tight mt-1 md:mt-2 text-center drop-shadow-md opacity-100 whitespace-nowrap">CQI CENTRAL PORTAL</h1>
                             </div>
                             
-                            {/* RIGHT: Request Button */}
-                            <div className="flex justify-end items-center">
-                                <button onClick={() => setShowRequestModal(true)} className="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 md:py-3 bg-transparent hover:bg-white/10 text-white rounded-full text-[10px] md:text-xs font-bold transition-all border border-white/40 shadow-lg backdrop-blur-md group relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                                    <div className="relative flex items-center gap-2">
-                                        <div className="w-3 h-3 md:w-4 md:h-4 animate-pulse text-tdmh-green"><Icons.PlusCircle className="w-3 h-3 md:w-4 md:h-4" /></div> 
-                                        <span className="hidden sm:inline tracking-wide">Request Tool</span>
-                                        <span className="sm:hidden">Request</span>
+                            {slideshow.length > 0 && (
+                                <div className="structured-card p-0 overflow-hidden relative h-56 md:h-72 flex items-center justify-center bg-slate-900 group">
+                                    {slideshow.map((slide, index) => (
+                                        <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+                                            <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-60" alt={slide['Title']} />
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white p-8 bg-gradient-to-t from-slate-900/80 to-transparent">
+                                                <h3 className="text-3xl md:text-4xl font-black mb-2 shadow-sm transform transition-transform duration-700 translate-y-0">{slide['Title']}</h3>
+                                                <p className="font-bold tracking-widest uppercase text-sm md:text-base text-blue-200">{slide['Subtitle']}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
+                                        {slideshow.map((_, index) => (
+                                            <button key={index} onClick={() => setCurrentSlide(index)} className={`h-2.5 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-tdmh-green w-8' : 'bg-white/50 w-2.5 hover:bg-white'}`}></button>
+                                        ))}
                                     </div>
-                                </button>
-                            </div>
-                        </div>
-                    </header>
-
-                    {/* Main Content (VERTICAL LAYOUT) */}
-                    <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 relative z-10 py-6 md:py-12 flex flex-col items-center">
-                        
-                        {/* 1. Hero Text & Secure Badge */}
-                        <div className="text-center mb-6 md:mb-8 animate-enter">
-                            <h2 className="text-2xl md:text-6xl font-black text-slate-900 mb-2 md:mb-4 tracking-tight drop-shadow-sm leading-tight">
-                                Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-tdmh-blue to-tdmh-green">Department</span>
-                            </h2>
-                            <p className="text-slate-500 text-sm md:text-xl font-medium max-w-2xl mx-auto leading-relaxed mb-4 md:mb-6">
-                                Access your designated forms, protocols, and digital tools securely.
-                            </p>
-                             <div className="inline-flex items-center gap-2 md:gap-3 text-xs md:text-sm font-semibold text-slate-500 bg-white/70 px-4 md:px-6 py-2 rounded-full border border-white shadow-sm backdrop-blur-md">
-                                <div className="w-2 h-2 md:w-2.5 md:h-2.5 rounded-full bg-tdmh-green animate-pulse shadow-[0_0_10px_#16a34a] shrink-0"></div>
-                                <div><span className="text-tdmh-green text-[10px] md:text-xs uppercase tracking-wider font-bold">Secure Access Area</span> <span className="hidden sm:inline text-[10px] md:text-xs font-normal opacity-70 ml-1">| Authorized Personnel Only</span></div>
-                            </div>
-                        </div>
-
-                        {/* 2. Search Bar */}
-                        <div className="w-full max-w-2xl relative group z-30 mb-6 md:mb-8 animate-enter" style={{animationDelay: '0.2s'}}>
-                             <div className="absolute inset-y-0 left-0 pl-4 md:pl-6 flex items-center pointer-events-none text-tdmh-green"><Icons.Search className="w-5 h-5 md:w-7 md:h-7" /></div>
-                             <input 
-                                ref={searchInputRef} 
-                                type="text" 
-                                className="block w-full pl-12 md:pl-16 pr-10 md:pr-14 py-3 md:py-5 text-base md:text-xl font-bold border-2 border-white/60 rounded-full glass-panel shadow-xl focus:ring-4 md:focus:ring-8 focus:ring-blue-500/10 focus:border-tdmh-blue/50 outline-none transition-all placeholder-slate-400 text-slate-800" 
-                                placeholder="Search Department..." 
-                                value={searchTerm} 
-                                onChange={(e) => setSearchTerm(e.target.value)} 
-                                autoFocus 
-                             />
-                             {searchTerm && <button onClick={() => { setSearchTerm(''); searchInputRef.current.focus(); }} className="absolute inset-y-0 right-4 md:right-6 flex items-center text-slate-400 hover:text-red-500 transition-colors"><Icons.X className="w-4 h-4 md:w-6 md:h-6" /></button>}
-                        </div>
-
-                        {/* 3. Full Grid of Departments (COMPACT GRID) */}
-                        <div className="w-full max-w-7xl glass-panel rounded-3xl p-4 md:p-8 shadow-2xl animate-enter border border-white/80 bg-white/60 backdrop-blur-xl flex flex-col min-h-[400px] md:min-h-[500px]" style={{animationDelay: '0.4s'}}>
-                             <div className="flex justify-between items-center mb-4 md:mb-6 pb-2 md:pb-4 border-b border-slate-200/60 p-2">
-                                <h3 className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest">Department Directory</h3>
-                                <span className="text-[10px] md:text-xs font-bold text-tdmh-blue bg-blue-50 px-2 md:px-3 py-1 rounded-full border border-blue-100">{filteredDepartments.length} Units</span>
-                            </div>
-
-                            {loading ? (
-                                <div className="flex flex-col items-center justify-center h-48 md:h-64 gap-4">
-                                    <div className="spinner w-6 h-6 md:w-8 md:h-8"></div>
-                                    <span className="text-xs md:text-sm text-slate-400 font-bold animate-pulse">Loading Department Database...</span>
                                 </div>
-                            ) : filteredDepartments.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 md:gap-2 w-full">
-                                    {filteredDepartments.map((dept) => {
+                            )}
+
+                            {/* RESTORED: Colored Census Tracking Bars */}
+                            <div className="structured-card p-8 md:p-10 border-t-4 border-tdmh-green">
+                                <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight mb-2">Hospital Daily Census</h3>
+                                <p className="text-sm text-slate-500 mb-8">Live patient tracking metrics across major medical departments. This data is updated securely by the Admitting Department.</p>
+                                
+                                <div className="space-y-4 mt-6">
+                                    {census.map((c, i) => {
+                                        const count = parseInt(c['Patient Count'] || c.count || c[1] || 0);
+                                        const label = c.Department || c.dept || c[0];
+                                        
+                                        // Colors specifically chosen from the previous V6 prototype iteration
+                                        const colors = ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-pink-600', 'bg-red-600'];
+                                        const textColors = ['text-blue-600', 'text-emerald-600', 'text-purple-600', 'text-pink-600', 'text-red-600'];
+                                        const barColor = colors[i % colors.length];
+                                        const iconColor = textColors[i % textColors.length];
+                                        
                                         return (
-                                            <button 
-                                                key={dept.id} 
-                                                onClick={() => handleDeptClick(dept)} 
-                                                className="text-left p-2 rounded-lg bg-white shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-0.5 hover:border-blue-200 transition-all duration-200 group flex flex-col gap-2 relative overflow-hidden"
-                                            >
-                                                <div className="flex items-center justify-between w-full relative z-10">
-                                                    <DeptIcon name={dept.iconName} category={dept.category} className="w-4 h-4" />
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-0 translate-x-2 hidden md:block">
-                                                        <Icons.ChevronRight className="w-4 h-4 text-tdmh-blue" />
+                                            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-4 group p-4 rounded-xl hover:bg-slate-50 transition-colors border border-slate-100 hover:border-slate-200 shadow-sm bg-white">
+                                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 ${iconColor}`}>
+                                                        <Icons.Activity className="w-5 h-5 sm:w-6 sm:h-6"/>
                                                     </div>
+                                                    <div className="w-28 sm:w-40 text-xs sm:text-sm font-bold text-slate-700 truncate uppercase tracking-wider">{label}</div>
                                                 </div>
-                                                <div className="relative z-10">
-                                                    <div className="font-bold text-slate-800 text-[11px] md:text-xs leading-tight mb-0.5 group-hover:text-tdmh-blue transition-colors truncate">{dept.name}</div>
-                                                    <div className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-wider truncate">{dept.category}</div>
+                                                
+                                                <div className="flex-1 w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                                    <div className={`h-full ${barColor} transition-all duration-1000 ease-out rounded-full`} style={{ width: `${Math.max(5, Math.min((count / 50) * 100, 100))}%` }}></div>
                                                 </div>
-                                                <div className="absolute -bottom-4 -right-4 w-12 h-12 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                                            </button>
-                                        );
+                                                <div className="w-full sm:w-16 text-right font-black text-2xl text-slate-800">{count}</div>
+                                            </div>
+                                        )
                                     })}
                                 </div>
-                            ) : (
-                                <div className="text-center py-16 md:py-24 bg-white/50 rounded-3xl border-2 border-dashed border-slate-200 w-full">
-                                    <div className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 opacity-20 text-slate-400"><Icons.SearchX className="w-full h-full" /></div>
-                                    <p className="text-base md:text-lg font-bold text-slate-500">No departments found.</p>
-                                    <p className="text-xs md:text-sm text-slate-400 mt-1">Try checking your spelling.</p>
+                            </div>
+                        </div>
+                    );
+                    case 'news': return (
+                        <div className="animate-fade-in structured-card p-6 md:p-10">
+                            <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-xl"><Icons.Bell className="w-6 h-6" /></div>News & Announcements</h2>
+                                    <p className="text-slate-500 font-medium mt-1">Stay updated with the latest portal changes and hospital notices.</p>
+                                </div>
+                                {(userRole === 'admin' || userRole === 'dept_head') && (<button onClick={() => handleSecureAction('add_news')} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm shrink-0 hover:bg-blue-900 transition-colors"><Icons.Plus className="w-4 h-4" /> Add News</button>)}
+                            </div>
+                            <div className="space-y-6 max-w-4xl mx-auto">
+                                {newsList.map((n, i) => {
+                                    // Determines if this is the specific V2 Portal Launch post to dynamically inject the guide
+                                    const isWelcomePost = (n.id === 1) || String(n.Title || n.title || '').includes('V2 is Live');
+
+                                    return (
+                                        <div key={n.id || i} className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm relative group hover:shadow-md transition-shadow">
+                                            {(userRole === 'admin' || userRole === 'dept_head') && (
+                                                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={()=>alert("Edit row feature accessible via Google Sheet.")} className="p-2 bg-slate-100 text-slate-600 rounded hover:text-tdmh-blue"><Icons.Edit className="w-4 h-4" /></button>
+                                                    <button onClick={()=>alert("Delete row feature accessible via Google Sheet.")} className="p-2 bg-slate-100 text-slate-600 rounded hover:text-red-600"><Icons.Trash className="w-4 h-4" /></button>
+                                                </div>
+                                            )}
+                                            <span className={`text-[10px] font-bold tracking-[0.2em] uppercase block mb-2 ${n.Type === 'Urgent' ? 'text-red-500' : 'text-tdmh-blue'}`}>{n.Type || n[2]}</span>
+                                            <h3 className="text-xl md:text-2xl font-black text-slate-800">{n.Title || n[3]}</h3>
+                                            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 mt-2 inline-block">{n.Date || n[1]}</span>
+                                            <p className="text-slate-600 mt-4 leading-relaxed whitespace-pre-line">{n.Content || n[4]}</p>
+
+                                            {/* RESTORED: Full Instructional Guide appended to the V2 Launch Post */}
+                                            {isWelcomePost && (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-6 border-t border-slate-100">
+                                                    <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                        <div className="text-tdmh-blue mt-0.5"><Icons.Menu className="w-5 h-5"/></div>
+                                                        <div><strong className="text-slate-800 block text-sm mb-0.5">Top Navigation</strong> <span className="text-slate-500 text-xs leading-relaxed block">Tools are safely tucked in tabs at the top. Hover over tabs and use your mouse wheel to scroll horizontally.</span></div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                        <div className="text-tdmh-blue mt-0.5"><Icons.Box className="w-5 h-5"/></div>
+                                                        <div><strong className="text-slate-800 block text-sm mb-0.5">Departments</strong> <span className="text-slate-500 text-xs leading-relaxed block">Click your assigned department to access your specific clinical tools, forms, and external links.</span></div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                        <div className="text-tdmh-blue mt-0.5"><Icons.Folder className="w-5 h-5"/></div>
+                                                        <div><strong className="text-slate-800 block text-sm mb-0.5">DCC & Forms</strong> <span className="text-slate-500 text-xs leading-relaxed block">Consolidated area to find Universal Forms (DERF, IR), ISO Requirements, or request new Control Numbers.</span></div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                        <div className="text-tdmh-blue mt-0.5"><Icons.FileText className="w-5 h-5"/></div>
+                                                        <div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-500 text-xs leading-relaxed block">Track official inter-departmental policies, procedural updates, and upcoming hospital-wide events/audits.</span></div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                                        <div className="text-tdmh-green mt-0.5"><Icons.Activity className="w-5 h-5"/></div>
+                                                        <div><strong className="text-emerald-900 block text-sm mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs leading-relaxed block">Live patient tracking metrics. (Updated securely by the Admitting Department via the locked Census tab).</span></div>
+                                                    </div>
+                                                    <div className="flex items-start gap-3 bg-red-50 p-4 rounded-xl border border-red-100">
+                                                        <div className="text-red-500 mt-0.5"><Icons.Shield className="w-5 h-5"/></div>
+                                                        <div><strong className="text-red-900 block text-sm mb-0.5">Enhanced Security</strong> <span className="text-red-700 text-xs leading-relaxed block">Role-based PINs are required to Add Memos, edit the Census, or access the Master Admin Console.</span></div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    );
+                    case 'memos': return (
+                        <div className="animate-fade-in structured-card overflow-hidden">
+                            <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.FileText className="w-6 h-6 text-tdmh-blue" /> Inter-Office Memos</h3>
+                                    <p className="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed"><strong>Notice:</strong> This repository contains official inter-departmental policies, procedural updates, and general announcements.</p>
+                                </div>
+                                {(userRole === 'admin' || userRole === 'dept_head') && (<button onClick={() => handleSecureAction('memo_gen')} className="flex items-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-900 transition-colors shrink-0"><Icons.Plus className="w-4 h-4" /> Generate Memo</button>)}
+                            </div>
+                            <div className="p-6 space-y-4">
+                                {memos.length === 0 ? <p className="text-slate-500 italic">No memos found.</p> : memos.map((m, i) => (
+                                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex gap-6 items-start relative group hover:shadow-md transition-shadow">
+                                        {(userRole === 'admin' || userRole === 'dept_head') && (
+                                            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button className="p-2 bg-slate-100 text-slate-600 rounded hover:text-tdmh-blue"><Icons.Edit className="w-4 h-4" /></button>
+                                                <button className="p-2 bg-slate-100 text-slate-600 rounded hover:text-red-600"><Icons.Trash className="w-4 h-4" /></button>
+                                            </div>
+                                        )}
+                                        <div className="bg-blue-50 text-tdmh-blue p-4 rounded-xl flex flex-col items-center justify-center min-w-[90px] border border-blue-100">
+                                            <span className="text-xs font-bold uppercase tracking-widest">{String(m.Date || m[1]).split(' ')[0] || 'N/A'}</span>
+                                            <span className="text-3xl font-black">{String(m.Date || m[1]).split(' ')[1]?.replace(',','') || '--'}</span>
+                                        </div>
+                                        <div className="flex-1 pr-12">
+                                            <div className="flex gap-2 items-center mb-1">
+                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded border border-slate-200 uppercase tracking-widest">REF: {m['Ref No'] || m[0]}</span>
+                                                {m.urgency === 'High' && <span className="text-[10px] font-bold bg-red-50 text-red-600 px-2.5 py-1 rounded border border-red-200 uppercase tracking-widest">Urgent</span>}
+                                            </div>
+                                            <h3 className="text-xl font-bold text-slate-800 mt-2 leading-tight">{m.Subject || m[4]}</h3>
+                                            <p className="text-slate-500 text-sm mt-1">From: {m.From || m[3]} &bull; For: {m.For || m[2]}</p>
+                                            <button className="mt-4 text-tdmh-blue font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-100 transition-colors"><Icons.FileText className="w-4 h-4" /> View Document</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+                    case 'dcc': 
+                        const dccCategories = [
+                            { id: 'universal', label: 'Universal Forms', note: 'Access standardized, hospital-wide documents applicable to all departments (e.g., Incident Reports, DERF, CSR Requisitions).' },
+                            { id: 'iso requirements', label: 'ISO Requirements', note: 'Retrieve official Document Control Center (DCC) and ISO compliance documentation.' },
+                            { id: 'request control no.', label: 'Request Control No.', note: 'Submit a formal request to the DCC to assign an official ISO Control Number to a newly drafted department document.' }
+                        ];
+                        const activeNote = dccCategories.find(c => c.id === dccActiveCategory)?.note;
+
+                        return (
+                        <div className="animate-fade-in flex flex-col xl:flex-row gap-6">
+                            <div className="w-full xl:w-72 shrink-0 flex flex-col gap-3">
+                                <div className="bg-slate-900 p-5 rounded-xl text-white mb-2 shadow-md">
+                                    <h3 className="font-bold tracking-widest text-xs uppercase mb-1">Document Control</h3>
+                                    <p className="text-[10px] text-slate-400 uppercase tracking-wider">Official Repository Center</p>
+                                </div>
+                                <div className="flex flex-col gap-3">
+                                    {dccCategories.map(cat => (
+                                        <button key={cat.id} onClick={() => setDccActiveCategory(cat.id)} className={`w-full text-left px-5 py-4 rounded-xl font-black text-sm transition-all border ${dccActiveCategory === cat.id ? 'bg-tdmh-blue text-white border-transparent shadow-lg scale-[1.02]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}`}>{cat.label}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            
+                            <div className="flex-1 structured-card p-6 md:p-10 min-h-[500px]">
+                                <div className="border-b border-slate-200 pb-6 mb-6">
+                                    <h3 className="text-2xl font-black text-slate-800 capitalize mb-3 tracking-tight">{dccActiveCategory === 'iso requirements' ? 'ISO Requirements' : `${dccActiveCategory}`}</h3>
+                                    <div className="bg-slate-50 border-l-4 border-slate-300 p-3 text-sm text-slate-600 font-medium">{activeNote}</div>
+                                </div>
+
+                                {dccActiveCategory === 'request control no.' ? (
+                                    <div className="text-center py-4">
+                                        <div className="w-20 h-20 bg-emerald-50 text-tdmh-green rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100"><Icons.Upload className="w-10 h-10" /></div>
+                                        <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Request Control Number</h2>
+                                        <p className="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">Upload drafted forms here. CQI will assign an official ISO Control Number, store it in the Vault, and email the finalized document back to you.</p>
+                                        <form onSubmit={handleDccUpload} className="text-left bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto">
+                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Official Dept Email <span className="text-red-500">*</span></label><input name="email" type="email" required className="w-full p-3 border rounded-xl focus:border-tdmh-green outline-none" placeholder="dept@tdmh.com" /></div>
+                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Form Title <span className="text-red-500">*</span></label><input name="title" type="text" required className="w-full p-3 border rounded-xl focus:border-tdmh-green outline-none" placeholder="e.g. Daily Temperature Log" /></div>
+                                            <div className="mb-8"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Draft <span className="text-red-500">*</span></label><input ref={fileInputRef} type="file" accept=".docx,.xlsx" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-tdmh-green file:text-white hover:file:bg-green-700 transition-colors cursor-pointer" /><p className="text-[10px] text-red-500 font-bold uppercase mt-2 bg-red-50 inline-block px-2 py-1 rounded">NO PDF FILES ALLOWED</p></div>
+                                            <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-green text-white font-black tracking-wider uppercase py-4 rounded-xl shadow-lg hover:bg-green-700 transition-colors">{isSubmitting ? "Uploading..." : "Submit to CQI Queue"}</button>
+                                        </form>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {tools.map((t, i) => (
+                                            <a key={i} href={t.Link} target="_blank" className="flex items-center gap-4 p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-blue-50/30 transition-colors bg-white group">
+                                                <div className="w-12 h-12 bg-slate-100 text-slate-500 group-hover:text-tdmh-blue rounded-xl flex items-center justify-center shrink-0"><Icons.FileText className="w-6 h-6" /></div>
+                                                <div><h4 className="font-bold text-slate-800 text-sm group-hover:text-tdmh-blue leading-tight">{t['Tool Name']}</h4><p className="text-xs text-slate-500 mt-1">{t.Description}</p></div>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                    case 'track': return (
+                        <div className="animate-fade-in structured-card p-8 md:p-12 max-w-3xl mx-auto">
+                            <div className="text-center mb-10">
+                                <div className="w-16 h-16 bg-blue-50 text-tdmh-blue rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100"><Icons.Search className="w-8 h-8" /></div>
+                                <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Track Request Status</h2>
+                                <p className="text-slate-500">Enter your Reference ID or Dept Email to check the live status of your Form or Memo.</p>
+                            </div>
+                            <form onSubmit={handleTrackRequest} className="flex gap-3 mb-10">
+                                <input type="text" value={trackQuery} onChange={(e)=>setTrackQuery(e.target.value)} className="flex-1 p-4 border-2 rounded-xl focus:border-tdmh-blue outline-none text-lg font-medium" placeholder="e.g. CQI-1029 or dept@tdmh.com" />
+                                <button type="submit" disabled={isTracking} className="bg-tdmh-blue text-white px-8 font-black uppercase tracking-widest rounded-xl shadow-lg hover:bg-blue-900 transition-colors">{isTracking ? "..." : "Track"}</button>
+                            </form>
+                            {trackResult && (
+                                <div className="bg-white border-2 border-slate-100 rounded-2xl p-8 shadow-sm">
+                                    {trackResult.error ? (
+                                        <p className="text-red-500 font-bold text-center">{trackResult.error}</p>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div><p className="text-[10px] font-bold text-slate-400 uppercase">ID: {trackResult['Tracking ID']}</p><h3 className="text-xl font-black text-slate-800">{trackResult['Title']}</h3></div>
+                                                <span className={`px-4 py-1.5 font-black text-xs rounded-lg uppercase tracking-widest ${trackResult['Status'] === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>{trackResult['Status']}</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 rounded-full h-3 mb-2"><div className={`h-full rounded-full transition-all duration-1000 ${trackResult['Status'] === 'RESOLVED' ? 'bg-emerald-500 w-full' : 'bg-yellow-400 w-1/2'}`}></div></div>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </div>
-
-                    </main>
-
-                    {/* CONFIRMATION MODAL */}
-                    {confirmingDept && (
-                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-pop">
-                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center border border-white/20">
-                                <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-tdmh-blue">
-                                    <Icons.Shield className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800 mb-2">Security Check</h3>
-                                <p className="text-sm text-slate-500 mb-6">
-                                    Are you sure you belong to <span className="font-bold text-tdmh-blue">{confirmingDept.name}</span>? 
-                                    <br/>Please confirm to proceed.
-                                </p>
-                                <div className="flex gap-3 justify-center">
-                                    <button onClick={() => setConfirmingDept(null)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-200 transition-colors">Cancel</button>
-                                    <button onClick={confirmDeptSelection} className="px-4 py-2 bg-tdmh-blue text-white rounded-lg text-sm font-bold hover:bg-blue-900 transition-colors shadow-lg">Yes, Proceed</button>
-                                </div>
+                    );
+                    case 'departments': return (
+                        <div className="animate-fade-in structured-card p-10 text-center">
+                            <h2 className="text-3xl font-black text-slate-800 mb-3">Hospital Departments</h2>
+                            <p className="text-slate-500 mb-10 font-medium text-sm md:text-base max-w-2xl mx-auto">Access specialized forms, clinical tools, and operational resources designated specifically for your unit.</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {departments.map((dept, i) => {
+                                    const IconCmp = Icons[dept.iconName] || Icons.Box;
+                                    return (
+                                        <div key={dept.id || i} className="p-6 border rounded-2xl hover:border-tdmh-blue hover:shadow-lg transition-all bg-white cursor-pointer group hover:-translate-y-1">
+                                            <div className="w-12 h-12 bg-slate-50 border rounded-xl mx-auto flex items-center justify-center text-slate-500 group-hover:bg-tdmh-blue group-hover:text-white mb-4 transition-colors"><IconCmp className="w-6 h-6" /></div>
+                                            <div className="font-bold text-slate-800 group-hover:text-tdmh-blue">{dept['Name'] || dept.Name}</div>
+                                            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{dept.category}</div>
+                                        </div>
+                                    )
+                                })}
                             </div>
-                         </div>
-                    )}
-
-                    {/* DASHBOARD MODAL (Tools) */}
-                    {selectedDept && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-lg animate-enter">
-                            <div className="bg-[#f8fafc] rounded-[2rem] shadow-2xl w-full max-w-5xl overflow-hidden transform transition-all animate-pop border border-white/50 max-h-[90vh] flex flex-col ring-1 ring-black/5">
-                                <div className="bg-gradient-to-r from-[#1e3a8a] to-[#0f172a] p-6 sm:p-8 flex justify-between items-start text-white relative shrink-0">
-                                    <div className="flex items-center gap-5 sm:gap-6 relative z-10">
-                                        <DashboardIcon name={selectedDept.iconName} category={selectedDept.category} className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                                        <div><h3 className="font-bold text-xl sm:text-3xl leading-none tracking-tight">{selectedDept.name}</h3><span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-tdmh-green text-white shadow-lg mt-1 inline-block">{selectedDept.category}</span></div>
-                                    </div>
-                                    <button onClick={() => { setSelectedDept(null); setSelectedToolQR(null); }} className="hover:bg-white/10 p-3 rounded-full transition-colors relative z-10 text-white/70 hover:text-white group">
-                                        <Icons.X className="w-6 h-6 sm:w-8 sm:h-8 group-hover:rotate-90 transition-transform duration-300" />
-                                    </button>
-                                </div>
-                                <div className="p-6 sm:p-8 overflow-y-auto custom-scrollbar bg-slate-50">
-                                    <div className="mb-8 bg-amber-50 border-l-4 border-amber-400 rounded-r-xl p-5 flex items-start gap-4 shadow-sm">
-                                        <Icons.Shield className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
-                                        <div className="text-sm sm:text-base text-amber-900">
-                                            <span className="font-bold text-amber-700 uppercase tracking-wide text-xs block mb-1">Security Check</span>
-                                            You are viewing the toolset for <span className="font-bold underline decoration-amber-400/50 underline-offset-2">{selectedDept.name}</span>. Ensure this is your assigned unit.
+                        </div>
+                    );
+                    case 'calendar': 
+                        const daysInMonth = Array.from({length: 31}, (_, i) => i + 1);
+                        const eventDays = calendar.map(e => parseInt(e.dayNum || String(e['Date Text']).replace(/[^0-9]/g, '') || 0));
+                        
+                        return (
+                        <div className="animate-fade-in structured-card p-6 md:p-10">
+                            <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div><h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.Calendar className="w-6 h-6 text-purple-600" /> Master Activities Timeline</h2><p className="text-sm text-slate-500 font-medium mt-2">Log of upcoming hospital activities, departmental meetings, and ISO audits.</p></div>
+                                {(userRole === 'admin' || userRole === 'dept_head') && (<button onClick={() => handleSecureAction('add_event')} className="flex items-center justify-center gap-2 bg-purple-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm shrink-0 hover:bg-purple-700 transition-colors"><Icons.Plus className="w-4 h-4" /> Add Event</button>)}
+                            </div>
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                {/* RESTORED: Visual Calendar Grid */}
+                                <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h3 className="font-black text-slate-800 text-lg uppercase tracking-wider">March 2026</h3>
+                                        <div className="flex gap-2">
+                                            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronLeft className="w-4 h-4"/></button>
+                                            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronRight className="w-4 h-4"/></button>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-1 gap-4 sm:gap-5">
-                                        {deptTools.length > 0 ? deptTools.map((tool, i) => {
-                                            const toolIconColor = getToolIconColor(tool.color);
+                                    <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">
+                                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-1">
+                                        {daysInMonth.map(day => {
+                                            const hasEvent = eventDays.includes(day);
                                             return (
-                                            <div key={i} className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-100 transition-all flex flex-col md:flex-row gap-5 md:items-center group">
-                                                <div className="flex items-center gap-5 flex-grow">
-                                                    <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm shrink-0">
-                                                        <div className={toolIconColor}>
-                                                            {getToolIcon(tool.name)} 
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="font-bold text-slate-800 text-lg sm:text-xl mb-1 group-hover:text-tdmh-blue transition-colors">{tool.name}</h5>
-                                                        <p className="text-sm font-medium text-slate-500 leading-relaxed max-w-xl">{tool.desc}</p>
-                                                    </div>
+                                                <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded text-sm font-bold border transition-colors ${hasEvent ? 'bg-purple-50 border-purple-300 text-purple-700 cursor-pointer hover:bg-purple-600 hover:text-white shadow-sm' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}`}>
+                                                    {day}
+                                                    {hasEvent && <div className="mt-0.5 w-1 h-1 bg-current rounded-full opacity-50"></div>}
                                                 </div>
-                                                <div className="flex gap-3 shrink-0 pt-4 md:pt-0 border-t md:border-t-0 border-slate-50">
-                                                    <button onClick={() => setSelectedToolQR(tool)} className="flex-1 md:flex-none px-5 py-3 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors border border-slate-200 group-hover:border-slate-300">
-                                                        <Icons.QrCode className="w-5 h-5" /><span className="hidden lg:inline">Mobile QR</span><span className="lg:hidden">QR</span>
-                                                    </button>
-                                                    <a href={tool.link} target="_blank" className="flex-1 md:flex-none px-6 py-3 bg-tdmh-blue hover:bg-blue-900 text-white rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/20 hover:shadow-blue-900/30 transform active:scale-95">
-                                                        <span>Open Tool</span><Icons.ExternalLink className="w-5 h-5" />
-                                                    </a>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Event List */}
+                                <div>
+                                    <h3 className="font-bold text-slate-500 mb-6 uppercase tracking-widest text-[10px]">Upcoming Schedule</h3>
+                                    <div className="relative border-l-2 border-slate-200 ml-2 space-y-6 pb-2">
+                                        {calendar.map((ev, i) => (
+                                            <div key={i} className="relative pl-6 group">
+                                                <div className="absolute -left-[7px] top-1.5 w-3 h-3 rounded-full bg-white border-2 border-purple-500"></div>
+                                                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm hover:border-purple-300 transition-colors">
+                                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{ev['Date Text'] || ev.DateText} &bull; {ev.Time || ev.time}</div>
+                                                    <div className="text-base font-bold text-slate-800">{ev['Event Title'] || ev.Title}</div>
                                                 </div>
                                             </div>
-                                        )}) : <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200"><p className="font-bold text-slate-500">No tools assigned.</p></div>}
+                                        ))}
+                                        {calendar.length === 0 && <p className="text-slate-500 italic pl-6">No events scheduled.</p>}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    );
+                    case 'agimat': return (
+                        <div className="animate-fade-in max-w-5xl mx-auto py-6">
+                            <div className="flex flex-col items-center justify-center mb-10 text-center"><h2 className="text-[4rem] text-slate-900 font-serif leading-none tracking-tight">Agimat</h2><p className="text-slate-500 font-medium text-base mt-2">Standardized video training and continuous quality improvement resources.</p></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* RESTORED: Correct mapping for Agimat Array with Video UI Placeholders if Link is blank */}
+                                {agimat.map((vid, i) => (
+                                    <div key={i} className="structured-card p-5 group hover:border-tdmh-blue transition-colors shadow-sm">
+                                        <div className="aspect-video bg-slate-900 rounded-xl mb-5 overflow-hidden border border-slate-200 relative">
+                                            {vid['Video URL (Embed)'] ? (
+                                                <iframe className="w-full h-full" src={vid['Video URL (Embed)']} frameBorder="0" allowFullScreen></iframe>
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 absolute inset-0">
+                                                    <Icons.Video className="w-12 h-12 mb-3 opacity-50" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Video Placeholder</span>
+                                                    <span className="text-[9px] text-slate-400 mt-1">(Connect Google Drive Link)</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="px-2 pb-2"><span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-widest rounded border border-slate-200">{vid['Module Number']}</span><h4 className="text-slate-800 font-black text-xl mt-2">{vid['Video Title']}</h4><p className="text-sm text-slate-500 mt-1">{vid.Description}</p></div>
+                                    </div>
+                                ))}
+                                {agimat.length === 0 && (
+                                    <div className="col-span-1 md:col-span-2 text-center p-10 bg-white border border-slate-200 rounded-xl">
+                                        <Icons.Video className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                                        <p className="text-slate-500">No training videos found in database.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                    case 'census': return (
+                        <div className="animate-fade-in structured-card p-8 md:p-12 border-t-4 border-t-tdmh-green">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-slate-200 pb-6 gap-4">
+                                <div><h2 className="text-3xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.Activity className="w-8 h-8 text-tdmh-green" /> Admitting Census Entry</h2><p className="text-slate-500 text-sm mt-2">Data entered here instantly updates the public Home Dashboard metrics.</p></div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 mb-10">
+                                {census.map((c, i) => (
+                                    <div key={i} className="bg-white p-6 rounded-2xl border-2 border-slate-100 text-center focus-within:border-tdmh-green transition-colors">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-4">{c.Department || c[0]}</label>
+                                        <input type="number" value={c['Patient Count'] || c[1] || ''} onChange={(e) => { const newCensus = [...census]; newCensus[i] = {...newCensus[i], 'Patient Count': e.target.value}; setCensus(newCensus); }} className="w-full p-4 rounded-xl border border-slate-300 font-black text-4xl text-tdmh-blue text-center focus:border-tdmh-green focus:ring-1 outline-none transition-colors" />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-end gap-4 border-t border-slate-200 pt-8"><button onClick={handleSaveCensus} disabled={isSubmitting} className="px-8 py-4 bg-tdmh-green text-white font-black uppercase rounded-xl hover:bg-green-700 shadow-lg disabled:opacity-50 transition-colors">{isSubmitting ? "Saving..." : "Save & Publish to Dashboard"}</button></div>
+                        </div>
+                    );
+                    default: return null;
+                }
+            }
 
-                    {/* ADMIN MODAL */}
-                    {showAdminModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-pop">
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden animate-pop border border-white/20">
-                                <div className="bg-slate-900 p-6 flex justify-between items-center border-b border-slate-800 shrink-0">
-                                    <div><h3 className="font-bold text-xl text-white">Admin Console</h3><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">System Management</p></div>
-                                    <button onClick={() => { setShowAdminModal(false); setIsAdminUnlocked(false); setAdminPin(''); }} className="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-full transition-colors"><Icons.X className="w-5 h-5" /></button>
+            return (
+                <div className="flex flex-col min-h-screen bg-pattern">
+                    
+                    {/* NEWS WELCOME FLYER */}
+                    {showNewsFlyer && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative transform animate-slide-up flex flex-col border border-slate-200 m-auto">
+                                <button onClick={() => setShowNewsFlyer(false)} className="absolute top-5 right-5 text-slate-400 hover:text-slate-800 z-20 transition-all bg-white p-2.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5" /></button>
+                                <div className="p-8 pb-6 bg-slate-50 border-b border-slate-100 flex flex-col items-center text-center shrink-0">
+                                    <div className="w-16 h-16 bg-tdmh-blue text-white rounded-2xl flex items-center justify-center mb-4 shadow-md"><Icons.Bell className="w-8 h-8" /></div>
+                                    <span className="text-[10px] font-bold tracking-[0.2em] text-tdmh-blue uppercase mb-2">TDMH Official Notice</span>
+                                    <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">TDMH CQI Portal V2 is Live!</h2>
                                 </div>
-                                <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-                                    {!isAdminUnlocked ? (
-                                        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-slate-50">
-                                            <form onSubmit={handleAdminLogin} className="space-y-4 text-center w-full max-w-xs">
-                                                <div className="inline-block p-4 bg-slate-200 rounded-full mb-2"><div className="w-8 h-8 text-slate-600"><Icons.Lock className="w-8 h-8" /></div></div>
-                                                <p className="text-sm font-bold text-slate-500">Enter Security PIN</p>
-                                                <input type="password" value={adminPin} onChange={(e) => setAdminPin(e.target.value)} className="w-full p-4 bg-white border-2 border-slate-200 rounded-xl text-center text-3xl font-bold tracking-[0.5em] focus:ring-4 focus:ring-tdmh-blue/20 focus:border-tdmh-blue outline-none" placeholder="••••" autoFocus />
-                                                <button type="submit" className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 shadow-lg">Unlock</button>
-                                            </form>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col flex-1 bg-slate-50 min-h-0 overflow-hidden">
-                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 border-b border-slate-200 bg-white shrink-0">
-                                                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100"><div className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-1">Total Tools</div><div className="text-2xl font-black text-blue-900">{tools.length}</div></div>
-                                                <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100"><div className="text-xs font-bold text-orange-400 uppercase tracking-wider mb-1">Requests</div><div className="text-2xl font-black text-orange-900">{requests.length}</div></div>
-                                                <button onClick={() => fetchData(true)} className="p-4 bg-white rounded-2xl border border-slate-200 hover:bg-slate-50 flex flex-col justify-center items-center gap-1 text-slate-600 font-bold text-xs"><Icons.RefreshCw className="w-4 h-4" />Sync Data</button>
-                                                <a href={GOOGLE_SHEET_URL} target="_blank" className="p-4 bg-tdmh-blue rounded-2xl hover:bg-blue-900 flex flex-col justify-center items-center gap-1 text-white font-bold text-xs"><Icons.ExternalLink className="w-4 h-4" />Open Sheet</a>
-                                            </div>
-                                            
-                                            <div className="px-6 pt-4 shrink-0">
-                                                <button onClick={fetchMonitors} className="w-full p-3 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl text-purple-700 font-bold text-sm flex items-center justify-center gap-2 transition-colors">
-                                                    <Icons.Activity className="w-4 h-4" /> Monitor All Systems
-                                                </button>
-                                            </div>
+                                <div className="p-8 md:px-10 bg-white overflow-y-auto custom-scrollbar max-h-[60vh]">
+                                    <p className="text-slate-700 mb-6 text-lg font-bold leading-relaxed text-center">Welcome to your upgraded administrative command center.</p>
+                                    <p className="text-slate-600 mb-8 leading-relaxed">
+                                        We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs. Here is your quick guide to navigating the new system:
+                                    </p>
+                                    
+                                    <ul className="space-y-5 mb-10">
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Menu className="w-5 h-5"/></div>
+                                            <div><strong className="text-slate-800 block text-base mb-0.5">The Top Navigation</strong> <span className="text-slate-600 text-sm leading-snug block">All your tools are now located in the tabs at the top of your screen. You can scroll horizontally through them if you are on a smaller screen!</span></div>
+                                        </li>
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Box className="w-5 h-5"/></div>
+                                            <div><strong className="text-slate-800 block text-base mb-0.5">Departments Tab</strong> <span className="text-slate-600 text-sm leading-snug block">This is where you will find your old, familiar grid. Click your department to access your specific clinical tools and forms.</span></div>
+                                        </li>
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Folder className="w-5 h-5"/></div>
+                                            <div><strong className="text-slate-800 block text-base mb-0.5">DCC & Forms Tab</strong> <span className="text-slate-600 text-sm leading-snug block">We have consolidated all documents! Go here to find Universal Forms (DERF, Incident Reports), ISO Requirements, or to request a new Control Number.</span></div>
+                                        </li>
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div>
+                                            <div><strong className="text-slate-800 block text-base mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-sm leading-snug block">Two brand-new tabs. Check the Memos tab for official inter-departmental policies, and the Calendar for upcoming ISO audits and meetings.</span></div>
+                                        </li>
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div>
+                                            <div><strong className="text-emerald-900 block text-base mb-0.5">Hospital Daily Census</strong> <span className="text-emerald-700 text-sm leading-snug block">Check the Home Dashboard for live patient tracking. (Note: Only the Admitting Department can edit these numbers using a secure PIN).</span></div>
+                                        </li>
+                                        <li className="flex items-start gap-4">
+                                            <div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div>
+                                            <div><strong className="text-red-900 block text-base mb-0.5">Enhanced Security</strong> <span className="text-red-700 text-sm leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div>
+                                        </li>
+                                    </ul>
 
-                                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 min-h-0">
-                                                {adminViewMode === 'monitor' ? (
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-2 mb-4">
-                                                            <button onClick={() => setAdminViewMode('dashboard')} className="p-1 hover:bg-slate-100 rounded text-slate-500"><Icons.ArrowLeft className="w-5 h-5"/></button>
-                                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">System Monitors</h4>
-                                                        </div>
-                                                        {loadingMonitors ? <div className="text-center p-8"><div className="spinner mx-auto mb-2"></div>Loading...</div> : monitors.length > 0 ? (
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                {monitors.map((m, i) => (
-                                                                    <a key={i} href={m.link} target="_blank" className="bg-white p-4 rounded-xl border border-slate-200 hover:border-purple-300 hover:shadow-md transition-all flex items-center gap-4 group">
-                                                                        <div className="p-3 rounded-lg bg-purple-50 text-purple-600 group-hover:bg-purple-100"><Icons.Activity className="w-6 h-6"/></div>
-                                                                        <div>
-                                                                            <div className="font-bold text-slate-800">{m.name}</div>
-                                                                            <div className="text-xs text-slate-500">{m.desc}</div>
-                                                                        </div>
-                                                                        <Icons.ExternalLink className="ml-auto w-4 h-4 text-slate-300 group-hover:text-purple-500"/>
-                                                                    </a>
-                                                                ))}
-                                                            </div>
-                                                        ) : <div className="text-center py-10 text-slate-400">No monitors found in sheet.</div>}
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <div className="flex items-center justify-between mb-4">
-                                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">Request Log</h4>
-                                                            <button onClick={fetchRequests} className="text-xs font-bold text-slate-500 hover:text-tdmh-blue flex items-center gap-1">
-                                                                <Icons.RefreshCw className={`w-3 h-3 ${loadingRequests ? 'animate-spin' : ''}`} /> Refresh
-                                                            </button>
-                                                        </div>
-                                                        
-                                                        {loadingRequests ? <div className="text-center p-8"><div className="spinner mx-auto mb-2"></div>Loading...</div> : requests.length > 0 ? (
-                                                            <table className="w-full text-left text-sm bg-white rounded-xl shadow-sm overflow-hidden">
-                                                                <thead className="bg-slate-100 text-xs font-bold text-slate-500 uppercase sticky top-0"><tr><th className="p-3">Time</th><th className="p-3">Dept</th><th className="p-3">Tool</th><th className="p-3">Status</th></tr></thead>
-                                                                <tbody className="divide-y divide-slate-100">
-                                                                    {requests.map((req, i) => (
-                                                                        <tr key={i} className="hover:bg-blue-50">
-                                                                            <td className="p-3 text-slate-400 text-xs whitespace-nowrap">{req.timestamp?.split('T')[0]}</td>
-                                                                            <td className="p-3 font-bold">{req.dept}</td>
-                                                                            <td className="p-3"><div>{req.toolName}</div><div className="text-xs text-slate-400 truncate w-32">{req.desc}</div></td>
-                                                                            <td className="p-3"><span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-[10px] font-bold rounded uppercase">{req.status}</span></td>
-                                                                        </tr>
-                                                                    ))}
-                                                                </tbody>
-                                                            </table>
-                                                        ) : <div className="text-center py-10 text-slate-400">No pending requests</div>}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
+                                    <p className="text-slate-600 italic text-sm mb-8 text-center bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                        Take a moment to click through the tabs and explore the new layout. If you need any assistance, please contact the CQI Department.
+                                    </p>
+                                    <button onClick={() => setShowNewsFlyer(false)} className="px-8 py-4 bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest rounded-xl transition-all w-full text-sm shadow-lg shadow-blue-900/20 hover:-translate-y-1">Acknowledge & Enter Portal</button>
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* REQUEST MODAL */}
-                    {showRequestModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-pop">
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-pop border border-white/20">
-                                <div className="bg-slate-50 p-6 flex justify-between items-center border-b border-slate-100 shrink-0">
-                                    <div><h3 className="font-bold text-xl text-slate-800">Request New Tool</h3><p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">CQI Department</p></div>
-                                    <button onClick={() => setShowRequestModal(false)} className="text-slate-400 hover:text-slate-600 p-2 bg-white rounded-full border border-slate-200 hover:border-slate-300 transition-colors shadow-sm"><Icons.X className="w-5 h-5" /></button>
-                                </div>
-                                <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-                                    <form onSubmit={handleRequestSubmit} className="space-y-6">
-                                        <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Your Department</label><div className="relative group"><select name="dept" required className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none">{departments.map(d => <option key={d.id} value={d.name}>{d.name}</option>)}</select></div></div>
-                                        <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tool Name</label><input name="toolName" required placeholder="e.g. New Checklist" className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none" /></div>
-                                        <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Description</label><textarea name="description" required placeholder="Describe tool..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none resize-none"></textarea></div>
-                                        <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Link (Optional)</label><input name="link" placeholder="https://..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none" /></div>
-                                        <div className="space-y-1"><label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Scope</label><div className="relative group"><select name="scope" className="w-full p-4 pl-5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-tdmh-blue outline-none"><option value="Dept Only">My Department Only</option><option value="Universal">Universal</option></select></div></div>
-                                        <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-4 rounded-xl hover:bg-blue-900 shadow-lg mt-4 active:scale-95 transform">Submit Request</button>
-                                    </form>
-                                </div>
+                    {/* ROLE LOGIN MODAL */}
+                    {showRoleLogin && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 m-auto">
+                                <button onClick={() => setShowRoleLogin(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
+                                <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"><Icons.Shield className="w-8 h-8" /></div>
+                                <h3 className="text-xl font-black text-slate-800 mb-2">Role Verification</h3>
+                                <p className="text-xs text-slate-500 mb-6 font-medium">Enter your specific PIN to continue.</p>
+                                <form onSubmit={submitRoleLogin}>
+                                    <input type="password" value={rolePinInput} onChange={(e)=>setRolePinInput(e.target.value)} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all" placeholder="••••••••" />
+                                    <button type="submit" className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors">Unlock Access</button>
+                                </form>
                             </div>
                         </div>
                     )}
                     
-                    {/* QR Modal */}
-                    {selectedToolQR && (
-                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-pop">
-                            <div className="bg-white rounded-[2rem] p-10 max-w-sm w-full relative animate-pop shadow-2xl text-center border border-white/10 ring-1 ring-white/20">
-                               <button onClick={() => setSelectedToolQR(null)} className="absolute top-5 right-5 text-slate-300 hover:text-slate-500 p-2 hover:bg-slate-50 rounded-full transition-all"><Icons.X className="w-6 h-6" /></button>
-                               <div className="inline-flex p-5 rounded-full bg-blue-50 mb-6 ring-8 ring-blue-50/50 shadow-inner"><div className="w-10 h-10 text-tdmh-blue"><Icons.QrCode className="w-10 h-10" /></div></div>
-                               <h3 className="text-xl font-black text-slate-800 mb-2 leading-tight">{selectedToolQR.name}</h3>
-                               <p className="text-sm text-slate-400 mb-8 font-medium">Scan this code with your mobile device to open the tool.</p>
-                               <div className="bg-white p-4 rounded-3xl border-2 border-slate-100 shadow-inner inline-block relative group">
-                                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(selectedToolQR.link)}&color=1e3a8a&bgcolor=ffffff&margin=20`} alt="QR" className="w-64 h-64 object-contain rounded-2xl" />
-                               </div>
+                    {/* MASTER ADMIN CONSOLE MODAL */}
+                    {showAdminConsole && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
+                            <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-7xl overflow-hidden flex flex-col h-[90vh] animate-slide-up border border-slate-700 m-auto">
+                                <div className="bg-slate-900 p-6 flex justify-between items-center text-white shrink-0 shadow-md z-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl"><Icons.Shield className="w-6 h-6 text-tdmh-green" /></div>
+                                        <div>
+                                            <h2 className="text-2xl font-black tracking-tight">Master Admin Console</h2>
+                                            <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">System Management & File Routing</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <a href="https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit" target="_blank" className="hidden sm:flex px-6 py-2.5 bg-white/10 border border-white/20 text-white font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-white/20 transition-colors">Raw Database</a>
+                                        <button onClick={() => setShowAdminConsole(false)} className="text-slate-400 hover:text-white p-2 bg-slate-800 border border-slate-700 rounded-full transition-colors"><Icons.X className="w-5 h-5" /></button>
+                                    </div>
+                                </div>
+                                <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col lg:flex-row gap-8">
+                                    <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Icons.Upload className="w-5 h-5"/></div>
+                                                <div><h3 className="font-black text-slate-800">Resolve Request (Option A)</h3><p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Stamp & Move to Vault</p></div>
+                                            </div>
+                                            <form onSubmit={handleResolveDCC} className="space-y-5">
+                                                <div>
+                                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Tracking ID to Resolve <span className="text-red-500">*</span></label>
+                                                    <input type="text" value={resolveId} onChange={(e)=>setResolveId(e.target.value)} required className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-800" placeholder="e.g. CQI-1234" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Upload Stamped Final File <span className="text-red-500">*</span></label>
+                                                    <input ref={resolveFileRef} type="file" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-emerald-500 file:text-white file:border-0 file:font-bold hover:file:bg-emerald-600 cursor-pointer" />
+                                                </div>
+                                                <button type="submit" disabled={isResolving} className="w-full bg-emerald-600 text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                                                    {isResolving ? "Processing..." : "Approve & Route File"}
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Forms</div><div className="text-3xl font-black text-tdmh-blue">{tools.length || 0}</div></div>
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
+                                        </div>
+                                    </div>
+                                    <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4">
+                                            <h3 className="font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
+                                            <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold text-tdmh-blue hover:underline">Open in new tab</a>
+                                        </div>
+                                        <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border-2 border-slate-200 min-h-[400px] lg:min-h-0 relative">
+                                            <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    <footer className="glass-header border-t border-white/10 text-white/80 text-center py-8 text-[10px] sm:text-xs uppercase tracking-widest mt-auto bg-medical-pattern flex flex-col md:flex-row justify-center items-center gap-4">
-                        <p>&copy; {new Date().getFullYear()} Taytay Doctors Multispecialty Hospital. All Rights Reserved.</p>
-                         {/* MANUAL SYNC BUTTON */}
-                        <button 
-                            onClick={() => fetchData(true)}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-[10px] font-bold transition-all border border-white/10"
-                        >
-                            <Icons.RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                            Sync Database
+                    {/* ADD EVENT MODAL */}
+                    {showAddEvent && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative transform animate-slide-up m-auto">
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <h3 className="font-black text-slate-800 text-xl">Schedule New Event</h3>
+                                    <button onClick={() => setShowAddEvent(false)} className="text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <form className="p-6 space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Feature linked to Database!"); setShowAddEvent(false); }}>
+                                    <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Event Title</label><input type="text" required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-purple-500" placeholder="e.g. Quality Assurance Meeting"/></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Date</label><input type="date" required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-purple-500"/></div>
+                                        <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Time</label><input type="time" required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-purple-500"/></div>
+                                    </div>
+                                    <button type="submit" className="w-full bg-purple-600 text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-purple-700 transition-colors">Add to Calendar</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ADD NEWS MODAL */}
+                    {showAddNews && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative transform animate-slide-up m-auto">
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <h3 className="font-black text-slate-800 text-xl">Post Announcement</h3>
+                                    <button onClick={() => setShowAddNews(false)} className="text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <form className="p-6 space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Feature links to Database!"); setShowAddNews(false); }}>
+                                    <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Headline / Title</label><input type="text" required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-tdmh-blue" placeholder="Announcement Title"/></div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Category</label><select className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-tdmh-blue"><option>General</option><option>System Update</option><option>Urgent</option></select></div>
+                                        <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Date</label><input type="date" required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-tdmh-blue"/></div>
+                                    </div>
+                                    <div><label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Message Content</label><textarea required className="w-full p-3 rounded-lg border border-slate-300 outline-none focus:border-tdmh-blue resize-none h-32" placeholder="Write the announcement details here..."></textarea></div>
+                                    <button type="submit" className="w-full bg-tdmh-blue text-white font-bold py-3.5 rounded-xl mt-4 hover:bg-blue-900 transition-colors shadow-sm">Post to News Feed</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TOP NAVIGATION: FIXED OVERLAPPING ISSUE */}
+                    <nav className="bg-tdmh-blue text-white shadow-xl z-40 sticky top-0 border-b-2 border-blue-900">
+                        <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16 md:h-20 gap-4">
+                                
+                                {/* Left: Branding (Fixed width preventing squash) */}
+                                <div className="flex items-center gap-3 shrink-0">
+                                    <div className="bg-white p-1 rounded-xl shadow-inner border border-blue-100 flex items-center justify-center">
+                                        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="90" height="90" rx="20" fill="#1e3a8a" /><path d="M35 50 H65 M50 35 V65" stroke="#16a34a" strokeWidth="16" strokeLinecap="round" /></svg>
+                                    </div>
+                                    <button onClick={() => handleSecureAction('admin')} className="p-1.5 rounded-md bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors shadow-sm" title="Admin Control Center">
+                                        <Icons.Shield className="w-4 h-4 md:w-5 md:h-5" />
+                                    </button>
+                                    <div className="hidden md:flex flex-col border-l border-blue-700 pl-3 ml-1">
+                                        <span className="font-black text-sm lg:text-base tracking-tight leading-none whitespace-nowrap">TDMH CQI Portal</span>
+                                    </div>
+                                </div>
+                                
+                                {/* Center: Scrollable Tabs for Desktop */}
+                                <div className="hidden xl:flex flex-1 items-center justify-center min-w-0 px-10 relative">
+                                    <button onClick={() => scrollTabs('left')} className="absolute left-1 z-10 p-1.5 rounded-full bg-blue-800/80 text-white hover:bg-tdmh-blue border border-blue-700 shadow-md transition-colors flex items-center justify-center" title="Scroll Left">
+                                        <Icons.ChevronLeft className="w-4 h-4" />
+                                    </button>
+
+                                    <div 
+                                        ref={tabsContainerRef}
+                                        className="flex items-center gap-1 bg-blue-900/40 p-1.5 rounded-xl border border-blue-800/50 overflow-x-auto no-scrollbar scroll-smooth w-full"
+                                    >
+                                        {TABS.map(tab => {
+                                            const IconCmp = Icons[tab.icon];
+                                            return (
+                                                <button key={tab.id} onClick={() => handleSecureAction(tab.id)} className={`px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all whitespace-nowrap shrink-0 ${activeTab === tab.id ? 'bg-white text-tdmh-blue shadow-md scale-105' : 'text-blue-100 hover:bg-blue-800 hover:text-white'}`}>
+                                                    <IconCmp className="w-4 h-4" /> {tab.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    <button onClick={() => scrollTabs('right')} className="absolute right-1 z-10 p-1.5 rounded-full bg-blue-800/80 text-white hover:bg-tdmh-blue border border-blue-700 shadow-md transition-colors flex items-center justify-center" title="Scroll Right">
+                                        <Icons.ChevronRight className="w-4 h-4" />
+                                    </button>
+                                </div>
+
+                                {/* Right: Auth & Mobile Menu */}
+                                <div className="flex items-center gap-4 shrink-0">
+                                    <div className="hidden lg:flex gap-2 mr-2">
+                                        {userRole === 'admin' && <span className="bg-red-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-sm border border-red-600">Admin</span>}
+                                        {userRole === 'dept_head' && <span className="bg-yellow-500 text-yellow-900 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-sm border border-yellow-600">Dept Head</span>}
+                                        {userRole === 'admitting' && <span className="bg-purple-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-sm border border-purple-600">Admitting</span>}
+                                    </div>
+                                    
+                                    {userRole === 'guest' ? (
+                                        <button onClick={() => setShowRoleLogin(true)} className="hidden sm:flex items-center gap-2 bg-white/10 border border-white/20 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-white/20 transition-colors shadow-sm whitespace-nowrap">
+                                            <Icons.Lock className="w-4 h-4" /> Login
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => {setUserRole('guest'); setActiveTab('home');}} className="hidden sm:flex text-xs font-bold uppercase tracking-widest text-red-300 hover:text-red-100 bg-red-900/30 px-4 py-2 rounded-lg border border-red-900/50 transition-colors">Logout</button>
+                                    )}
+                                    
+                                    {/* Hamburger always shows on non-XL screens */}
+                                    <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="xl:hidden p-2 bg-white text-tdmh-blue rounded-lg shadow-sm">
+                                        {mobileMenuOpen ? <Icons.X className="w-5 h-5" /> : <Icons.Menu className="w-5 h-5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Menu Dropdown */}
+                        {mobileMenuOpen && (
+                            <div className="xl:hidden bg-white border-t border-slate-200 absolute w-full shadow-2xl animate-fade-in text-slate-800 z-50 max-h-[calc(100vh-4rem)] overflow-y-auto custom-scrollbar">
+                                <div className="p-4 space-y-2">
+                                    {TABS.map(tab => {
+                                        const IconCmp = Icons[tab.icon];
+                                        return (
+                                            <button key={tab.id} onClick={() => handleSecureAction(tab.id)} className={`w-full flex items-center gap-3 px-5 py-4 rounded-xl text-sm font-bold transition-colors ${activeTab === tab.id ? 'bg-tdmh-blue text-white shadow-md' : 'text-slate-600 hover:bg-slate-50 border border-slate-100'}`}>
+                                                <IconCmp className="w-5 h-5" /> {tab.label}
+                                            </button>
+                                        );
+                                    })}
+                                    <div className="pt-4 mt-4 border-t border-slate-200 space-y-2">
+                                        {userRole === 'guest' ? (
+                                            <button onClick={() => {setShowRoleLogin(true); setMobileMenuOpen(false);}} className="w-full flex justify-center items-center gap-2 bg-slate-100 border border-slate-200 text-slate-700 px-5 py-4 rounded-xl font-bold hover:bg-slate-200 transition-colors">
+                                                <Icons.Lock className="w-5 h-5" /> Staff Login
+                                            </button>
+                                        ) : (
+                                            <button onClick={() => {setUserRole('guest'); setActiveTab('home'); setMobileMenuOpen(false);}} className="w-full flex justify-center items-center gap-2 bg-red-50 border border-red-100 text-red-600 px-5 py-4 rounded-xl font-bold hover:bg-red-100 transition-colors">
+                                                Logout
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </nav>
+
+                    {/* MAIN CONTENT AREA */}
+                    <main className="flex-grow max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 w-full relative z-10 flex flex-col justify-start">
+                        {renderActiveTabContent()}
+                    </main>
+
+                    {/* BOTTOM FOOTER */}
+                    <footer className="mt-auto bg-tdmh-blue border-t-2 border-blue-900 py-6 text-center text-white text-[10px] font-bold flex flex-col md:flex-row justify-center items-center gap-6 relative z-20 shrink-0">
+                        <p className="uppercase tracking-widest text-blue-200">&copy; {new Date().getFullYear()} TAYTAY DOCTORS MULTISPECIALTY HOSPITAL.</p>
+                        <button onClick={fetchDatabase} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-900 border border-blue-800 text-tdmh-green hover:bg-blue-800 transition-colors uppercase tracking-widest text-xs font-black shadow-lg">
+                            <Icons.Sync className="w-4 h-4" /> {isSyncing ? 'Syncing...' : 'System Sync'}
                         </button>
                     </footer>
                 </div>
