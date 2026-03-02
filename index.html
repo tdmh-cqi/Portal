@@ -103,6 +103,21 @@
             { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hover: 'group-hover:bg-orange-600 group-hover:text-white group-hover:border-orange-600' }
         ];
 
+        // --- NEW: Tool Form Smart Color Translator ---
+        const getToolColor = (colorStr) => {
+            const c = String(colorStr || '').toLowerCase().trim();
+            if (c.includes('red') && !c.includes('orange')) return 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white border-red-200';
+            if (c.includes('orange')) return 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white border-orange-200';
+            if (c.includes('yellow')) return 'bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white border-yellow-200';
+            if (c.includes('green') || c.includes('teal')) return 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white border-emerald-200';
+            if (c.includes('purple') || c.includes('indigo')) return 'bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white border-purple-200';
+            if (c.includes('pink') || c.includes('maroon')) return 'bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white border-pink-200';
+            if (c.includes('blue')) return 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white border-blue-200';
+            if (c.includes('brown')) return 'bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white border-amber-200';
+            // Default generic link style
+            return 'bg-slate-50 text-slate-500 group-hover:bg-slate-600 group-hover:text-white border-slate-200';
+        };
+
         function App() {
             // --- DATA & SYNC STATES ---
             const [isSyncing, setIsSyncing] = useState(true);
@@ -144,8 +159,8 @@
             
             // --- OVERLAY STATES ---
             const [currentSlide, setCurrentSlide] = useState(0);
-            const [slideshowIndex, setSlideshowIndex] = useState(null); // Fullscreen Slideshow Index
-            const [qrLightbox, setQrLightbox] = useState(null); // QR Code URL
+            const [slideshowIndex, setSlideshowIndex] = useState(null); 
+            const [qrLightbox, setQrLightbox] = useState(null); 
             
             // --- MODAL STATES ---
             const [showNewsFlyer, setShowNewsFlyer] = useState(true); 
@@ -174,7 +189,6 @@
                 { id: 'census', label: 'Census Entry', icon: 'Activity' }
             ];
 
-            // Lock scrolling when modals/overlays are open
             useEffect(() => {
                 if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null) {
                     document.body.classList.add('modal-open');
@@ -183,22 +197,18 @@
                 }
             }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews, slideshowIndex, qrLightbox]);
 
-            // Auto-advance slideshow
             useEffect(() => {
                 if (slideshow.length <= 1 || slideshowIndex !== null) return;
                 const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % slideshow.length); }, 5000);
                 return () => clearInterval(timer);
             }, [slideshow.length, slideshowIndex]);
 
-            // NEW: Keyboard Event Listener for Slideshow (Esc, Left, Right)
             useEffect(() => {
                 const handleKeyDown = (e) => {
-                    // Close overlays on Esc
                     if (e.key === 'Escape') {
                         setSlideshowIndex(null);
                         setQrLightbox(null);
                     }
-                    // Next/Prev for Slideshow Fullscreen
                     if (slideshowIndex !== null) {
                         if (e.key === 'ArrowRight') setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
                         if (e.key === 'ArrowLeft') setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
@@ -744,29 +754,37 @@
                                             </div>
                                         )}
                                         
-                                        {deptTools.map((t, i) => (
-                                            <div key={i} className="flex flex-col p-4 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-blue-50/30 transition-colors bg-white shadow-sm">
-                                                <div className="flex items-start gap-4 mb-4">
-                                                    <div className="w-12 h-12 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0 border border-slate-200 transition-colors">
-                                                        <Icons.Link className="w-5 h-5" />
+                                        {deptTools.map((t, i) => {
+                                            // FIX: Read dynamically added Color and Icon columns from TOOLS sheet
+                                            const toolColorClass = getToolColor(t.Color || t.color || t[4]);
+                                            const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[5] || '').trim();
+                                            const matchedToolIcon = Object.keys(Icons).find(k => k.toLowerCase() === toolIconStr.toLowerCase());
+                                            const ToolIconCmp = matchedToolIcon ? Icons[matchedToolIcon] : Icons.Link;
+
+                                            return (
+                                                <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
+                                                    <div className="flex items-start gap-4 mb-5">
+                                                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border transition-colors shadow-sm ${toolColorClass}`}>
+                                                            <ToolIconCmp className="w-5 h-5" />
+                                                        </div>
+                                                        <div className="pt-0.5">
+                                                            <h4 className="font-bold text-slate-800 text-sm leading-tight transition-colors group-hover:text-tdmh-blue">{t['Tool Name'] || t['Name'] || t.name || t[0]}</h4>
+                                                            <p className="text-xs text-slate-500 mt-1.5 leading-snug">{t.Description || t.description || t[1]}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h4 className="font-bold text-slate-800 text-sm leading-tight transition-colors">{t['Tool Name'] || t['Name'] || t.name || t[0]}</h4>
-                                                        <p className="text-xs text-slate-500 mt-1">{t.Description || t.description || t[1]}</p>
+                                                    
+                                                    <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
+                                                        <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
+                                                        <button 
+                                                            onClick={() => setQrLightbox(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`)} 
+                                                            className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"
+                                                        >
+                                                            <Icons.QrCode className="w-4 h-4" /> QR
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                
-                                                <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
-                                                    <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors">Open Link</a>
-                                                    <button 
-                                                        onClick={() => setQrLightbox(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`)} 
-                                                        className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1 border border-slate-200"
-                                                    >
-                                                        <Icons.QrCode className="w-4 h-4" /> QR Code
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
@@ -793,7 +811,6 @@
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     {departments.map((dept, i) => {
-                                        // FIXED: Uses "Icon" column exactly as it appears in the spreadsheet
                                         const iconKeyStr = String(dept['Icon'] || dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
                                         const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
                                         let IconCmp = Icons.Box; 
@@ -948,7 +965,7 @@
             return (
                 <div className="flex flex-col min-h-screen bg-pattern">
                     
-                    {/* NEW: FULLSCREEN SLIDESHOW OVERLAY (With Esc and Navigation!) */}
+                    {/* FULLSCREEN SLIDESHOW OVERLAY */}
                     {slideshowIndex !== null && slideshow[slideshowIndex] && (
                         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl animate-fade-in" onClick={() => setSlideshowIndex(null)}>
                             
@@ -956,7 +973,6 @@
                                 <Icons.X className="w-8 h-8"/>
                             </button>
 
-                            {/* Previous Arrow */}
                             {slideshow.length > 1 && (
                                 <button onClick={(e) => { e.stopPropagation(); setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1); }} className="absolute left-4 md:left-10 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all hover:scale-110" title="Previous (Left Arrow)">
                                     <Icons.ChevronLeft className="w-8 h-8"/>
@@ -970,7 +986,6 @@
                                 </div>
                             </div>
 
-                            {/* Next Arrow */}
                             {slideshow.length > 1 && (
                                 <button onClick={(e) => { e.stopPropagation(); setSlideshowIndex((prev) => (prev + 1) % slideshow.length); }} className="absolute right-4 md:right-10 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all hover:scale-110" title="Next (Right Arrow)">
                                     <Icons.ChevronRight className="w-8 h-8"/>
@@ -1047,7 +1062,7 @@
                         </div>
                     )}
                     
-                    {/* MASTER ADMIN CONSOLE MODAL (EXPANDED TO FULL SCREEN) */}
+                    {/* MASTER ADMIN CONSOLE MODAL */}
                     {showAdminConsole && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
                             <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 m-auto">
@@ -1090,7 +1105,6 @@
                                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
                                         </div>
                                         
-                                        {/* FIXED: Uses "System Name" explicitly for the title */}
                                         {monitors.length > 0 && (
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col max-h-[50vh]">
                                                 <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 shrink-0">
@@ -1167,7 +1181,7 @@
                         </div>
                     )}
 
-                    {/* TOP NAVIGATION: FIXED LOGO - REMOVED CONTAINER AND TEXT */}
+                    {/* TOP NAVIGATION */}
                     <nav className="bg-tdmh-blue text-white shadow-xl z-40 sticky top-0 border-b-2 border-blue-900">
                         <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8">
                             <div className="flex justify-between items-center h-16 md:h-20 gap-4">
