@@ -141,6 +141,20 @@
             return Icons.Link; 
         };
 
+        // --- GOOGLE DRIVE IMAGE AUTO-CONVERTER ---
+        // This takes any standard Google Drive link and turns it into a direct image link!
+        const getDriveImage = (url) => {
+            if(!url) return '';
+            const strUrl = String(url);
+            // Matches /file/d/ID or ?id=ID in the URL
+            const match = strUrl.match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                // Uses Google's media content server to bypass the new drive embedding blocks
+                return `https://lh3.googleusercontent.com/d/${match[1]}`; 
+            }
+            return strUrl;
+        }
+
         // Signature Canvas Component
         const SignaturePad = ({ onSave, onCancel }) => {
             const canvasRef = useRef(null);
@@ -203,7 +217,6 @@
 
             const saveSignature = () => {
                 const canvas = canvasRef.current;
-                // Check if canvas is actually drawn on (simple check if empty)
                 const blank = document.createElement('canvas');
                 blank.width = canvas.width; blank.height = canvas.height;
                 if(canvas.toDataURL() === blank.toDataURL()) {
@@ -315,10 +328,9 @@
                 { id: 'census', label: 'Census Entry', icon: 'Activity' }
             ];
 
-            // SCROLL BUG FIX (Aggressive override)
             const unlockScroll = () => {
                 document.body.classList.remove('modal-open');
-                document.body.style.overflow = 'auto'; // Hard reset
+                document.body.style.overflow = 'auto'; 
             };
 
             useEffect(() => {
@@ -329,7 +341,6 @@
                 } else {
                     unlockScroll();
                 }
-                
                 return () => unlockScroll();
             }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews, slideshowIndex, qrLightbox, signModal.isOpen]);
 
@@ -393,8 +404,6 @@
                 if (data.isoRequirements) setIsoRequirements(data.isoRequirements || []);
                 if (data.agimat) setAgimat(data.agimat || []);
                 if (data.monitoring) setMonitors(data.monitoring || []);
-                
-                // Trim active slideshows just in case admins added spaces
                 if (data.slideshow) setSlideshow((data.slideshow || []).filter(s => String(s['Active (Yes/No)'] || '').trim().toUpperCase() === 'YES'));
             };
 
@@ -441,7 +450,6 @@
                 } catch (e) { return {status: 'error'}; }
             };
 
-            // --- NATIVE JAVASCRIPT SMART FORMATTER (ZERO-SETUP) ---
             const handleFixGrammar = () => {
                 if (!memoData.body.trim()) return alert("Please type something in the memo body first.");
                 setIsFixingGrammar(true);
@@ -492,7 +500,7 @@
                     refNo: signModal.refNo,
                     name: signData.name,
                     dept: signData.dept,
-                    signature: signatureBase64 // Base64 data from Canvas
+                    signature: signatureBase64 
                 };
 
                 const res = await sendPostRequest(payload);
@@ -508,7 +516,6 @@
                 }
             };
 
-            // --- SECURE BACKEND PIN VERIFICATION ---
             const handleGlobalUnlock = async (e) => { 
                 e.preventDefault(); 
                 setIsVerifyingLogin(true);
@@ -534,7 +541,7 @@
                 setIsVerifyingLogin(false);
 
                 if (res.status === 'success' && res.role !== 'portal_lock') { 
-                    const newRole = res.role; // Will be 'admin', 'dept_head', or 'admitting'
+                    const newRole = res.role; 
                     setRoleLoginFeedback({ type: 'success', text: 'Access Granted! Unlocking module...' });
                     setTimeout(() => {
                         setUserRole(newRole); 
@@ -685,10 +692,10 @@
                                             onClick={() => setSlideshowIndex(currentSlide)}
                                         >
                                             <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
-                                                <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
+                                                <img src={getDriveImage(slide['Image URL'])} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
                                             </div>
                                             
-                                            <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl" alt={slide['Title']} />
+                                            <img src={getDriveImage(slide['Image URL'])} className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl" alt={slide['Title']} />
                                             
                                             <div className="absolute inset-x-0 bottom-0 pt-32 pb-8 px-8 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent flex flex-col items-center justify-end text-center text-white pointer-events-none">
                                                 <h3 className="text-3xl md:text-5xl font-black mb-2 drop-shadow-xl">{slide['Title']}</h3>
@@ -1265,7 +1272,7 @@
                             )}
 
                             <div className="relative max-w-7xl w-full max-h-[90vh] flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-                                <img src={slideshow[slideshowIndex]['Image URL']} className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl" alt={slideshow[slideshowIndex]['Title']} />
+                                <img src={getDriveImage(slideshow[slideshowIndex]['Image URL'])} className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl" alt={slideshow[slideshowIndex]['Title']} />
                                 <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black/50 p-2 mx-auto w-max rounded-lg backdrop-blur-md">
                                     <p className="text-sm font-bold">{slideshow[slideshowIndex]['Title']}</p>
                                 </div>
@@ -1296,15 +1303,15 @@
 
                     {/* NEWS WELCOME FLYER */}
                     {showNewsFlyer && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative transform animate-slide-up flex flex-col border border-slate-200 m-auto">
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative transform animate-slide-up flex flex-col border border-slate-200 my-auto shrink-0">
                                 <button onClick={() => { setShowNewsFlyer(false); unlockScroll(); }} className="absolute top-5 right-5 text-slate-400 hover:text-slate-800 z-20 transition-all bg-white p-2.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5" /></button>
                                 <div className="p-8 pb-6 bg-slate-50 border-b border-slate-100 flex flex-col items-center text-center shrink-0">
                                     <div className="w-16 h-16 bg-tdmh-blue text-white rounded-2xl flex items-center justify-center mb-4 shadow-md"><Icons.Bell className="w-8 h-8" /></div>
                                     <span className="text-[10px] font-bold tracking-[0.2em] text-tdmh-blue uppercase mb-2">TDMH Official Notice</span>
                                     <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">TDMH CQI Portal V2 is Live!</h2>
                                 </div>
-                                <div className="p-8 md:px-10 bg-white overflow-y-auto custom-scrollbar max-h-[60vh]">
+                                <div className="p-8 md:px-10 bg-white">
                                     <p className="text-slate-700 mb-6 text-lg font-bold leading-relaxed text-center">Welcome to your upgraded administrative command center.</p>
                                     <p className="text-slate-600 mb-8 leading-relaxed">We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs. Here is your quick guide to navigating the new system:</p>
                                     
@@ -1326,8 +1333,8 @@
 
                     {/* ROLE LOGIN MODAL */}
                     {showRoleLogin && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 m-auto">
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 my-auto shrink-0">
                                 <button onClick={() => {setShowRoleLogin(false); setPendingAction(null); unlockScroll(); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
                                 <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"><Icons.Shield className="w-8 h-8" /></div>
                                 <h3 className="text-xl font-black text-slate-800 mb-2">Role Verification</h3>
@@ -1351,8 +1358,8 @@
                     
                     {/* MASTER ADMIN CONSOLE MODAL */}
                     {showAdminConsole && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
-                            <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 m-auto">
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
+                            <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 my-auto shrink-0">
                                 <div className="bg-slate-900 p-6 flex justify-between items-center text-white shrink-0 shadow-md z-10">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl"><Icons.Shield className="w-6 h-6 text-tdmh-green" /></div>
