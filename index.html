@@ -91,7 +91,6 @@
             HeartHandshake: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 15v3.8l-2.1-2.1c-.8-.8-2-.8-2.8 0-.8.8-.8 2 0 2.8l5.4 5.4c.8.8 2 .8 2.8 0l5.4-5.4c.8-.8.8-2 0-2.8-.8-.8-2-.8-2.8 0l-2.1 2.1V15"/></svg>,
             Bed: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>,
             Monitor: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
-            // FIXED: Added the missing Plus icon which caused the blank screen crash!
             Plus: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         };
 
@@ -143,9 +142,10 @@
             
             const [selectedDept, setSelectedDept] = useState(null); 
             
-            // --- SLIDESHOW STATES ---
+            // --- OVERLAY STATES ---
             const [currentSlide, setCurrentSlide] = useState(0);
-            const [lightboxImg, setLightboxImg] = useState(null); 
+            const [slideshowIndex, setSlideshowIndex] = useState(null); // Fullscreen Slideshow Index
+            const [qrLightbox, setQrLightbox] = useState(null); // QR Code URL
             
             // --- MODAL STATES ---
             const [showNewsFlyer, setShowNewsFlyer] = useState(true); 
@@ -174,16 +174,39 @@
                 { id: 'census', label: 'Census Entry', icon: 'Activity' }
             ];
 
+            // Lock scrolling when modals/overlays are open
             useEffect(() => {
-                if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews || lightboxImg) document.body.classList.add('modal-open');
-                else document.body.classList.remove('modal-open');
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews, lightboxImg]);
+                if (mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null) {
+                    document.body.classList.add('modal-open');
+                } else {
+                    document.body.classList.remove('modal-open');
+                }
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showAddNews, slideshowIndex, qrLightbox]);
 
+            // Auto-advance slideshow
             useEffect(() => {
-                if (slideshow.length <= 1 || lightboxImg) return;
+                if (slideshow.length <= 1 || slideshowIndex !== null) return;
                 const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % slideshow.length); }, 5000);
                 return () => clearInterval(timer);
-            }, [slideshow.length, lightboxImg]);
+            }, [slideshow.length, slideshowIndex]);
+
+            // NEW: Keyboard Event Listener for Slideshow (Esc, Left, Right)
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    // Close overlays on Esc
+                    if (e.key === 'Escape') {
+                        setSlideshowIndex(null);
+                        setQrLightbox(null);
+                    }
+                    // Next/Prev for Slideshow Fullscreen
+                    if (slideshowIndex !== null) {
+                        if (e.key === 'ArrowRight') setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
+                        if (e.key === 'ArrowLeft') setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
+                    }
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [slideshowIndex, slideshow.length]);
 
             // --- TAB SCROLL FUNCTIONS ---
             useEffect(() => {
@@ -198,7 +221,6 @@
             };
 
             // --- API ENGINE WITH INSTANT CACHING ---
-            // This function processes the raw data and updates all UI states
             const populateData = (data) => {
                 setGlobalPinRequired(data.globalPinRequired === true);
                 if (!data.globalPinRequired) setGlobalUnlocked(true);
@@ -223,11 +245,9 @@
                 if (data.slideshow) setSlideshow((data.slideshow || []).filter(s => String(s['Active (Yes/No)']).toUpperCase() === 'YES'));
             };
 
-            // Main Fetch function: Checks Cache first for instant load, then syncs in background
             const fetchDatabase = async (isBackgroundSync = false) => {
                 if (!isBackgroundSync) setIsSyncing(true);
                 
-                // 1. Try to load from Local Cache first (Instant Load!)
                 if (!isBackgroundSync) {
                     try {
                         const cachedData = localStorage.getItem('tdmh_cqi_portal_cache');
@@ -235,28 +255,23 @@
                             const parsedCache = JSON.parse(cachedData);
                             if (parsedCache && parsedCache.data) {
                                 populateData(parsedCache.data);
-                                setIsSyncing(false); // UI is ready immediately
+                                setIsSyncing(false);
                             }
                         }
-                    } catch(e) { console.log("Cache read error", e); }
+                    } catch(e) { console.log("Cache error", e); }
                 }
 
-                // 2. Fetch fresh data from Google Apps Script
                 try {
-                    // Note: We use background sync silently so it doesn't disrupt the user if cache loaded
                     if(isBackgroundSync) setIsSyncing(true); 
                     
                     const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(err => { return { ok: false }; });
                     if (response && response.ok) {
                         const result = await response.json();
                         if(result.status === 'success') {
-                            // Save fresh data to Cache for next time
                             localStorage.setItem('tdmh_cqi_portal_cache', JSON.stringify(result));
-                            // Update UI with fresh data
                             populateData(result.data);
                         }
                     } else {
-                        // If no cache and network fails, unlock to prevent getting stuck
                         if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true);
                     }
                 } catch (error) { 
@@ -266,11 +281,10 @@
                 setIsSyncing(false);
             };
 
-            // Initial Load
             useEffect(() => { fetchDatabase(); }, []);
 
             const sendPostRequest = async (payload) => {
-                if (API_URL === "PASTE_YOUR_WEB_APP_URL_HERE") { alert("System Offline Mode: Connect your URL to save data."); return {status: 'success', trackingId: 'CQI-TEST-000'}; }
+                if (API_URL === "PASTE_YOUR_WEB_APP_URL_HERE") { alert("System Offline Mode."); return {status: 'success', trackingId: 'CQI-TEST-000'}; }
                 try {
                     const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" }).catch(err => { return { ok: false }; });
                     if (response && response.ok) return await response.json();
@@ -279,7 +293,6 @@
             };
 
             // --- SECURITY HANDLERS ---
-            
             const handleGlobalUnlock = (e) => { 
                 e.preventDefault(); 
                 if (globalPinInput === 'Wherecaringcomesfirst') { 
@@ -436,7 +449,7 @@
                             {slideshow.length > 0 && (
                                 <div className="structured-card p-0 overflow-hidden relative h-80 md:h-[600px] flex items-center justify-center bg-slate-900 group shadow-lg cursor-pointer hover:shadow-xl transition-shadow border-2 border-slate-100">
                                     
-                                    <div className="absolute top-4 right-4 z-30 bg-black/70 backdrop-blur text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setLightboxImg(slideshow[currentSlide]['Image URL'])}>
+                                    <div className="absolute top-4 right-4 z-30 bg-black/70 backdrop-blur text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSlideshowIndex(currentSlide)}>
                                         <Icons.Maximize className="w-5 h-5" /> View Fullscreen
                                     </div>
 
@@ -444,7 +457,7 @@
                                         <div 
                                             key={index} 
                                             className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                                            onClick={() => setLightboxImg(slide['Image URL'])}
+                                            onClick={() => setSlideshowIndex(currentSlide)}
                                         >
                                             <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
                                                 <img src={slide['Image URL']} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
@@ -746,7 +759,7 @@
                                                 <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
                                                     <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors">Open Link</a>
                                                     <button 
-                                                        onClick={() => setLightboxImg(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`)} 
+                                                        onClick={() => setQrLightbox(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`)} 
                                                         className="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors flex items-center gap-1 border border-slate-200"
                                                     >
                                                         <Icons.QrCode className="w-4 h-4" /> QR Code
@@ -780,6 +793,7 @@
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     {departments.map((dept, i) => {
+                                        // FIXED: Uses "Icon" column exactly as it appears in the spreadsheet
                                         const iconKeyStr = String(dept['Icon'] || dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
                                         const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
                                         let IconCmp = Icons.Box; 
@@ -934,16 +948,47 @@
             return (
                 <div className="flex flex-col min-h-screen bg-pattern">
                     
-                    {/* PHOTO VIEWER (LIGHTBOX) OVERLAY (QR Codes use this too!) */}
-                    {lightboxImg && (
-                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in" onClick={() => setLightboxImg(null)}>
-                            <div className="relative max-w-7xl w-full max-h-[90vh] flex flex-col items-center justify-center animate-slide-up" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => setLightboxImg(null)} className="absolute -top-12 right-0 md:-right-12 text-white hover:text-slate-300 transition-colors bg-white/10 p-2 rounded-full">
+                    {/* NEW: FULLSCREEN SLIDESHOW OVERLAY (With Esc and Navigation!) */}
+                    {slideshowIndex !== null && slideshow[slideshowIndex] && (
+                        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl animate-fade-in" onClick={() => setSlideshowIndex(null)}>
+                            
+                            <button onClick={() => setSlideshowIndex(null)} className="absolute top-6 right-6 z-50 text-white/70 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-3 rounded-full" title="Close (Esc)">
+                                <Icons.X className="w-8 h-8"/>
+                            </button>
+
+                            {/* Previous Arrow */}
+                            {slideshow.length > 1 && (
+                                <button onClick={(e) => { e.stopPropagation(); setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1); }} className="absolute left-4 md:left-10 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all hover:scale-110" title="Previous (Left Arrow)">
+                                    <Icons.ChevronLeft className="w-8 h-8"/>
+                                </button>
+                            )}
+
+                            <div className="relative max-w-7xl w-full max-h-[90vh] flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+                                <img src={slideshow[slideshowIndex]['Image URL']} className="w-full h-auto max-h-[85vh] object-contain rounded-xl shadow-2xl" alt={slideshow[slideshowIndex]['Title']} />
+                                <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-black/50 p-2 mx-auto w-max rounded-lg backdrop-blur-md">
+                                    <p className="text-sm font-bold">{slideshow[slideshowIndex]['Title']}</p>
+                                </div>
+                            </div>
+
+                            {/* Next Arrow */}
+                            {slideshow.length > 1 && (
+                                <button onClick={(e) => { e.stopPropagation(); setSlideshowIndex((prev) => (prev + 1) % slideshow.length); }} className="absolute right-4 md:right-10 z-50 text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all hover:scale-110" title="Next (Right Arrow)">
+                                    <Icons.ChevronRight className="w-8 h-8"/>
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* QR CODE OVERLAY */}
+                    {qrLightbox && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in" onClick={() => setQrLightbox(null)}>
+                            <div className="relative flex flex-col items-center justify-center animate-slide-up" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => setQrLightbox(null)} className="absolute -top-16 right-0 text-white hover:text-slate-300 transition-colors bg-white/10 p-2 rounded-full" title="Close (Esc)">
                                     <Icons.X className="w-8 h-8"/>
                                 </button>
-                                
-                                <div className={`${String(lightboxImg).includes('qrserver') ? 'bg-white p-8 rounded-2xl shadow-2xl' : ''}`}>
-                                    <img src={lightboxImg} className={`w-full h-auto max-h-[85vh] object-contain rounded-xl ${!String(lightboxImg).includes('qrserver') ? 'shadow-2xl' : ''}`} alt="Enlarged View" />
+                                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center">
+                                    <h3 className="font-black text-slate-800 text-xl md:text-2xl mb-6 flex items-center gap-2"><Icons.QrCode className="w-6 h-6 md:w-8 md:h-8 text-tdmh-blue"/> Scan Document</h3>
+                                    <img src={qrLightbox} className="w-64 h-64 md:w-80 md:h-80 object-contain" alt="QR Code" />
                                 </div>
                             </div>
                         </div>
@@ -1002,10 +1047,10 @@
                         </div>
                     )}
                     
-                    {/* MASTER ADMIN CONSOLE MODAL */}
+                    {/* MASTER ADMIN CONSOLE MODAL (EXPANDED TO FULL SCREEN) */}
                     {showAdminConsole && (
                         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
-                            <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-7xl overflow-hidden flex flex-col h-[90vh] animate-slide-up border border-slate-700 m-auto">
+                            <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 m-auto">
                                 <div className="bg-slate-900 p-6 flex justify-between items-center text-white shrink-0 shadow-md z-10">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl"><Icons.Shield className="w-6 h-6 text-tdmh-green" /></div>
@@ -1045,19 +1090,20 @@
                                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
                                         </div>
                                         
+                                        {/* FIXED: Uses "System Name" explicitly for the title */}
                                         {monitors.length > 0 && (
-                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                                <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4">
+                                            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col max-h-[50vh]">
+                                                <h3 className="font-black text-slate-800 flex items-center gap-2 mb-4 shrink-0">
                                                     <Icons.Activity className="w-5 h-5 text-tdmh-blue"/> System Monitors
                                                 </h3>
-                                                <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                                                <div className="space-y-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
                                                     {monitors.map((m, i) => (
                                                         <a key={i} href={m.Link || m.link || m[1]} target="_blank" className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-tdmh-blue hover:bg-slate-50 transition-colors group">
                                                             <div className="p-2 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-tdmh-blue group-hover:text-white transition-colors shrink-0 mt-0.5">
                                                                 <Icons.Activity className="w-4 h-4" />
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <h5 className="text-sm font-bold text-slate-800 group-hover:text-tdmh-blue truncate">{m.Name || m.name || m[0]}</h5>
+                                                                <h5 className="text-sm font-bold text-slate-800 group-hover:text-tdmh-blue truncate">{m['System Name'] || m.Name || m.name || m[0]}</h5>
                                                                 <p className="text-[10px] text-slate-500 line-clamp-2 mt-0.5 leading-snug">{m.Description || m.desc || m[2]}</p>
                                                             </div>
                                                         </a>
@@ -1067,11 +1113,11 @@
                                         )}
                                     </div>
                                     <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-                                        <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4">
+                                        <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4 shrink-0">
                                             <h3 className="font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
                                             <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold text-tdmh-blue hover:underline">Open in new tab</a>
                                         </div>
-                                        <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border-2 border-slate-200 min-h-[400px] lg:min-h-0 relative">
+                                        <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border-2 border-slate-200 min-h-[500px] relative">
                                             <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
                                         </div>
                                     </div>
