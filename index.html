@@ -52,7 +52,7 @@
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
 
-        // --- MASSIVE ICON LIBRARY (Custom mapped to your specific Google Sheet inputs) ---
+        // --- MASSIVE ICON LIBRARY ---
         const Icons = {
             Search: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
             X: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
@@ -90,7 +90,9 @@
             Scan: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>,
             HeartHandshake: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 15v3.8l-2.1-2.1c-.8-.8-2-.8-2.8 0-.8.8-.8 2 0 2.8l5.4 5.4c.8.8 2 .8 2.8 0l5.4-5.4c.8-.8.8-2 0-2.8-.8-.8-2-.8-2.8 0l-2.1 2.1V15"/></svg>,
             Bed: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg>,
-            Monitor: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+            Monitor: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
+            // FIXED: Added the missing Plus icon which caused the blank screen crash!
+            Plus: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         };
 
         // Department UI Colors Array 
@@ -146,7 +148,7 @@
             const [lightboxImg, setLightboxImg] = useState(null); 
             
             // --- MODAL STATES ---
-            const [showNewsFlyer, setShowNewsFlyer] = useState(true); // Default true for mock data, will update on sync
+            const [showNewsFlyer, setShowNewsFlyer] = useState(true); 
             const [showAdminConsole, setShowAdminConsole] = useState(false);
             const [showAddMemo, setShowAddMemo] = useState(false);
             const [showAddEvent, setShowAddEvent] = useState(false);
@@ -195,43 +197,76 @@
                 if (tabsContainerRef.current) tabsContainerRef.current.scrollBy({ left: direction === 'left' ? -250 : 250, behavior: 'smooth' });
             };
 
-            // --- API ENGINE ---
-            const fetchDatabase = async () => {
-                setIsSyncing(true);
+            // --- API ENGINE WITH INSTANT CACHING ---
+            // This function processes the raw data and updates all UI states
+            const populateData = (data) => {
+                setGlobalPinRequired(data.globalPinRequired === true);
+                if (!data.globalPinRequired) setGlobalUnlocked(true);
+                
+                if (data.census) setCensus(data.census || []);
+                
+                if (data.news) {
+                    const newsData = data.news || [];
+                    setNewsList(newsData);
+                    const hasWelcome = newsData.some(n => String(n.Title || n.title || n[3] || '').includes('V2 is Live'));
+                    setShowNewsFlyer(hasWelcome);
+                }
+
+                if (data.memos) setMemos(data.memos || []);
+                if (data.departments) setDepartments(data.departments || []);
+                if (data.tools) setTools(data.tools || []); 
+                if (data.calendar) setCalendar(data.calendar || []);
+                if (data.universalForms) setUniversalForms(data.universalForms || []);
+                if (data.isoRequirements) setIsoRequirements(data.isoRequirements || []);
+                if (data.agimat) setAgimat(data.agimat || []);
+                if (data.monitoring) setMonitors(data.monitoring || []);
+                if (data.slideshow) setSlideshow((data.slideshow || []).filter(s => String(s['Active (Yes/No)']).toUpperCase() === 'YES'));
+            };
+
+            // Main Fetch function: Checks Cache first for instant load, then syncs in background
+            const fetchDatabase = async (isBackgroundSync = false) => {
+                if (!isBackgroundSync) setIsSyncing(true);
+                
+                // 1. Try to load from Local Cache first (Instant Load!)
+                if (!isBackgroundSync) {
+                    try {
+                        const cachedData = localStorage.getItem('tdmh_cqi_portal_cache');
+                        if (cachedData) {
+                            const parsedCache = JSON.parse(cachedData);
+                            if (parsedCache && parsedCache.data) {
+                                populateData(parsedCache.data);
+                                setIsSyncing(false); // UI is ready immediately
+                            }
+                        }
+                    } catch(e) { console.log("Cache read error", e); }
+                }
+
+                // 2. Fetch fresh data from Google Apps Script
                 try {
+                    // Note: We use background sync silently so it doesn't disrupt the user if cache loaded
+                    if(isBackgroundSync) setIsSyncing(true); 
+                    
                     const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(err => { return { ok: false }; });
                     if (response && response.ok) {
                         const result = await response.json();
                         if(result.status === 'success') {
-                            setGlobalPinRequired(result.data.globalPinRequired === true);
-                            if (!result.data.globalPinRequired) setGlobalUnlocked(true);
-                            
-                            if (result.data.census) setCensus(result.data.census || []);
-                            
-                            if (result.data.news) {
-                                const newsData = result.data.news || [];
-                                setNewsList(newsData);
-                                // The Welcome Flyer will ONLY show if the "V2 is Live!" post is actively in the Google Sheet.
-                                // If you delete that row from the sheet, this popup will never show again!
-                                const hasWelcome = newsData.some(n => String(n.Title || n.title || n[3] || '').includes('V2 is Live'));
-                                setShowNewsFlyer(hasWelcome);
-                            }
-
-                            if (result.data.memos) setMemos(result.data.memos || []);
-                            if (result.data.departments) setDepartments(result.data.departments || []);
-                            if (result.data.tools) setTools(result.data.tools || []); 
-                            if (result.data.calendar) setCalendar(result.data.calendar || []);
-                            if (result.data.universalForms) setUniversalForms(result.data.universalForms || []);
-                            if (result.data.isoRequirements) setIsoRequirements(result.data.isoRequirements || []);
-                            if (result.data.agimat) setAgimat(result.data.agimat || []);
-                            if (result.data.monitoring) setMonitors(result.data.monitoring || []);
-                            if (result.data.slideshow) setSlideshow((result.data.slideshow || []).filter(s => String(s['Active (Yes/No)']).toUpperCase() === 'YES'));
+                            // Save fresh data to Cache for next time
+                            localStorage.setItem('tdmh_cqi_portal_cache', JSON.stringify(result));
+                            // Update UI with fresh data
+                            populateData(result.data);
                         }
-                    } else { setGlobalUnlocked(true); }
-                } catch (error) { setGlobalUnlocked(true); }
+                    } else {
+                        // If no cache and network fails, unlock to prevent getting stuck
+                        if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true);
+                    }
+                } catch (error) { 
+                    if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true); 
+                }
+                
                 setIsSyncing(false);
             };
 
+            // Initial Load
             useEffect(() => { fetchDatabase(); }, []);
 
             const sendPostRequest = async (payload) => {
@@ -342,7 +377,7 @@
                 setIsSubmitting(true);
                 const res = await sendPostRequest({ action: 'updateCensus', updates: census.map(c => ({ department: c.Department || c[0], count: c['Patient Count'] || c[1] })) });
                 setIsSubmitting(false);
-                if(res.status === 'success') { alert("Census successfully published!"); fetchDatabase(); }
+                if(res.status === 'success') { alert("Census successfully published!"); fetchDatabase(true); }
             };
 
             const handleTrackRequest = async (e) => {
@@ -359,7 +394,9 @@
                 setIsTracking(false);
             };
 
-            if (isSyncing && !globalUnlocked) return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
+            if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
+                return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
+            }
 
             if (globalPinRequired && !globalUnlocked) {
                 return (
@@ -476,7 +513,6 @@
                             <div className="space-y-6 max-w-4xl mx-auto">
                                 {newsList.length === 0 && <p className="text-slate-500 italic">No news posted yet.</p>}
                                 {newsList.map((n, i) => {
-                                    // MATCHING LOGIC: If a row contains "V2 is Live", show the detailed visual guide
                                     const isWelcomePost = String(n.Title || n.title || n[3] || '').includes('V2 is Live');
                                     return (
                                         <div key={n.id || i} className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm relative group hover:shadow-md transition-shadow">
@@ -662,11 +698,8 @@
                     );
                     
                     case 'departments': 
-                        // SUB-VIEW: Show tools for a specific department if one is clicked
                         if (selectedDept) {
                             
-                            // EXACT MATCH FIX + UNIVERSAL MATCH: 
-                            // Includes tools explicitly mapped to this Dept ID AND tools mapped to "UNIVERSAL"
                             const deptTools = tools.filter(t => {
                                 const targetIdsStr = String(t['Target Dept ID'] || t['Target ID'] || t.TargetID || t.targetID || '').toLowerCase();
                                 const selectedId = String(selectedDept['ID'] || selectedDept.id || selectedDept['Name'] || selectedDept.name || '').toLowerCase().trim();
@@ -710,7 +743,6 @@
                                                     </div>
                                                 </div>
                                                 
-                                                {/* NEW: Automated QR Code Generator Built Right In! */}
                                                 <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
                                                     <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors">Open Link</a>
                                                     <button 
@@ -727,7 +759,6 @@
                             );
                         }
 
-                        // MAIN VIEW: The Grid of Departments
                         return (
                             <div className="animate-fade-in structured-card p-6 md:p-10">
                                 <div className="mb-4 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -749,7 +780,6 @@
 
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                     {departments.map((dept, i) => {
-                                        // 1. Precise Header Matching matching your exact "Icon" column
                                         const iconKeyStr = String(dept['Icon'] || dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
                                         const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
                                         let IconCmp = Icons.Box; 
@@ -763,7 +793,6 @@
                                             else if (catStr.includes('support')) IconCmp = Icons.Activity;
                                         }
 
-                                        // 2. Vibrant Colors Applied
                                         const colorTheme = DEPT_COLORS[i % DEPT_COLORS.length];
 
                                         return (
@@ -846,14 +875,12 @@
                     case 'agimat': return (
                         <div className="animate-fade-in max-w-5xl mx-auto py-6">
                             <div className="flex flex-col items-center justify-center mb-10 text-center">
-                                {/* NEW AGIMAT LOGO: Add image to your GitHub images folder! */}
                                 <img 
                                     src="./images%20logo/agimat-logo.png" 
                                     alt="Agimat" 
                                     className="h-16 md:h-24 object-contain mb-4 drop-shadow-sm" 
                                     onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} 
                                 />
-                                {/* Fallback text if the image fails to load */}
                                 <h2 className="text-[4rem] text-slate-900 font-serif leading-none tracking-tight hidden">Agimat</h2>
                                 <p className="text-slate-500 font-medium text-base mt-2">Standardized video training and continuous quality improvement resources.</p>
                             </div>
@@ -915,7 +942,6 @@
                                     <Icons.X className="w-8 h-8"/>
                                 </button>
                                 
-                                {/* If it's a QR code, add a white background padding so it scans easily */}
                                 <div className={`${String(lightboxImg).includes('qrserver') ? 'bg-white p-8 rounded-2xl shadow-2xl' : ''}`}>
                                     <img src={lightboxImg} className={`w-full h-auto max-h-[85vh] object-contain rounded-xl ${!String(lightboxImg).includes('qrserver') ? 'shadow-2xl' : ''}`} alt="Enlarged View" />
                                 </div>
@@ -1181,7 +1207,7 @@
 
                     <footer className="mt-auto bg-tdmh-blue border-t-2 border-blue-900 py-6 text-center text-white text-[10px] font-bold flex flex-col md:flex-row justify-center items-center gap-6 relative z-20 shrink-0">
                         <p className="uppercase tracking-widest text-blue-200">&copy; {new Date().getFullYear()} TAYTAY DOCTORS MULTISPECIALTY HOSPITAL.</p>
-                        <button onClick={fetchDatabase} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-900 border border-blue-800 text-tdmh-green hover:bg-blue-800 transition-colors uppercase tracking-widest text-xs font-black shadow-lg">
+                        <button onClick={() => fetchDatabase(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-900 border border-blue-800 text-tdmh-green hover:bg-blue-800 transition-colors uppercase tracking-widest text-xs font-black shadow-lg">
                             <Icons.Sync className="w-4 h-4" /> {isSyncing ? 'Syncing...' : 'System Sync'}
                         </button>
                     </footer>
