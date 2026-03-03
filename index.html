@@ -725,6 +725,21 @@
                 setIsTracking(false);
             };
 
+            // ==========================================
+            // NEW: CINEMATIC POPUP PLAYER LOGIC
+            // ==========================================
+            const openCinematicPlayer = (url) => {
+                const width = 900;
+                const height = 600;
+                const left = (window.innerWidth / 2) - (width / 2);
+                const top = (window.innerHeight / 2) - (height / 2);
+                
+                // This forces a brand-new, clean window context. 
+                // It bypasses 100% of iframe restrictions and third-party cookie blocks 
+                // because it acts as a primary browser tab, but looks like a sleek app modal.
+                window.open(url, 'AgimatPlayerWindow', `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=no,resizable=yes,location=no,status=no`);
+            };
+
             if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
                 return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
             }
@@ -1222,18 +1237,19 @@
                         const daysInMonthArray = Array.from({length: daysInMonthCount}, (_, i) => i + 1);
                         const blankDays = Array.from({length: firstDayOfMonth}, (_, i) => i);
 
-                        // Safe parser for dates (handles "YYYY-MM-DD" natively from inputs and string dates)
+                        // Safe parser for dates (bypasses timezone shifting issues)
+                        const getSafeDate = (val) => {
+                            if (!val) return null;
+                            let str = String(val).trim();
+                            // If strictly YYYY-MM-DD, append T12:00:00 to prevent UTC midnight shifting backwards in local time
+                            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return new Date(str + 'T12:00:00');
+                            let d = new Date(str);
+                            return isNaN(d.getTime()) ? null : d;
+                        };
+
                         const eventDaysThisMonth = calendar.map(e => {
-                            const dateStr = e.date || e['Date Text'] || e['Date'] || e[0] || e[1]; 
-                            if (!dateStr) return null;
-                            let d;
-                            if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}/)) {
-                                const parts = dateStr.split('T')[0].split('-');
-                                d = new Date(parts[0], parts[1] - 1, parts[2]);
-                            } else {
-                                d = new Date(dateStr);
-                            }
-                            if (!isNaN(d.getTime()) && d.getMonth() === calMonth && d.getFullYear() === calYear) {
+                            const d = getSafeDate(e.date || e['Date Text'] || e['Date'] || e[0] || e[1]);
+                            if (d && d.getMonth() === calMonth && d.getFullYear() === calYear) {
                                 return d.getDate();
                             }
                             return null;
@@ -1283,7 +1299,9 @@
                                     <div className="relative border-l-2 border-slate-200 ml-2 space-y-6 pb-2">
                                         {calendar.length === 0 && <p className="text-slate-500 italic pl-6">No events scheduled.</p>}
                                         {calendar.map((ev, i) => {
-                                            const displayDate = ev['Date Text'] || ev['Date'] || ev.date || ev[0];
+                                            const rawDate = ev['Date Text'] || ev['Date'] || ev.date || ev[0];
+                                            const safeDateObj = getSafeDate(rawDate);
+                                            const displayDate = safeDateObj ? safeDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : rawDate;
                                             const displayTime = ev.Time || ev.time || ev[2];
                                             return (
                                                 <div key={i} className="relative pl-6 group">
@@ -1292,7 +1310,7 @@
                                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-2">
                                                             {displayDate} {displayTime ? `• ${displayTime}` : ''}
                                                             {(userRole === 'admin' || userRole === 'dept_head') && (
-                                                                <button onClick={() => { setEditEventData({oldDateText: displayDate, oldTitle: ev['Event Title'] || ev.Title || ev[3], newTime: ''}); setShowEditEvent(true); }} className="text-blue-500 hover:text-blue-700 bg-blue-50 p-1 rounded transition-colors" title="Edit Time">
+                                                                <button onClick={() => { setEditEventData({oldDateText: rawDate, oldTitle: ev['Event Title'] || ev.Title || ev[3], newTime: ''}); setShowEditEvent(true); }} className="text-blue-500 hover:text-blue-700 bg-blue-50 p-1 rounded transition-colors" title="Edit Time">
                                                                     <Icons.Edit className="w-3 h-3" />
                                                                 </button>
                                                             )}
@@ -1323,41 +1341,44 @@
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {agimat.map((vid, i) => {
                                     let rawUrl = String(vid['Video URL (Embed)'] || vid['Video URL'] || vid.link || '');
-                                    let embedUrl = rawUrl;
+                                    let isYouTube = rawUrl.includes('youtube.com') || rawUrl.includes('youtu.be');
+                                    let isDrive = rawUrl.includes('drive.google.com');
                                     
-                                    // RESILIENT EMBED LOGIC
-                                    if (rawUrl.includes('drive.google.com')) {
+                                    // Build the Google Drive /view link for the click-out popup
+                                    let directUrl = rawUrl.replace('/preview', '/view');
+                                    if (isDrive) {
                                         const match = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                                        if (match) {
-                                            // Using the cleanest, most firewall-friendly preview format
-                                            embedUrl = `https://drive.google.com/file/d/${match[1]}/preview?usp=sharing`;
-                                        }
-                                    } else if (rawUrl.includes('youtube.com/watch?v=')) {
-                                        embedUrl = rawUrl.replace('watch?v=', 'embed/').split('&')[0];
-                                    } else if (rawUrl.includes('youtu.be/')) {
-                                        const videoId = rawUrl.split('youtu.be/')[1].split('?')[0];
-                                        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                                        if (match) { directUrl = `https://drive.google.com/file/d/${match[1]}/view`; }
                                     }
 
-                                    let directUrl = embedUrl ? embedUrl.replace('/preview', '/view') : rawUrl;
-                                    
+                                    // Build the YouTube embed link if applicable
+                                    let embedUrl = null;
+                                    if (isYouTube) {
+                                        if (rawUrl.includes('youtube.com/watch?v=')) {
+                                            embedUrl = rawUrl.replace('watch?v=', 'embed/').split('&')[0];
+                                        } else if (rawUrl.includes('youtu.be/')) {
+                                            const videoId = rawUrl.split('youtu.be/')[1].split('?')[0];
+                                            embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                                        }
+                                    }
+
                                     return (
                                         <div key={i} className="structured-card p-5 group hover:border-tdmh-blue transition-colors shadow-sm flex flex-col">
                                             <div className="aspect-video bg-slate-900 rounded-xl mb-4 overflow-hidden border border-slate-200 relative shadow-inner">
-                                                {embedUrl ? (
-                                                    <iframe 
-                                                        className="w-full h-full" 
-                                                        src={embedUrl} 
-                                                        frameBorder="0" 
-                                                        allow="autoplay; fullscreen; encrypted-media; picture-in-picture" 
-                                                        allowFullScreen 
-                                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-top-navigation"
-                                                        title={vid['Video Title'] || 'Training Video'}
-                                                    ></iframe>
+                                                {isYouTube && embedUrl ? (
+                                                    <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen title={vid['Video Title'] || 'Training Video'}></iframe>
+                                                ) : isDrive ? (
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-800 text-white transition-colors hover:bg-slate-700 cursor-pointer group-hover:bg-slate-700" onClick={() => openCinematicPlayer(directUrl)}>
+                                                        <div className="w-16 h-16 rounded-full bg-blue-600/90 flex items-center justify-center mb-3 shadow-lg transform group-hover:scale-110 transition-transform">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 ml-1 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                                                        </div>
+                                                        <span className="font-bold tracking-widest uppercase text-xs text-blue-200">Play in Native Player</span>
+                                                        <p className="text-[9px] text-slate-400 mt-2 max-w-[80%] text-center">Opens safely over the portal to bypass network blocks</p>
+                                                    </div>
                                                 ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 absolute inset-0">
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 absolute inset-0 cursor-pointer" onClick={() => openCinematicPlayer(directUrl)}>
                                                         <Icons.Video className="w-12 h-12 mb-3 opacity-50" />
-                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Video Placeholder</span>
+                                                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Open Resource</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -1368,17 +1389,6 @@
                                                     <h4 className="text-slate-800 font-black text-xl mt-3 leading-tight">{vid['Video Title']}</h4>
                                                     <p className="text-sm text-slate-500 mt-2 leading-relaxed">{vid.Description}</p>
                                                 </div>
-                                                
-                                                {embedUrl && (
-                                                    <div className="mt-auto pt-5">
-                                                        <div className="bg-blue-50/50 border border-blue-100 p-3.5 rounded-xl flex items-center justify-between gap-4 shadow-sm">
-                                                            <p className="text-[10px] text-tdmh-blue font-bold leading-snug">Video not playing?<br/><span className="text-slate-500 font-medium">Click watch fullscreen to open directly.</span></p>
-                                                            <a href={directUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 bg-tdmh-blue text-white px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-blue-900 transition-transform hover:scale-105 shadow-md">
-                                                                <Icons.Maximize className="w-4 h-4" /> Watch Fullscreen
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     );
