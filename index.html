@@ -26,9 +26,10 @@
         }
     </script>
     
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Switched from unpkg to cdnjs for higher reliability on strict hospital networks -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js" crossorigin></script>
 
     <style>
         body { background-color: #f4f7f9; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
@@ -107,8 +108,14 @@
             { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hover: 'group-hover:bg-orange-600 group-hover:text-white group-hover:border-orange-600' }
         ];
 
-        const getToolColor = (colorStr) => {
-            const c = String(colorStr || '').toLowerCase().trim();
+        // SMART FALLBACK COLOR & ICON SYSTEM
+        const getToolColor = (colorStr, fallbackStr) => {
+            let c = String(colorStr || '').toLowerCase().trim();
+            if (!c && fallbackStr) {
+                const len = String(fallbackStr).length;
+                const colors = ['red', 'orange', 'yellow', 'green', 'purple', 'pink', 'blue', 'brown'];
+                c = colors[len % colors.length];
+            }
             if (c.includes('red') && !c.includes('orange')) return 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white border-red-200';
             if (c.includes('orange')) return 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white border-orange-200';
             if (c.includes('yellow')) return 'bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white border-yellow-200';
@@ -120,18 +127,19 @@
             return 'bg-slate-50 text-slate-500 group-hover:bg-slate-600 group-hover:text-white border-slate-200';
         };
 
-        const getToolIcon = (iconStr) => {
-            const s = String(iconStr || '').toLowerCase().trim();
-            if (s.includes('form') || s.includes('paper') || s.includes('pen') || s.includes('document') || s.includes('request')) return Icons.FileText;
+        const getToolIcon = (iconStr, fallbackStr) => {
+            let s = String(iconStr || '').toLowerCase().trim();
+            if (!s && fallbackStr) s = String(fallbackStr).toLowerCase().trim();
+            if (s.includes('form') || s.includes('paper') || s.includes('pen') || s.includes('document') || s.includes('request') || s.includes('sheet') || s.includes('report') || s.includes('score card') || s.includes('abstract')) return Icons.FileText;
             if (s.includes('needle') || s.includes('syringe')) return Icons.Syringe;
             if (s.includes('car') || s.includes('vehicle')) return Icons.Car;
-            if (s.includes('phone') || s.includes('mobile')) return Icons.Smartphone;
+            if (s.includes('phone') || s.includes('mobile') || s.includes('it ')) return Icons.Smartphone;
             if (s.includes('aircon') || s.includes('fan')) return Icons.Fan;
             if (s.includes('computer') || s.includes('monitor') || s.includes('laptop')) return Icons.Monitor;
-            if (s.includes('infectious') || s.includes('shield') || s.includes('safety')) return Icons.Shield;
-            if (s.includes('medical') || s.includes('stethoscope')) return Icons.Stethoscope;
-            if (s.includes('person') || s.includes('head') || s.includes('user') || s.includes('people')) return Icons.Users;
-            if (s.includes('equipment') || s.includes('tool') || s.includes('box')) return Icons.Box;
+            if (s.includes('infectious') || s.includes('shield') || s.includes('safety') || s.includes('risk')) return Icons.Shield;
+            if (s.includes('medical') || s.includes('stethoscope') || s.includes('clinical')) return Icons.Stethoscope;
+            if (s.includes('person') || s.includes('head') || s.includes('user') || s.includes('people') || s.includes('attendance')) return Icons.Users;
+            if (s.includes('equipment') || s.includes('tool') || s.includes('box') || s.includes('calibration')) return Icons.Box;
             if (s.includes('pill') || s.includes('medicine')) return Icons.Pill;
             if (s.includes('lab') || s.includes('microscope')) return Icons.Microscope;
             if (s.includes('baby') || s.includes('nicu')) return Icons.Baby;
@@ -145,9 +153,7 @@
             if(!url) return '';
             const strUrl = String(url);
             const match = strUrl.match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
-            if (match && match[1]) {
-                return `https://lh3.googleusercontent.com/d/${match[1]}`; 
-            }
+            if (match && match[1]) return `https://lh3.googleusercontent.com/d/${match[1]}`; 
             return strUrl;
         }
 
@@ -175,9 +181,7 @@
             const getCoordinates = (e) => {
                 const canvas = canvasRef.current;
                 const rect = canvas.getBoundingClientRect();
-                if (e.touches && e.touches.length > 0) {
-                    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-                }
+                if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
                 return { x: e.clientX - rect.left, y: e.clientY - rect.top };
             };
 
@@ -210,18 +214,6 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             };
 
-            const saveSignature = () => {
-                const canvas = canvasRef.current;
-                const blank = document.createElement('canvas');
-                blank.width = canvas.width; blank.height = canvas.height;
-                if(canvas.toDataURL() === blank.toDataURL()) {
-                    return false; // Tells parent validation failed
-                }
-                onSave(canvas.toDataURL('image/png'));
-                return true;
-            };
-
-            // Expose the internal validation back up via props if needed, but handled inside button logic below
             return (
                 <div className="w-full">
                     <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-slate-50 mb-3 relative cursor-crosshair">
@@ -242,7 +234,6 @@
                                 const blank = document.createElement('canvas');
                                 blank.width = canvas.width; blank.height = canvas.height;
                                 if(canvas.toDataURL() === blank.toDataURL()) {
-                                    // Let parent handle the error display
                                     onSave(null); 
                                 } else {
                                     onSave(canvas.toDataURL('image/png'));
@@ -296,15 +287,14 @@
             const [qrLightbox, setQrLightbox] = useState(null); 
             
             const [liveTime, setLiveTime] = useState(new Date());
+            const [currentCalDate, setCurrentCalDate] = useState(new Date());
             
-            // --- NEW: Custom Notification State ---
             const [customAlert, setCustomAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
             const [showNewsFlyer, setShowNewsFlyer] = useState(true); 
             const [showAdminConsole, setShowAdminConsole] = useState(false);
             const [showAddMemo, setShowAddMemo] = useState(false);
             
-            // Modified Event States
             const [showAddEvent, setShowAddEvent] = useState(false);
             const [showEditEvent, setShowEditEvent] = useState(false);
             const [showAddNews, setShowAddNews] = useState(false);
@@ -337,7 +327,6 @@
                 { id: 'census', label: 'Census Entry', icon: 'Activity' }
             ];
 
-            // Replaces standard window.alert
             const showAlert = (title, message, type = 'info') => {
                 setCustomAlert({ isOpen: true, title, message, type });
             };
@@ -1009,9 +998,9 @@
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {sortedUniversal.length === 0 && <p className="text-slate-500 italic col-span-full">No forms mapped yet.</p>}
                                         {sortedUniversal.map((t, i) => {
-                                            const toolColorClass = getToolColor(t.Color || t.color || t[3]);
+                                            const toolColorClass = getToolColor(t.Color || t.color || t[3], t['Form Title'] || t[0]);
                                             const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[4] || '').trim();
-                                            const ToolIconCmp = getToolIcon(toolIconStr);
+                                            const ToolIconCmp = getToolIcon(toolIconStr, t['Form Title'] || t[0]);
                                             
                                             return (
                                                 <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
@@ -1026,6 +1015,12 @@
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
                                                         <a href={t.Link || t[2]} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
+                                                        <button 
+                                                            onClick={() => { setQrLightbox({url: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t[2] || '')}`, title: t['Form Title'] || t[0]}); unlockScroll(); }} 
+                                                            className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"
+                                                        >
+                                                            <Icons.QrCode className="w-4 h-4" /> QR
+                                                        </button>
                                                     </div>
                                                 </div>
                                             );
@@ -1037,9 +1032,9 @@
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {sortedISO.length === 0 && <p className="text-slate-500 italic col-span-full">No forms mapped yet.</p>}
                                         {sortedISO.map((t, i) => {
-                                            const toolColorClass = getToolColor(t.Color || t.color || t[3]);
+                                            const toolColorClass = getToolColor(t.Color || t.color || t[3], t['Form Title'] || t[0]);
                                             const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[4] || '').trim();
-                                            const ToolIconCmp = getToolIcon(toolIconStr);
+                                            const ToolIconCmp = getToolIcon(toolIconStr, t['Form Title'] || t[0]);
                                             
                                             return (
                                                 <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
@@ -1054,6 +1049,12 @@
                                                     </div>
                                                     <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
                                                         <a href={t.Link || t[2]} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
+                                                        <button 
+                                                            onClick={() => { setQrLightbox({url: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t[2] || '')}`, title: t['Form Title'] || t[0]}); unlockScroll(); }} 
+                                                            className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"
+                                                        >
+                                                            <Icons.QrCode className="w-4 h-4" /> QR
+                                                        </button>
                                                     </div>
                                                 </div>
                                             );
@@ -1127,9 +1128,9 @@
                                         )}
                                         
                                         {deptTools.map((t, i) => {
-                                            const toolColorClass = getToolColor(t.Color || t.color || t[4]);
+                                            const toolColorClass = getToolColor(t.Color || t.color || t[4], t['Tool Name'] || t['Name'] || t.name || t[0]);
                                             const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[5] || '').trim();
-                                            const ToolIconCmp = getToolIcon(toolIconStr);
+                                            const ToolIconCmp = getToolIcon(toolIconStr, t['Tool Name'] || t['Name'] || t.name || t[0]);
 
                                             return (
                                                 <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
@@ -1146,7 +1147,7 @@
                                                     <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
                                                         <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
                                                         <button 
-                                                            onClick={() => { setQrLightbox(`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`); unlockScroll(); }} 
+                                                            onClick={() => { setQrLightbox({url: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`, title: t['Tool Name'] || t['Name'] || t.name || t[0]}); unlockScroll(); }} 
                                                             className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"
                                                         >
                                                             <Icons.QrCode className="w-4 h-4" /> QR
@@ -1217,8 +1218,24 @@
                         );
 
                     case 'calendar': 
-                        const daysInMonth = Array.from({length: 31}, (_, i) => i + 1);
-                        const eventDays = calendar.map(e => parseInt(e.dayNum || String(e['Date Text']).replace(/[^0-9]/g, '') || String(e[0]).replace(/[^0-9]/g, '') || 0));
+                        const calYear = currentCalDate.getFullYear();
+                        const calMonth = currentCalDate.getMonth();
+                        const monthName = currentCalDate.toLocaleString('default', { month: 'long' });
+                        const daysInMonthCount = new Date(calYear, calMonth + 1, 0).getDate();
+                        const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay(); 
+                        
+                        const daysInMonth = Array.from({length: daysInMonthCount}, (_, i) => i + 1);
+                        const blankDays = Array.from({length: firstDayOfMonth}, (_, i) => i);
+
+                        const eventDaysThisMonth = calendar.map(e => {
+                            const dateStr = e.date || e['Date Text'] || e['Date'] || e[0] || e[1]; 
+                            if (!dateStr) return null;
+                            const d = new Date(dateStr);
+                            if (!isNaN(d.getTime()) && d.getMonth() === calMonth && d.getFullYear() === calYear) {
+                                return d.getDate();
+                            }
+                            return null;
+                        }).filter(Boolean);
                         
                         return (
                         <div className="animate-fade-in structured-card p-6 md:p-10">
@@ -1233,22 +1250,25 @@
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                                 <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h3 className="font-black text-slate-800 text-lg uppercase tracking-wider">March 2026</h3>
+                                        <h3 className="font-black text-slate-800 text-lg uppercase tracking-wider">{monthName} {calYear}</h3>
                                         <div className="flex gap-2">
-                                            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronLeft className="w-4 h-4"/></button>
-                                            <button className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronRight className="w-4 h-4"/></button>
+                                            <button onClick={() => setCurrentCalDate(new Date(calYear, calMonth - 1, 1))} className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronLeft className="w-4 h-4"/></button>
+                                            <button onClick={() => setCurrentCalDate(new Date(calYear, calMonth + 1, 1))} className="p-1.5 rounded border border-slate-200 text-slate-400 hover:text-purple-600 hover:bg-slate-50 transition-colors"><Icons.ChevronRight className="w-4 h-4"/></button>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">
                                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                                     </div>
                                     <div className="grid grid-cols-7 gap-1">
+                                        {blankDays.map(b => <div key={`blank-${b}`} className="aspect-square"></div>)}
                                         {daysInMonth.map(day => {
-                                            const hasEvent = eventDays.includes(day);
+                                            const hasEvent = eventDaysThisMonth.includes(day);
+                                            const isToday = new Date().getDate() === day && new Date().getMonth() === calMonth && new Date().getFullYear() === calYear;
+                                            
                                             return (
-                                                <div key={day} className={`aspect-square flex flex-col items-center justify-center rounded text-sm font-bold border transition-colors ${hasEvent ? 'bg-purple-50 border-purple-300 text-purple-700 cursor-pointer hover:bg-purple-600 hover:text-white shadow-sm' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50'}`}>
+                                                <div key={day} className={`aspect-square flex flex-col items-center justify-center text-sm font-black border transition-colors ${hasEvent ? 'bg-purple-600 border-purple-700 text-white shadow-md rounded-full' : isToday ? 'bg-slate-100 border-slate-300 text-tdmh-blue rounded-xl' : 'bg-white border-transparent text-slate-600 hover:bg-slate-50 rounded-xl'}`}>
                                                     {day}
-                                                    {hasEvent && <div className="mt-0.5 w-1 h-1 bg-current rounded-full opacity-50"></div>}
+                                                    {hasEvent && <div className="mt-0.5 w-1 h-1 bg-white rounded-full opacity-70"></div>}
                                                 </div>
                                             )
                                         })}
@@ -1295,14 +1315,29 @@
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {agimat.map((vid, i) => {
-                                    let embedUrl = vid['Video URL (Embed)'] || '';
+                                    let rawUrl = String(vid['Video URL (Embed)'] || vid['Video URL'] || vid.link || '');
+                                    let embedUrl = rawUrl;
+                                    
+                                    // Smart auto-formatter for video links to ensure they play in iframe
+                                    if (rawUrl.includes('youtube.com/watch?v=')) {
+                                        embedUrl = rawUrl.replace('watch?v=', 'embed/').split('&')[0];
+                                    } else if (rawUrl.includes('youtu.be/')) {
+                                        const videoId = rawUrl.split('youtu.be/')[1].split('?')[0];
+                                        embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                                    } else if (rawUrl.includes('drive.google.com') && rawUrl.includes('/view')) {
+                                        embedUrl = rawUrl.replace('/view', '/preview');
+                                    } else if (rawUrl.includes('drive.google.com/file/d/') && !rawUrl.includes('/preview')) {
+                                        const match = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                                        if (match) embedUrl = `https://drive.google.com/file/d/${match[1]}/preview`;
+                                    }
+
                                     let directUrl = embedUrl.replace('/preview', '/view');
                                     
                                     return (
                                         <div key={i} className="structured-card p-5 group hover:border-tdmh-blue transition-colors shadow-sm flex flex-col">
                                             <div className="aspect-video bg-slate-900 rounded-xl mb-4 overflow-hidden border border-slate-200 relative shadow-inner">
                                                 {embedUrl ? (
-                                                    <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen sandbox="allow-scripts allow-same-origin allow-popups allow-presentation"></iframe>
+                                                    <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen></iframe>
                                                 ) : (
                                                     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 absolute inset-0">
                                                         <Icons.Video className="w-12 h-12 mb-3 opacity-50" />
@@ -1456,9 +1491,13 @@
                                 <button onClick={() => { setQrLightbox(null); unlockScroll(); }} className="absolute -top-16 right-0 text-white hover:text-slate-300 transition-colors bg-white/10 p-2 rounded-full" title="Close (Esc)">
                                     <Icons.X className="w-8 h-8"/>
                                 </button>
-                                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl flex flex-col items-center">
-                                    <h3 className="font-black text-slate-800 text-xl md:text-2xl mb-6 flex items-center gap-2"><Icons.QrCode className="w-6 h-6 md:w-8 md:h-8 text-tdmh-blue"/> Scan Document</h3>
-                                    <img src={qrLightbox} className="w-64 h-64 md:w-80 md:h-80 object-contain" alt="QR Code" />
+                                <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center">
+                                    <div className="w-12 h-12 bg-tdmh-blue text-white rounded-xl flex items-center justify-center mb-4"><Icons.QrCode className="w-6 h-6"/></div>
+                                    <h3 className="font-black text-slate-800 text-xl tracking-tight mb-1">{qrLightbox.title}</h3>
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Scan to Access Document</p>
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                                        <img src={qrLightbox.url} className="w-48 h-48 object-contain" alt="QR Code" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1829,8 +1868,13 @@
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Added a safety check to ensure ReactDOM is fully loaded before rendering
+        if (window.ReactDOM) {
+            const root = window.ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        } else {
+            document.getElementById('root').innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-family: sans-serif;"><h2>System Loading Error</h2><p>The React framework failed to load. Please check your internet connection or IT firewall settings.</p></div>';
+        }
     </script>
 </body>
 </html>
