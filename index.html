@@ -1324,16 +1324,13 @@
                                 {agimat.map((vid, i) => {
                                     let rawUrl = String(vid['Video URL (Embed)'] || vid['Video URL'] || vid.link || '');
                                     let embedUrl = rawUrl;
-                                    let isDriveVideo = false;
                                     
-                                    // Detects Google Drive Video URL to stream it natively avoiding iFrame cookie blocking
-                                    if (rawUrl.includes('drive.google.com/file/d/')) {
+                                    // RESILIENT EMBED LOGIC
+                                    if (rawUrl.includes('drive.google.com')) {
                                         const match = rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
                                         if (match) {
-                                            const driveId = match[1];
-                                            isDriveVideo = true;
-                                            // Direct stream URL for Google Drive (bypasses iframe cookie issues)
-                                            embedUrl = `https://lh3.googleusercontent.com/d/${driveId}`;
+                                            // Using the cleanest, most firewall-friendly preview format
+                                            embedUrl = `https://drive.google.com/file/d/${match[1]}/preview?usp=sharing`;
                                         }
                                     } else if (rawUrl.includes('youtube.com/watch?v=')) {
                                         embedUrl = rawUrl.replace('watch?v=', 'embed/').split('&')[0];
@@ -1342,20 +1339,21 @@
                                         embedUrl = `https://www.youtube.com/embed/${videoId}`;
                                     }
 
-                                    let directUrl = rawUrl.replace('/preview', '/view');
+                                    let directUrl = embedUrl ? embedUrl.replace('/preview', '/view') : rawUrl;
                                     
                                     return (
                                         <div key={i} className="structured-card p-5 group hover:border-tdmh-blue transition-colors shadow-sm flex flex-col">
                                             <div className="aspect-video bg-slate-900 rounded-xl mb-4 overflow-hidden border border-slate-200 relative shadow-inner">
                                                 {embedUrl ? (
-                                                    isDriveVideo ? (
-                                                        <video controls className="absolute inset-0 w-full h-full bg-black object-contain" playsInline preload="metadata">
-                                                            <source src={embedUrl} type="video/mp4" />
-                                                            Your browser does not support the video tag.
-                                                        </video>
-                                                    ) : (
-                                                        <iframe className="w-full h-full" src={embedUrl} frameBorder="0" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowFullScreen></iframe>
-                                                    )
+                                                    <iframe 
+                                                        className="w-full h-full" 
+                                                        src={embedUrl} 
+                                                        frameBorder="0" 
+                                                        allow="autoplay; fullscreen; encrypted-media; picture-in-picture" 
+                                                        allowFullScreen 
+                                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-top-navigation"
+                                                        title={vid['Video Title'] || 'Training Video'}
+                                                    ></iframe>
                                                 ) : (
                                                     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 absolute inset-0">
                                                         <Icons.Video className="w-12 h-12 mb-3 opacity-50" />
@@ -1371,10 +1369,10 @@
                                                     <p className="text-sm text-slate-500 mt-2 leading-relaxed">{vid.Description}</p>
                                                 </div>
                                                 
-                                                {embedUrl && !isDriveVideo && (
+                                                {embedUrl && (
                                                     <div className="mt-auto pt-5">
                                                         <div className="bg-blue-50/50 border border-blue-100 p-3.5 rounded-xl flex items-center justify-between gap-4 shadow-sm">
-                                                            <p className="text-[10px] text-tdmh-blue font-bold leading-snug">Video not playing?<br/><span className="text-slate-500 font-medium">This happens due to strict browser cookie settings.</span></p>
+                                                            <p className="text-[10px] text-tdmh-blue font-bold leading-snug">Video not playing?<br/><span className="text-slate-500 font-medium">Click watch fullscreen to open directly.</span></p>
                                                             <a href={directUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 bg-tdmh-blue text-white px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-blue-900 transition-transform hover:scale-105 shadow-md">
                                                                 <Icons.Maximize className="w-4 h-4" /> Watch Fullscreen
                                                             </a>
