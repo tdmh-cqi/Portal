@@ -488,17 +488,48 @@
                 if(res.status === 'success') {
                     showAlert(
                         "Memo Sent for Approval", 
-                        `Your memo has been successfully generated and routed to the Admin queue for final review.\n\nOnce approved, it will be published to the portal.\n\nTracking Ref: ${res.refNo}`, 
+                        `Your memo has been successfully generated and routed to the Admin queue for final review.\n\nOnce approved, it will be published to the portal.\n\nTracking Ref: ${res.refNo || 'PENDING'}`, 
                         "success"
                     );
                     setShowAddMemo(false);
                     unlockScroll();
                     setMemoData({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+                    fetchDatabase(true);
                 } else {
                     showAlert("Submission Failed", "Failed to submit memo to the database. Please try again.", "error");
                 }
             };
             
+            // --- NEW: Memo Approval Handlers ---
+            const handleApproveMemo = async (refNo) => {
+                setIsSubmitting(true);
+                const payload = { action: 'approveMemo', refNo: refNo };
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+                
+                if(res.status === 'success') {
+                    showAlert("Memo Approved", `Ref No: ${refNo}\n\nThis memo has been successfully approved and published to the live portal.`, "success");
+                    fetchDatabase(true); 
+                } else {
+                    showAlert("Approval Failed", "Failed to approve the memo. Please try again or check your Apps Script configuration.", "error");
+                }
+            };
+
+            const handleRejectMemo = async (refNo) => {
+                if(!confirm(`Are you sure you want to REJECT and discard memo ${refNo}?`)) return;
+                setIsSubmitting(true);
+                const payload = { action: 'rejectMemo', refNo: refNo };
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+                
+                if(res.status === 'success') {
+                    showAlert("Memo Rejected", `Ref No: ${refNo}\n\nThis memo draft has been discarded.`, "info");
+                    fetchDatabase(true); 
+                } else {
+                    showAlert("Rejection Failed", "Failed to reject the memo.", "error");
+                }
+            };
+
             const handleEventSubmit = async (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
@@ -724,6 +755,9 @@
                 } catch(e) { setTrackResult({ error: "Network error tracking request." }); }
                 setIsTracking(false);
             };
+
+            // NEW: Filter pending memos to be displayed in the Admin Console
+            const pendingMemos = memos.filter(m => String(m.Status || m[6]).toUpperCase() === 'PENDING REVIEW');
 
             if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
                 return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
@@ -1078,9 +1112,9 @@
                                         <>
                                             <div className="flex justify-between items-start mb-6">
                                                 <div><p className="text-[10px] font-bold text-slate-400 uppercase">ID: {trackResult['Tracking ID']}</p><h3 className="text-xl font-black text-slate-800">{trackResult['Title']}</h3></div>
-                                                <span className={`px-4 py-1.5 font-black text-xs rounded-lg uppercase tracking-widest ${trackResult['Status'] === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>{trackResult['Status']}</span>
+                                                <span className={`px-4 py-1.5 font-black text-xs rounded-lg uppercase tracking-widest ${trackResult['Status'] === 'RESOLVED' || trackResult['Status'] === 'PUBLISHED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>{trackResult['Status']}</span>
                                             </div>
-                                            <div className="w-full bg-slate-100 rounded-full h-3 mb-2"><div className={`h-full rounded-full transition-all duration-1000 ${trackResult['Status'] === 'RESOLVED' ? 'bg-emerald-500 w-full' : 'bg-yellow-400 w-1/2'}`}></div></div>
+                                            <div className="w-full bg-slate-100 rounded-full h-3 mb-2"><div className={`h-full rounded-full transition-all duration-1000 ${trackResult['Status'] === 'RESOLVED' || trackResult['Status'] === 'PUBLISHED' ? 'bg-emerald-500 w-full' : 'bg-yellow-400 w-1/2'}`}></div></div>
                                         </>
                                     )}
                                 </div>
@@ -1517,7 +1551,7 @@
                                         <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Box className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-base mb-0.5">Departments Tab</strong> <span className="text-slate-600 text-sm leading-snug block">Clicking a department is open to everyone. Logging in is only required if you are uploading restricted tools.</span></div></li>
                                         <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Folder className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-base mb-0.5">DCC & Forms Tab</strong> <span className="text-slate-600 text-sm leading-snug block">We have consolidated all documents! Go here to find Universal Forms (DERF, Incident Reports), ISO Requirements, or to request a new Control Number.</span></div></li>
                                         <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-base mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-sm leading-snug block">Viewing is open to all staff. Authorized Admin/Heads must log in to generate new Memos or Events.</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-base mb-0.5">Hospital Daily Census</strong> <span className="text-slate-600 text-sm leading-snug block">Check the Home Dashboard for live patient tracking. (Note: Only the Admitting Department can edit these numbers using a secure PIN).</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div><div><strong className="text-emerald-900 block text-sm mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs">Live patient tracking metrics. (Updated securely by the Admitting Department via the locked Census tab).</span></div></li>
                                         <li className="flex items-start gap-4"><div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-base mb-0.5">Enhanced Security</strong> <span className="text-slate-600 text-sm leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div></li>
                                     </ul>
 
@@ -1617,13 +1651,61 @@
                                             </div>
                                         )}
                                     </div>
-                                    <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
-                                        <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4 shrink-0">
-                                            <h3 className="font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
-                                            <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold text-tdmh-blue hover:underline">Open in new tab</a>
+                                    <div className="w-full lg:w-2/3 flex flex-col gap-6">
+                                        
+                                        {/* NEW: Pending Approvals Queue */}
+                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col min-h-[300px] max-h-[500px]">
+                                            <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4 shrink-0">
+                                                <div>
+                                                    <h3 className="font-black text-slate-800 flex items-center gap-2"><Icons.Bell className="w-5 h-5 text-yellow-500"/> Pending Approvals</h3>
+                                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Memos Awaiting Review</p>
+                                                </div>
+                                                <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full">{pendingMemos.length} Pending</span>
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                                                {pendingMemos.length === 0 ? (
+                                                    <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center border-2 border-dashed border-slate-100 rounded-xl">
+                                                        <Icons.ClipboardCheck className="w-12 h-12 mb-3 opacity-50 text-slate-300" />
+                                                        <p className="text-sm font-bold">All caught up!</p>
+                                                        <p className="text-xs mt-1">No memos pending your review.</p>
+                                                    </div>
+                                                ) : (
+                                                    pendingMemos.map((m, i) => (
+                                                        <div key={i} className="p-5 rounded-xl border border-slate-200 bg-slate-50 flex flex-col gap-3 relative group">
+                                                            <div className="flex justify-between items-start gap-4">
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                                        <span className="text-[10px] font-black bg-white text-slate-600 px-2.5 py-1 rounded shadow-sm border border-slate-200 uppercase tracking-widest">{m['Ref No'] || m[0]}</span>
+                                                                        {(m.Urgency || m.urgency || m[7]) === 'High' && <span className="text-[10px] font-black bg-red-50 text-red-600 px-2.5 py-1 rounded shadow-sm border border-red-200 uppercase tracking-widest">Urgent</span>}
+                                                                        <span className="text-[10px] font-bold text-slate-400">{m.Date || m[1]}</span>
+                                                                    </div>
+                                                                    <h4 className="font-black text-slate-800 text-lg leading-tight truncate">{m.Subject || m[4]}</h4>
+                                                                    <p className="text-xs text-slate-500 mt-1 font-medium truncate">From: <span className="text-slate-700">{m.From || m[3]}</span> • For: <span className="text-slate-700">{m.For || m[2]}</span></p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="text-xs text-slate-600 bg-white p-4 rounded-lg border border-slate-100 max-h-32 overflow-y-auto whitespace-pre-wrap font-medium leading-relaxed custom-scrollbar shadow-inner">
+                                                                {m.Body || m.body || m[5]}
+                                                            </div>
+                                                            <div className="flex justify-end gap-3 mt-1 pt-4 border-t border-slate-200">
+                                                                <button onClick={() => handleRejectMemo(m['Ref No'] || m[0])} disabled={isSubmitting} className="px-5 py-2.5 bg-white text-red-600 border border-red-200 rounded-xl text-xs font-black hover:bg-red-50 transition-colors uppercase tracking-widest">Reject</button>
+                                                                <button onClick={() => handleApproveMemo(m['Ref No'] || m[0])} disabled={isSubmitting} className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 transition-colors shadow-md uppercase tracking-widest flex items-center gap-2">
+                                                                    <Icons.ClipboardCheck className="w-4 h-4"/> Approve
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border-2 border-slate-200 min-h-[500px] relative">
-                                            <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
+
+                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col flex-1 min-h-[400px]">
+                                            <div className="flex justify-between items-center mb-4 border-b border-slate-100 pb-4 shrink-0">
+                                                <h3 className="font-black text-slate-800 flex items-center gap-2"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
+                                                <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold text-tdmh-blue hover:underline">Open in new tab</a>
+                                            </div>
+                                            <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border-2 border-slate-200 relative">
+                                                <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
