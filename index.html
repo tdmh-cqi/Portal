@@ -950,8 +950,9 @@
                                 {visibleMemos.length === 0 ? <p className="text-slate-500 italic text-center py-8">No published memos found.</p> : visibleMemos.map((m, i) => {
                                     
                                     const parsedDate = formatMemoDate(m.Date || m[1]);
-                                    const pdfLink = m['PDF Link'] || m.Link || m[8];
-                                    const hasValidLink = pdfLink && pdfLink.trim() !== '' && !pdfLink.includes('ERROR:');
+                                    const pdfLink = String(m['PDF Link'] || m.Link || m[8] || '');
+                                    const isErrorLink = pdfLink.startsWith('ERROR:');
+                                    const hasValidLink = pdfLink.trim() !== '' && pdfLink !== '#' && !isErrorLink;
 
                                     return (
                                         <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row gap-6 items-start relative group hover:shadow-md transition-shadow">
@@ -975,8 +976,10 @@
                                                 <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 flex-wrap w-full">
                                                     {hasValidLink ? (
                                                         <a href={pdfLink} target="_blank" className="text-tdmh-blue font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-blue-100 transition-colors shadow-sm"><Icons.FileText className="w-4 h-4" /> View Document</a>
+                                                    ) : isErrorLink ? (
+                                                        <button onClick={() => showAlert("PDF Generation Failed", `The server encountered this exact error when trying to create the PDF:\n\n${pdfLink}\n\nPlease check your Apps Script Google Drive IDs.`, "error")} className="text-red-600 font-bold text-sm bg-red-50 border border-red-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-red-100 transition-colors shadow-sm"><Icons.FileText className="w-4 h-4" /> Link Unavailable</button>
                                                     ) : (
-                                                        <button onClick={() => showAlert("Document Missing", "The automated PDF generation failed for this memo. Please check your Apps Script config (ensure your Google Doc Template ID and Folder ID are correct).", "error")} className="text-slate-500 font-bold text-sm bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-slate-200 transition-colors shadow-sm"><Icons.FileText className="w-4 h-4" /> Link Unavailable</button>
+                                                        <button disabled className="text-slate-400 font-bold text-sm bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 cursor-not-allowed shadow-sm"><Icons.Sync className="w-4 h-4 animate-spin" /> Processing PDF...</button>
                                                     )}
                                                     
                                                     <button onClick={() => { setSignModal({isOpen: true, refNo: m['Ref No'] || m[0]}); }} className="text-emerald-700 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-emerald-100 transition-colors shadow-sm"><Icons.PenTool className="w-4 h-4" /> Sign & Acknowledge</button>
@@ -1639,13 +1642,13 @@
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Forms</div><div className="text-3xl md:text-4xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div></div>
-                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Memos</div><div className="text-3xl md:text-4xl font-black text-emerald-600">{memos.length || 0}</div></div>
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Forms</div><div className="text-3xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div></div>
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
                                         </div>
                                         
                                         {monitors.length > 0 && (
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col min-h-[250px] max-h-[40vh]">
-                                                <h3 className="font-black text-slate-800 text-lg flex items-center gap-2 mb-4 shrink-0 border-b border-slate-100 pb-3">
+                                                <h3 className="font-black text-slate-800 text-base flex items-center gap-2 mb-4 shrink-0 border-b border-slate-100 pb-3">
                                                     <Icons.Activity className="w-5 h-5 text-tdmh-blue"/> System Monitors
                                                 </h3>
                                                 <div className="space-y-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
@@ -1701,8 +1704,9 @@
                                                 ) : (
                                                     pendingMemosList.map((m, i) => {
                                                         const parsedDate = formatMemoDate(m.Date || m[1]);
-                                                        const pdfLink = m['PDF Link'] || m.Link || m[8];
-                                                        const hasValidLink = pdfLink && pdfLink.trim() !== '' && !pdfLink.includes('ERROR:');
+                                                        const pdfLink = String(m['PDF Link'] || m.Link || m[8] || '');
+                                                        const isErrorLink = pdfLink.startsWith('ERROR:');
+                                                        const hasValidLink = pdfLink.trim() !== '' && pdfLink !== '#' && !isErrorLink;
 
                                                         return (
                                                         <div key={i} className="p-5 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-tdmh-blue transition-all relative group shadow-sm">
@@ -1718,9 +1722,13 @@
                                                                     <a href={pdfLink} target="_blank" className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-2.5 rounded-lg hover:bg-slate-50 hover:text-tdmh-blue transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
                                                                         <Icons.FileText className="w-4 h-4" /> View Draft
                                                                     </a>
-                                                                ) : (
-                                                                    <button onClick={() => showAlert("Document Missing", "The automated PDF generation failed for this memo. Please check your Apps Script config (ensure your Google Doc Template ID and Folder ID are correct).", "error")} className="flex-1 bg-slate-100 border border-slate-200 text-slate-500 font-bold py-2.5 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
+                                                                ) : isErrorLink ? (
+                                                                    <button onClick={() => showAlert("PDF Generation Failed", `The server encountered this exact error when trying to create the PDF:\n\n${pdfLink}\n\nPlease check your Apps Script Google Drive IDs.`, "error")} className="flex-1 bg-red-50 border border-red-200 text-red-600 font-bold py-2.5 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
                                                                         <Icons.FileText className="w-4 h-4" /> Link Unavailable
+                                                                    </button>
+                                                                ) : (
+                                                                    <button disabled className="flex-1 bg-slate-100 border border-slate-200 text-slate-400 font-bold py-2.5 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-xs shadow-sm">
+                                                                        <Icons.Sync className="w-4 h-4 animate-spin" /> Processing PDF...
                                                                     </button>
                                                                 )}
                                                                 <button 
@@ -1762,21 +1770,21 @@
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">To / For <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.forDept} onChange={(e)=>setMemoData({...memoData, forDept: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. All Department Heads" />
+                                            <input type="text" value={memoData.forDept} onChange={(e)=>setMemoData({...memoData, forDept: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. All Department Heads" />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">From <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.fromName} onChange={(e)=>setMemoData({...memoData, fromName: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. HR Department" />
+                                            <input type="text" value={memoData.fromName} onChange={(e)=>setMemoData({...memoData, fromName: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. HR Department" />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                         <div className="md:col-span-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Subject <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.subject} onChange={(e)=>setMemoData({...memoData, subject: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-800 shadow-inner" placeholder="e.g. Updated Holiday Schedule" />
+                                            <input type="text" value={memoData.subject} onChange={(e)=>setMemoData({...memoData, subject: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-800 shadow-inner" placeholder="e.g. Updated Holiday Schedule" />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Urgency</label>
-                                            <select value={memoData.urgency} onChange={(e)=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-700 shadow-inner cursor-pointer">
+                                            <select value={memoData.urgency} onChange={(e)=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-700 shadow-inner cursor-pointer">
                                                 <option>Normal</option>
                                                 <option>High</option>
                                             </select>
