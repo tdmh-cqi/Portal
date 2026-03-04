@@ -152,14 +152,19 @@
             return strUrl;
         }
 
+        // Fixed Date Formatter for Memo Cards
         const formatMemoDate = (dateVal) => {
             if (!dateVal) return { month: 'N/A', day: '--' };
             let str = String(dateVal);
+            
+            // Handle valid Date strings
             let d = new Date(str);
             if (!isNaN(d.getTime())) {
                 const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
                 return { month: monthNames[d.getMonth()], day: d.getDate().toString().padStart(2, '0') };
             }
+            
+            // Fallback parsing if date is a plain text string like "March 02, 2026"
             const parts = str.split(' ');
             return { month: parts[0]?.substring(0, 3).toUpperCase() || 'N/A', day: parts[1]?.replace(',', '') || '--' };
         };
@@ -971,7 +976,7 @@
                                                     {hasValidLink ? (
                                                         <a href={pdfLink} target="_blank" className="text-tdmh-blue font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-blue-100 transition-colors shadow-sm"><Icons.FileText className="w-4 h-4" /> View Document</a>
                                                     ) : (
-                                                        <button disabled className="text-slate-400 font-bold text-sm bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 cursor-not-allowed shadow-sm"><Icons.Sync className="w-4 h-4 animate-spin" /> PDF Processing...</button>
+                                                        <button onClick={() => showAlert("Document Missing", "The PDF link is missing from the Master Database. The automated generation may have failed due to invalid Google Drive Template IDs in your Apps Script.", "error")} className="text-slate-500 font-bold text-sm bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-slate-200 transition-colors shadow-sm"><Icons.FileText className="w-4 h-4" /> Link Unavailable</button>
                                                     )}
                                                     
                                                     <button onClick={() => { setSignModal({isOpen: true, refNo: m['Ref No'] || m[0]}); }} className="text-emerald-700 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-emerald-100 transition-colors shadow-sm"><Icons.PenTool className="w-4 h-4" /> Sign & Acknowledge</button>
@@ -1020,8 +1025,8 @@
                                         <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Request Control Number</h2>
                                         <p className="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">Upload drafted forms here. CQI will assign an official ISO Control Number, store it in the Vault, and email the finalized document back to you.</p>
                                         <form onSubmit={handleDccUpload} className="text-left bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto">
-                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Official Dept Email <span className="text-red-500">*</span></label><input name="email" type="email" required className="w-full p-3 border rounded-xl focus:border-tdmh-green outline-none" placeholder="dept@tdmh.com" /></div>
-                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Form Title <span className="text-red-500">*</span></label><input name="title" type="text" required className="w-full p-3 border rounded-xl focus:border-tdmh-green outline-none" placeholder="e.g. Daily Temperature Log" /></div>
+                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Official Dept Email <span className="text-red-500">*</span></label><input name="email" type="email" required className="w-full p-3 border border-slate-300 rounded-xl focus:border-tdmh-green outline-none" placeholder="dept@tdmh.com" /></div>
+                                            <div className="mb-5"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Form Title <span className="text-red-500">*</span></label><input name="title" type="text" required className="w-full p-3 border border-slate-300 rounded-xl focus:border-tdmh-green outline-none" placeholder="e.g. Daily Temperature Log" /></div>
                                             <div className="mb-8"><label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Draft <span className="text-red-500">*</span></label><input ref={fileInputRef} type="file" accept=".docx,.xlsx" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-tdmh-green file:text-white hover:file:bg-green-700 transition-colors cursor-pointer" /><p className="text-[10px] text-red-500 font-bold uppercase mt-2 bg-red-50 inline-block px-2 py-1 rounded">NO PDF FILES ALLOWED</p></div>
                                             <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-green text-white font-black tracking-wider uppercase py-4 rounded-xl shadow-lg hover:bg-green-700 transition-colors">{isSubmitting ? "Uploading..." : "Submit to CQI Queue"}</button>
                                         </form>
@@ -1430,7 +1435,7 @@
                                     </div>
                                 ))}
                             </div>
-                            <div className="flex justify-end gap-4 border-t border-slate-200 pt-8"><button onClick={handleSaveCensus} disabled={isSubmitting} className="px-8 py-4 bg-tdmh-green text-white font-black uppercase rounded-xl hover:bg-green-700 shadow-lg disabled:opacity-50 transition-colors w-full sm:w-auto">{isSubmitting ? "Saving..." : "Save & Publish"}</button></div>
+                            <div className="flex justify-end gap-4 border-t border-slate-200 pt-8"><button onClick={handleSaveCensus} disabled={isSubmitting} className="px-8 py-4 bg-tdmh-green text-white font-black uppercase rounded-xl hover:bg-green-700 shadow-lg disabled:opacity-50 transition-colors w-full sm:w-auto">{isSubmitting ? "Saving..." : "Save & Publish Dashboard"}</button></div>
                         </div>
                     );
                     default: return null;
@@ -1443,7 +1448,7 @@
                     {/* CUSTOM ALERTS/NOTIFICATIONS MODAL */}
                     {customAlert.isOpen && (
                         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setCustomAlert({...customAlert, isOpen: false})}>
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden relative transform animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
                                 <div className={`p-8 text-center ${customAlert.type === 'error' ? 'bg-red-50 border-b border-red-100' : 'bg-slate-50 border-b border-slate-100'}`}>
                                     <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border ${customAlert.type === 'error' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-tdmh-blue text-white border-blue-800'}`}>
                                         {customAlert.type === 'error' ? <Icons.X className="w-10 h-10"/> : <Icons.Bell className="w-10 h-10"/>}
@@ -1463,22 +1468,22 @@
                     {/* SIGNATURE MODAL */}
                     {signModal.isOpen && (
                         <div className="fixed inset-0 z-[130] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-sm animate-fade-in overflow-y-auto" onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}}>
-                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200" onClick={e => e.stopPropagation()}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200" onClick={e => e.stopPropagation()}>
                                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                     <div>
-                                        <h3 className="font-black text-slate-800 text-xl tracking-tight">Memo Acknowledgment</h3>
-                                        <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1">Ref: {signModal.refNo}</p>
+                                        <h3 className="font-black text-slate-800 text-xl tracking-tight mb-1">Memo Acknowledgment</h3>
+                                        <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Ref: {signModal.refNo}</p>
                                     </div>
                                     <button onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
                                 </div>
-                                <div className="p-6 space-y-4">
+                                <div className="p-6 space-y-5">
                                     <div>
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Your Full Name</label>
-                                        <input type="text" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} required className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Jane Doe" />
+                                        <input type="text" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} required className="w-full p-4 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Jane Doe" />
                                     </div>
                                     <div className="mb-4">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Department</label>
-                                        <input type="text" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} required className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Pediatrics" />
+                                        <input type="text" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} required className="w-full p-4 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Pediatrics" />
                                     </div>
                                     <div className="pt-2 border-t border-slate-100">
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3 text-center">Draw Your Signature Below</label>
@@ -1525,11 +1530,11 @@
                                 <button onClick={() => { setQrLightbox(null); unlockScroll(); }} className="absolute -top-16 right-0 text-white hover:text-slate-300 transition-colors bg-white/10 p-2 rounded-full" title="Close (Esc)">
                                     <Icons.X className="w-8 h-8"/>
                                 </button>
-                                <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl flex flex-col items-center w-full text-center border border-slate-200">
-                                    <div className="w-12 h-12 bg-tdmh-blue text-white rounded-xl flex items-center justify-center mb-4"><Icons.QrCode className="w-6 h-6"/></div>
+                                <div className="bg-white p-8 md:p-10 rounded-[2rem] shadow-2xl flex flex-col items-center w-full text-center border border-slate-200">
+                                    <div className="w-12 h-12 bg-tdmh-blue text-white rounded-xl flex items-center justify-center mb-4 shadow-sm"><Icons.QrCode className="w-6 h-6"/></div>
                                     <h3 className="font-black text-slate-800 text-xl tracking-tight mb-1">{qrLightbox.title}</h3>
-                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6">Scan to Access Document</p>
-                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-6">Scan to Access Document</p>
+                                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 shadow-inner">
                                         <img src={qrLightbox.url} className="w-48 h-48 object-contain" alt="QR Code" />
                                     </div>
                                 </div>
@@ -1549,15 +1554,15 @@
                                 </div>
                                 <div className="p-8 md:px-10 bg-white">
                                     <p className="text-slate-700 mb-6 text-lg font-bold leading-relaxed text-center">Welcome to your upgraded administrative command center.</p>
-                                    <p className="text-slate-600 mb-8 leading-relaxed text-sm sm:text-base">We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs. Here is your quick guide to navigating the new system:</p>
+                                    <p className="text-slate-600 mb-8 leading-relaxed text-sm">We have completely redesigned the portal to be faster, more secure, and easier to navigate. Instead of scrolling through a massive list, everything is now neatly organized into tabs. Here is your quick guide to navigating the new system:</p>
                                     
                                     <ul className="space-y-5 mb-10">
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Menu className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm sm:text-base mb-0.5">The Top Navigation</strong> <span className="text-slate-600 text-xs sm:text-sm leading-snug block">All your tools are now located in the tabs at the top of your screen. You can scroll horizontally through them!</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Box className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm sm:text-base mb-0.5">Departments Tab</strong> <span className="text-slate-600 text-xs sm:text-sm leading-snug block">Clicking a department is open to everyone. Logging in is only required if you are uploading restricted tools.</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Folder className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm sm:text-base mb-0.5">DCC & Forms Tab</strong> <span className="text-slate-600 text-xs sm:text-sm leading-snug block">We have consolidated all documents! Go here to find Universal Forms (DERF, Incident Reports), ISO Requirements, or to request a new Control Number.</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm sm:text-base mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-xs sm:text-sm leading-snug block">Viewing is open to all staff. Authorized Admin/Heads must log in to generate new Memos or Events.</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div><div><strong className="text-emerald-900 block text-sm sm:text-base mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs sm:text-sm leading-snug block">Check the Home Dashboard for live patient tracking. (Note: Only the Admitting Department can edit these numbers using a secure PIN).</span></div></li>
-                                        <li className="flex items-start gap-4"><div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm sm:text-base mb-0.5">Enhanced Security</strong> <span className="text-slate-600 text-xs sm:text-sm leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Menu className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm mb-0.5">The Top Navigation</strong> <span className="text-slate-600 text-xs leading-snug block">All your tools are now located in the tabs at the top of your screen. You can scroll horizontally through them!</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Box className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm mb-0.5">Departments Tab</strong> <span className="text-slate-600 text-xs leading-snug block">Clicking a department is open to everyone. Logging in is only required if you are uploading restricted tools.</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Folder className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm mb-0.5">DCC & Forms Tab</strong> <span className="text-slate-600 text-xs leading-snug block">We have consolidated all documents! Go here to find Universal Forms (DERF, Incident Reports), ISO Requirements, or to request a new Control Number.</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-xs leading-snug block">Viewing is open to all staff. Authorized Admin/Heads must log in to generate new Memos or Events.</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div><div><strong className="text-emerald-900 block text-sm mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs leading-snug block">Live patient tracking metrics. (Updated securely by the Admitting Department via the locked Census tab).</span></div></li>
+                                        <li className="flex items-start gap-4"><div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div><div><strong className="text-slate-800 block text-sm mb-0.5">Enhanced Security</strong> <span className="text-slate-600 text-xs leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div></li>
                                     </ul>
 
                                     <p className="text-slate-600 italic text-sm mb-8 text-center bg-slate-50 p-4 rounded-xl border border-slate-100">Take a moment to click through the tabs and explore the new layout. If you need any assistance, please contact the CQI Department.</p>
@@ -1570,10 +1575,10 @@
                     {/* ROLE LOGIN MODAL */}
                     {showRoleLogin && (
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 my-auto shrink-0">
-                                <button onClick={() => {setShowRoleLogin(false); setPendingAction(null); unlockScroll(); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
-                                <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"><Icons.Shield className="w-8 h-8" /></div>
-                                <h3 className="text-xl font-black text-slate-800 mb-2">Role Verification</h3>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 my-auto shrink-0">
+                                <button onClick={() => {setShowRoleLogin(false); setPendingAction(null); unlockScroll(); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full"><Icons.X className="w-5 h-5" /></button>
+                                <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner"><Icons.Shield className="w-8 h-8" /></div>
+                                <h3 className="text-xl font-black text-slate-800 mb-1 tracking-tight">Role Verification</h3>
                                 <p className="text-xs text-slate-500 mb-6 font-medium">Enter your specific PIN to continue.</p>
                                 
                                 {roleLoginFeedback && (
@@ -1583,8 +1588,8 @@
                                 )}
 
                                 <form onSubmit={submitRoleLogin}>
-                                    <input type="password" value={rolePinInput} onChange={(e)=>setRolePinInput(e.target.value)} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all" placeholder="••••••••" />
-                                    <button type="submit" disabled={isVerifyingLogin} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors disabled:opacity-50">
+                                    <input type="password" value={rolePinInput} onChange={(e)=>setRolePinInput(e.target.value)} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all shadow-inner" placeholder="••••••••" />
+                                    <button type="submit" disabled={isVerifyingLogin} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-4 rounded-xl shadow-lg transition-colors disabled:opacity-50 text-sm tracking-wide uppercase">
                                         {isVerifyingLogin ? "Verifying Database..." : "Unlock Access"}
                                     </button>
                                 </form>
@@ -1598,56 +1603,55 @@
                         return (
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
                             <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 my-auto shrink-0">
-                                <div className="bg-slate-900 p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-white shrink-0 shadow-md z-10 border-b border-slate-800">
+                                <div className="bg-slate-900 p-6 flex justify-between items-center text-white shrink-0 shadow-md z-10 border-b border-slate-800">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl"><Icons.Shield className="w-6 h-6 text-tdmh-green" /></div>
+                                        <div className="p-2.5 bg-slate-800 border border-slate-700 rounded-xl shadow-inner"><Icons.Shield className="w-6 h-6 text-tdmh-green" /></div>
                                         <div>
-                                            <h2 className="text-2xl font-black tracking-tight leading-none">Master Admin Console</h2>
+                                            <h2 className="text-xl md:text-2xl font-black tracking-tight leading-none">Master Admin Console</h2>
                                             <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">System Management & File Routing</p>
                                         </div>
                                     </div>
-                                    <div className="flex gap-4 items-center w-full sm:w-auto justify-end">
-                                        <a href="https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit" target="_blank" className="hidden sm:flex px-6 py-2.5 bg-white/10 border border-white/20 text-white font-bold text-xs uppercase tracking-widest rounded-lg hover:bg-white/20 transition-colors">Open Raw Database</a>
-                                        <button onClick={() => { setShowAdminConsole(false); unlockScroll(); }} className="text-slate-400 hover:text-white p-2 bg-slate-800 border border-slate-700 rounded-full transition-colors"><Icons.X className="w-5 h-5" /></button>
+                                    <div className="flex gap-4 items-center">
+                                        <button onClick={() => { setShowAdminConsole(false); unlockScroll(); }} className="text-slate-400 hover:text-white p-2.5 bg-slate-800 border border-slate-700 rounded-full transition-colors shadow-sm"><Icons.X className="w-5 h-5" /></button>
                                     </div>
                                 </div>
-                                <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col lg:flex-row gap-6">
+                                <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar flex flex-col lg:flex-row gap-6 lg:gap-8">
                                     
                                     <div className="w-full lg:w-1/3 flex flex-col gap-6">
                                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                                             <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Icons.Upload className="w-5 h-5"/></div>
+                                                <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center border border-emerald-100"><Icons.Upload className="w-5 h-5"/></div>
                                                 <div><h3 className="font-black text-slate-800 text-lg">Resolve Request (DCC)</h3><p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Stamp & Move to Vault</p></div>
                                             </div>
                                             <form onSubmit={handleResolveDCC} className="space-y-5">
                                                 <div>
                                                     <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Tracking ID to Resolve <span className="text-red-500">*</span></label>
-                                                    <input type="text" value={resolveId} onChange={(e)=>setResolveId(e.target.value)} required className="w-full p-3 border border-slate-300 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-800 transition-colors" placeholder="e.g. CQI-1234" />
+                                                    <input type="text" value={resolveId} onChange={(e)=>setResolveId(e.target.value)} required className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-emerald-500 outline-none font-bold text-slate-800 transition-colors" placeholder="e.g. CQI-1234" />
                                                 </div>
                                                 <div>
                                                     <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest mb-2">Upload Stamped Final File <span className="text-red-500">*</span></label>
                                                     <input ref={resolveFileRef} type="file" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-emerald-50 file:text-emerald-700 file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-xl p-1.5" />
                                                 </div>
-                                                <button type="submit" disabled={isResolving} className="w-full bg-emerald-600 text-white font-black tracking-widest uppercase text-sm py-3.5 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-colors disabled:opacity-50 mt-2">
+                                                <button type="submit" disabled={isResolving} className="w-full bg-emerald-600 text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-transform hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0 mt-2">
                                                     {isResolving ? "Processing..." : "Approve & Route File"}
                                                 </button>
                                             </form>
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Total Forms</div><div className="text-3xl md:text-4xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div></div>
-                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Active Memos</div><div className="text-3xl md:text-4xl font-black text-emerald-600">{memos.length || 0}</div></div>
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Forms</div><div className="text-3xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div></div>
+                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center"><div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Memos</div><div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div></div>
                                         </div>
                                         
                                         {monitors.length > 0 && (
                                             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex-1 flex flex-col min-h-[250px] max-h-[40vh]">
-                                                <h3 className="font-black text-slate-800 text-lg flex items-center gap-2 mb-4 shrink-0 border-b border-slate-100 pb-3">
+                                                <h3 className="font-black text-slate-800 text-base flex items-center gap-2 mb-4 shrink-0 border-b border-slate-100 pb-3">
                                                     <Icons.Activity className="w-5 h-5 text-tdmh-blue"/> System Monitors
                                                 </h3>
                                                 <div className="space-y-3 overflow-y-auto custom-scrollbar pr-2 flex-1">
                                                     {monitors.map((m, i) => (
                                                         <a key={i} href={m.Link || m.link || m[1]} target="_blank" className="flex items-start gap-3 p-3 rounded-xl border border-slate-100 hover:border-tdmh-blue hover:bg-slate-50 transition-colors group">
-                                                            <div className="p-2.5 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-tdmh-blue group-hover:text-white transition-colors shrink-0 mt-0.5">
+                                                            <div className="p-2 bg-slate-100 text-slate-500 rounded-lg group-hover:bg-tdmh-blue group-hover:text-white transition-colors shrink-0 mt-0.5">
                                                                 <Icons.Activity className="w-4 h-4" />
                                                             </div>
                                                             <div className="min-w-0">
@@ -1663,28 +1667,28 @@
                                     
                                     <div className="w-full lg:w-2/3 flex flex-col gap-6">
                                         
-                                        {/* Master Index Ref */}
+                                        {/* Master Index Ref Frame embedded accurately */}
                                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[400px] lg:h-[500px] shrink-0">
                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-100 pb-4 shrink-0 gap-3">
-                                                <h3 className="font-black text-slate-800 flex items-center gap-2 text-lg"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
-                                                <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold bg-blue-50 text-tdmh-blue px-3 py-1.5 rounded hover:bg-blue-100 transition-colors border border-blue-100">Open Full Window</a>
+                                                <h3 className="font-black text-slate-800 flex items-center gap-2 text-lg"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Database Preview</h3>
+                                                <a href="https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/edit" target="_blank" className="text-xs font-bold bg-blue-50 text-tdmh-blue px-3 py-1.5 rounded hover:bg-blue-100 transition-colors border border-blue-100">Open Full Window</a>
                                             </div>
                                             <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative shadow-inner">
-                                                <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
+                                                <iframe src="https://docs.google.com/spreadsheets/d/1BGUrqHX9vThP21S3S6lhOekTw4r3xqEELIJpdfMDAuU/htmlembed?widget=true&headers=false" className="absolute inset-0 w-full h-full border-none"></iframe>
                                             </div>
                                         </div>
 
                                         {/* Pending Memos Queue Section */}
                                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg flex flex-col flex-1 border-t-4 border-t-amber-400">
                                             <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                                                <div className="flex items-center gap-3 md:gap-4">
-                                                    <div className="w-10 h-10 md:w-12 md:h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100"><Icons.FileText className="w-5 h-5 md:w-6 md:h-6"/></div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100"><Icons.FileText className="w-5 h-5"/></div>
                                                     <div>
-                                                        <h3 className="font-black text-slate-800 text-lg md:text-xl leading-tight">Pending Memos Queue</h3>
-                                                        <p className="text-[10px] md:text-xs text-slate-400 uppercase tracking-widest font-bold mt-1">Awaiting Final Admin Approval</p>
+                                                        <h3 className="font-black text-slate-800 text-lg leading-tight">Pending Memos Queue</h3>
+                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Awaiting Final Admin Approval</p>
                                                     </div>
                                                 </div>
-                                                <div className="bg-amber-100 border border-amber-200 text-amber-700 font-black text-xl md:text-2xl px-4 py-1 rounded-xl shadow-sm">{pendingMemosList.length}</div>
+                                                <div className="bg-amber-100 border border-amber-200 text-amber-700 font-black text-xl px-4 py-1 rounded-xl shadow-sm">{pendingMemosList.length}</div>
                                             </div>
                                             
                                             <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
@@ -1696,32 +1700,33 @@
                                                     </div>
                                                 ) : (
                                                     pendingMemosList.map((m, i) => {
+                                                        const parsedDate = formatMemoDate(m.Date || m[1]);
                                                         const pdfLink = m['PDF Link'] || m.Link || m[8];
                                                         const hasValidLink = pdfLink && pdfLink.trim() !== '' && pdfLink !== '#';
 
                                                         return (
                                                         <div key={i} className="p-5 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-tdmh-blue transition-all relative group shadow-sm">
                                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
-                                                                <span className="text-[10px] font-bold bg-white text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200 uppercase tracking-widest shadow-sm">REF: {m['Ref No'] || m[0]}</span>
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.Date || m[1]}</span>
+                                                                <span className="text-[10px] font-bold bg-white text-slate-600 px-2.5 py-1 rounded border border-slate-200 uppercase tracking-widest shadow-sm">REF: {m['Ref No'] || m[0]}</span>
+                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{parsedDate.month} {parsedDate.day}</span>
                                                             </div>
-                                                            <h4 className="font-black text-slate-800 text-lg leading-tight mb-2">{m.Subject || m[4]}</h4>
-                                                            <p className="text-sm text-slate-600 mb-5 border-l-2 border-slate-300 pl-3 bg-white/50 py-1"><strong>From:</strong> {m.From || m[3]}</p>
+                                                            <h4 className="font-black text-slate-800 text-base leading-tight mb-2">{m.Subject || m[4]}</h4>
+                                                            <p className="text-xs text-slate-600 mb-5 border-l-2 border-slate-300 pl-3 bg-white/50 py-1"><strong>From:</strong> {m.From || m[3]}</p>
                                                             
                                                             <div className="flex flex-col sm:flex-row gap-3">
                                                                 {hasValidLink ? (
-                                                                    <a href={pdfLink} target="_blank" className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-50 hover:text-tdmh-blue transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                                                                    <a href={pdfLink} target="_blank" className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-2.5 rounded-lg hover:bg-slate-50 hover:text-tdmh-blue transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
                                                                         <Icons.FileText className="w-4 h-4" /> View Draft
                                                                     </a>
                                                                 ) : (
-                                                                    <button disabled className="flex-1 bg-slate-100 border border-slate-200 text-slate-400 font-bold py-3 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-sm">
-                                                                        <Icons.Sync className="w-4 h-4 animate-spin" /> Processing PDF...
+                                                                    <button onClick={() => showAlert("Document Missing", "The automated PDF generation failed for this memo. Please check your Apps Script config (ensure your Google Doc Template ID and Folder ID are correct).", "error")} className="flex-1 bg-slate-100 border border-slate-200 text-slate-500 font-bold py-2.5 rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
+                                                                        <Icons.FileText className="w-4 h-4" /> Link Unavailable
                                                                     </button>
                                                                 )}
                                                                 <button 
                                                                     onClick={() => handleApproveMemo(m['Ref No'] || m[0])} 
                                                                     disabled={isApprovingMemo} 
-                                                                    className="flex-1 bg-tdmh-blue text-white font-bold py-3 rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm shadow-sm"
+                                                                    className="flex-1 bg-tdmh-blue text-white font-bold py-2.5 rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-xs shadow-sm"
                                                                 >
                                                                     <Icons.ClipboardCheck className="w-4 h-4" /> {isApprovingMemo ? 'Approving...' : 'Approve & Publish'}
                                                                 </button>
@@ -1744,53 +1749,53 @@
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
                             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200">
                                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10 shadow-sm">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-blue-50 text-tdmh-blue rounded-xl shadow-sm border border-blue-100"><Icons.FileText className="w-6 h-6"/></div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-blue-50 text-tdmh-blue rounded-xl shadow-sm border border-blue-100"><Icons.FileText className="w-5 h-5"/></div>
                                         <div>
                                             <h3 className="font-black text-slate-800 text-xl tracking-tight leading-tight">Draft Official Memo</h3>
                                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">Automated PDF Template Generation</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => { setShowAddMemo(false); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
+                                    <button onClick={() => { setShowAddMemo(false); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
                                 </div>
                                 <form className="p-6 md:p-8 space-y-6" onSubmit={handleNativeMemoSubmit}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">To / For <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.forDept} onChange={(e)=>setMemoData({...memoData, forDept: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. All Department Heads" />
+                                            <input type="text" value={memoData.forDept} onChange={(e)=>setMemoData({...memoData, forDept: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. All Department Heads" />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">From <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.fromName} onChange={(e)=>setMemoData({...memoData, fromName: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. HR Department" />
+                                            <input type="text" value={memoData.fromName} onChange={(e)=>setMemoData({...memoData, fromName: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 shadow-inner" placeholder="e.g. HR Department" />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                         <div className="md:col-span-2">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Subject <span className="text-red-500">*</span></label>
-                                            <input type="text" value={memoData.subject} onChange={(e)=>setMemoData({...memoData, subject: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-800 shadow-inner" placeholder="e.g. Updated Holiday Schedule" />
+                                            <input type="text" value={memoData.subject} onChange={(e)=>setMemoData({...memoData, subject: e.target.value})} required className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-800 shadow-inner" placeholder="e.g. Updated Holiday Schedule" />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Urgency</label>
-                                            <select value={memoData.urgency} onChange={(e)=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-700 shadow-inner cursor-pointer">
+                                            <select value={memoData.urgency} onChange={(e)=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-700 shadow-inner cursor-pointer">
                                                 <option>Normal</option>
                                                 <option>High</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <div className="pt-3 border-t border-slate-100">
+                                    <div className="pt-2 border-t border-slate-100">
                                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3">
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Raw Memo Content <span className="text-red-500">*</span></label>
                                             <button type="button" onClick={handleFixGrammar} disabled={isFixingGrammar} className="text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-2 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50 shadow-sm w-full sm:w-auto justify-center">
                                                 <Icons.Sparkles className="w-3.5 h-3.5" /> {isFixingGrammar ? "Formatting..." : "✨ Auto-Format Draft"}
                                             </button>
                                         </div>
-                                        <textarea spellCheck="true" value={memoData.body} onChange={(e)=>setMemoData({...memoData, body: e.target.value})} required className="w-full p-5 rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 h-56 resize-y leading-relaxed text-sm shadow-inner" placeholder="Type or paste your raw draft here. Use your browser's spellcheck (red lines) for typos. Click the 'Auto-Format' button above to instantly clean up messy spacing, fix punctuation gaps, and capitalize your sentences before you submit..."></textarea>
+                                        <textarea spellCheck="true" value={memoData.body} onChange={(e)=>setMemoData({...memoData, body: e.target.value})} required className="w-full p-4 rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 h-48 resize-y leading-relaxed text-sm shadow-inner" placeholder="Type or paste your raw draft here. Use your browser's spellcheck (red lines) for typos. Click the 'Auto-Format' button above to instantly clean up messy spacing, fix punctuation gaps, and capitalize your sentences before you submit..."></textarea>
                                     </div>
                                     
-                                    <div className="bg-blue-50 p-5 rounded-xl border border-blue-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                                        <div className="p-2.5 bg-white rounded-lg shadow-sm shrink-0 border border-blue-100"><Icons.FileText className="w-6 h-6 text-tdmh-blue" /></div>
+                                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                                        <div className="p-2 bg-white rounded-lg shadow-sm shrink-0 border border-blue-100"><Icons.FileText className="w-5 h-5 text-tdmh-blue" /></div>
                                         <div>
-                                            <p className="text-sm text-blue-900 font-black mb-0.5">What happens next?</p>
+                                            <p className="text-sm text-blue-900 font-bold mb-0.5">What happens next?</p>
                                             <p className="text-xs text-blue-800 leading-relaxed">When you click submit, the system will automatically format this text into the official TDMH PDF Template. It will then be securely routed to the Admin panel for final review and signature placement before being published publicly.</p>
                                         </div>
                                     </div>
@@ -1816,7 +1821,7 @@
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Event Title <span className="text-red-500">*</span></label>
                                         <input type="text" value={eventData.title} onChange={e=>setEventData({...eventData, title: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-purple-500 transition-colors" placeholder="e.g. Quality Assurance Meeting"/>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Date <span className="text-red-500">*</span></label>
                                             <input type="date" value={eventData.date} onChange={e=>setEventData({...eventData, date: e.target.value})} required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-purple-500 transition-colors"/>
@@ -1859,7 +1864,7 @@
                     {/* ADD NEWS MODAL */}
                     {showAddNews && (
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200">
                                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                                     <h3 className="font-black text-slate-800 text-xl tracking-tight">Post Announcement</h3>
                                     <button onClick={() => { setShowAddNews(false); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors p-2 bg-white rounded-full shadow-sm border border-slate-200"><Icons.X className="w-5 h-5"/></button>
@@ -1869,7 +1874,7 @@
                                         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Headline / Title</label>
                                         <input type="text" required className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors" placeholder="Announcement Title"/>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Category</label>
                                             <select className="w-full p-3.5 text-sm rounded-xl border border-slate-300 outline-none focus:border-tdmh-blue transition-colors cursor-pointer">
