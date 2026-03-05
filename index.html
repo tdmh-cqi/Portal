@@ -103,7 +103,6 @@
             { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hover: 'group-hover:bg-orange-600 group-hover:text-white group-hover:border-orange-600' }
         ];
 
-        // SMART FALLBACK COLOR & ICON SYSTEM
         const getToolColor = (colorStr, fallbackStr) => {
             let c = String(colorStr || '').toLowerCase().trim();
             if (!c && fallbackStr) {
@@ -152,19 +151,16 @@
             return strUrl;
         }
 
-        // Fixed Date Formatter for Memo Cards
         const formatMemoDate = (dateVal) => {
             if (!dateVal) return { month: 'N/A', day: '--' };
             let str = String(dateVal);
             
-            // Handle valid Date strings
             let d = new Date(str);
             if (!isNaN(d.getTime())) {
                 const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
                 return { month: monthNames[d.getMonth()], day: d.getDate().toString().padStart(2, '0') };
             }
             
-            // Fallback parsing if date is a plain text string like "March 02, 2026"
             const parts = str.split(' ');
             return { month: parts[0]?.substring(0, 3).toUpperCase() || 'N/A', day: parts[1]?.replace(',', '') || '--' };
         };
@@ -308,6 +304,11 @@
             const [showAddMemo, setShowAddMemo] = useState(false);
             const [isApprovingMemo, setIsApprovingMemo] = useState(false);
             
+            // ARCHIVE STATES
+            const [showArchiveModal, setShowArchiveModal] = useState(false);
+            const [isArchiving, setIsArchiving] = useState(false);
+            const [archiveResult, setArchiveResult] = useState(null);
+            
             const [showAddEvent, setShowAddEvent] = useState(false);
             const [showEditEvent, setShowEditEvent] = useState(false);
             const [showAddNews, setShowAddNews] = useState(false);
@@ -350,7 +351,7 @@
             };
 
             useEffect(() => {
-                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || signModal.isOpen || customAlert.isOpen;
+                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showEditEvent || showAddNews || showArchiveModal || slideshowIndex !== null || qrLightbox !== null || signModal.isOpen || customAlert.isOpen;
                 if (hasModal) {
                     document.body.classList.add('modal-open');
                     document.body.style.overflow = 'hidden';
@@ -358,7 +359,7 @@
                     unlockScroll();
                 }
                 return () => unlockScroll();
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, signModal.isOpen, customAlert.isOpen]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showEditEvent, showAddNews, showArchiveModal, slideshowIndex, qrLightbox, signModal.isOpen, customAlert.isOpen]);
 
             useEffect(() => {
                 if (slideshow.length <= 1 || slideshowIndex !== null) return;
@@ -515,6 +516,20 @@
                     fetchDatabase(true);
                 } else {
                     showAlert("Submission Failed", res.message || "Failed to submit memo to the database. Please try again.", "error");
+                }
+            };
+
+            const handleArchiveDrafts = async () => {
+                setIsArchiving(true);
+                const res = await sendPostRequest({ action: 'archiveMemos' });
+                setIsArchiving(false);
+
+                if (res.status === 'success') {
+                    setArchiveResult({ url: res.url, count: res.count });
+                } else {
+                    showAlert("Notice", res.message || "Archive process encountered an issue.", "info");
+                    setShowArchiveModal(false);
+                    unlockScroll();
                 }
             };
 
@@ -944,7 +959,18 @@
                                     <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.FileText className="w-6 h-6 text-tdmh-blue" /> Inter-Office Memos</h3>
                                     <p className="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed"><strong>Notice:</strong> Viewing this repository is open to all staff. Authorized Department Heads and Admins must log in to draft new memos via the portal. Drafted memos are routed to Admin for final approval.</p>
                                 </div>
-                                {(userRole === 'admin' || userRole === 'dept_head') && (<button onClick={() => handleSecureAction('memo_gen')} className="flex items-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-900 transition-colors shrink-0 mt-4 md:mt-0"><Icons.Plus className="w-4 h-4" /> Generate Memo</button>)}
+                                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
+                                    {(userRole === 'admin') && (
+                                        <button onClick={() => setShowArchiveModal(true)} className="flex items-center justify-center gap-2 bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-300 transition-colors shrink-0">
+                                            <Icons.Folder className="w-4 h-4" /> Archive Drafts
+                                        </button>
+                                    )}
+                                    {(userRole === 'admin' || userRole === 'dept_head') && (
+                                        <button onClick={() => handleSecureAction('memo_gen')} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-900 transition-colors shrink-0">
+                                            <Icons.Plus className="w-4 h-4" /> Generate Memo
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                             <div className="p-6 space-y-4">
                                 {visibleMemos.length === 0 ? <p className="text-slate-500 italic text-center py-8">No published memos found.</p> : visibleMemos.map((m, i) => {
@@ -1463,6 +1489,43 @@
                                     <button onClick={() => setCustomAlert({...customAlert, isOpen: false})} className={`w-full font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-transform hover:-translate-y-1 shadow-lg ${customAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-900/20' : 'bg-tdmh-blue hover:bg-blue-900 text-white shadow-blue-900/20'}`}>
                                         Acknowledge
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ARCHIVE DRAFTS MODAL */}
+                    {showArchiveModal && (
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200">
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl shadow-sm border border-slate-200"><Icons.Folder className="w-5 h-5"/></div>
+                                        <div>
+                                            <h3 className="font-black text-slate-800 text-xl tracking-tight leading-tight">Archive Drafts</h3>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">ZIP & Clean Up Drive</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => { setShowArchiveModal(false); setArchiveResult(null); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <div className="p-6 md:p-8 text-center">
+                                    {archiveResult ? (
+                                        <div className="animate-fade-in">
+                                            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200 shadow-inner"><Icons.ClipboardCheck className="w-8 h-8"/></div>
+                                            <h4 className="text-xl font-black text-slate-800 mb-2">Archive Generated!</h4>
+                                            <p className="text-sm text-slate-500 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">Successfully compressed <strong className="text-emerald-700">{archiveResult.count} left-over drafts</strong>. <br/><br/>The original Google Docs have now been deleted from the active Drive folder to save space.</p>
+                                            <a href={archiveResult.url} target="_blank" onClick={() => { setShowArchiveModal(false); setArchiveResult(null); unlockScroll(); }} className="w-full inline-flex justify-center items-center gap-2 bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20">
+                                                <Icons.Upload className="w-4 h-4" /> Download ZIP File
+                                            </a>
+                                        </div>
+                                    ) : (
+                                        <div className="animate-fade-in">
+                                            <p className="text-sm text-slate-600 mb-8 leading-relaxed">This action will gather all left-over editable Google Doc drafts and compress them into a single downloadable ZIP file.<br/><br/>Once successfully compressed, the original draft files will be permanently removed from the active folder.</p>
+                                            <button onClick={handleArchiveDrafts} disabled={isArchiving} className="w-full flex justify-center items-center gap-2 bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0">
+                                                {isArchiving ? <><Icons.Sync className="w-4 h-4 animate-spin"/> Packaging Files...</> : "Generate Archive & Clean Folder"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
