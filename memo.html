@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TDMH Memo System</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    colors: { tdmh: { blue: '#1e3a8a', green: '#16a34a' } },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out forwards', 'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js" crossorigin></script>
+
+    <style>
+        body { background-color: #f4f7f9; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body.modal-open { overflow: hidden !important; }
+        .bg-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="text-slate-800 relative bg-pattern">
+    <div id="root" class="relative z-10 flex flex-col min-h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ==========================================
+        // 🚨 PASTE YOUR NEW MEMO WEB APP URL HERE 
+        // ==========================================
+        const API_URL = "https://script.google.com/macros/s/AKfycby0KPBCWeSRKD2X0k5AmwUkzqF4s950RLznQrVOpAD3_GkDNAgVVsFzq8_UpjIuBKF2MA/exec";
+
+        const Icons = {
+            FileText: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>,
+            PenTool: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>,
+            X: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
+            Shield: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+            Bell: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+            Sparkles: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg>,
+            Sync: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>,
+            Plus: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+            Lock: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>,
+            Activity: ({className}) => <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        };
+
+        // --- SIGNATURE CANVAS COMPONENT ---
+        const SignaturePad = ({ onSave, onCancel }) => {
+            const canvasRef = useRef(null);
+            const [isDrawing, setIsDrawing] = useState(false);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#0f172a';
+                
+                const resizeCanvas = () => {
+                    const parent = canvas.parentElement;
+                    canvas.width = parent.clientWidth;
+                    canvas.height = 200; 
+                };
+                resizeCanvas();
+                window.addEventListener('resize', resizeCanvas);
+                return () => window.removeEventListener('resize', resizeCanvas);
+            }, []);
+
+            const getCoordinates = (e) => {
+                const canvas = canvasRef.current;
+                const rect = canvas.getBoundingClientRect();
+                if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+                return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            };
+
+            const startDrawing = (e) => {
+                e.preventDefault();
+                setIsDrawing(true);
+                const { x, y } = getCoordinates(e);
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            };
+
+            const draw = (e) => {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const { x, y } = getCoordinates(e);
+                const ctx = canvasRef.current.getContext('2d');
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            };
+
+            const stopDrawing = () => {
+                setIsDrawing(false);
+                canvasRef.current.getContext('2d').closePath();
+            };
+
+            const clearCanvas = () => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            };
+
+            return (
+                <div className="w-full">
+                    <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-slate-50 mb-3 relative cursor-crosshair">
+                        <canvas 
+                            ref={canvasRef}
+                            onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing}
+                            onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing}
+                            className="w-full touch-none"
+                        />
+                        <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">Sign Here</div>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                        <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Clear</button>
+                        <div className="flex gap-2">
+                            <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
+                            <button type="button" onClick={() => {
+                                const canvas = canvasRef.current;
+                                const blank = document.createElement('canvas');
+                                blank.width = canvas.width; blank.height = canvas.height;
+                                if(canvas.toDataURL() === blank.toDataURL()) {
+                                    onSave(null); 
+                                } else {
+                                    onSave(canvas.toDataURL('image/png'));
+                                }
+                            }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">Confirm Signature</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            const [isSyncing, setIsSyncing] = useState(true);
+            const [memos, setMemos] = useState([]);
+            
+            const [userRole, setUserRole] = useState('guest');
+            const [showRoleLogin, setShowRoleLogin] = useState(false);
+            const [rolePinInput, setRolePinInput] = useState('');
+            const [isVerifyingLogin, setIsVerifyingLogin] = useState(false);
+            
+            const [customAlert, setCustomAlert] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+            const [showAddMemo, setShowAddMemo] = useState(false);
+            const [signModal, setSignModal] = useState({ isOpen: false, refNo: '' });
+            
+            const [memoData, setMemoData] = useState({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+            const [signData, setSignData] = useState({ name: '', dept: '' });
+            const [isFixingGrammar, setIsFixingGrammar] = useState(false);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            const showAlert = (title, message, type = 'info') => {
+                setCustomAlert({ isOpen: true, title, message, type });
+            };
+
+            const unlockScroll = () => {
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = 'auto'; 
+            };
+
+            useEffect(() => {
+                if (showAddMemo || signModal.isOpen || customAlert.isOpen || showRoleLogin) {
+                    document.body.classList.add('modal-open');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    unlockScroll();
+                }
+                return () => unlockScroll();
+            }, [showAddMemo, signModal.isOpen, customAlert.isOpen, showRoleLogin]);
+
+            const fetchDatabase = async () => {
+                setIsSyncing(true);
+                try {
+                    const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(() => ({ ok: false }));
+                    if (response && response.ok) {
+                        const result = await response.json();
+                        if(result.status === 'success') {
+                            setMemos(result.data.memos || []);
+                        }
+                    }
+                } catch (error) { 
+                    showAlert("Connection Error", "Could not reach the master database.", "error");
+                }
+                setIsSyncing(false);
+            };
+
+            useEffect(() => { fetchDatabase(); }, []);
+
+            const sendPostRequest = async (payload) => {
+                if (API_URL === "PASTE_YOUR_MEMO_WEB_APP_URL_HERE") { 
+                    showAlert("System Offline", "The database is currently running in offline developer mode. Please update your API URL.", "error");
+                    return {status: 'success'}; 
+                }
+                try {
+                    const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" }).catch(() => ({ ok: false }));
+                    if (response && response.ok) return await response.json();
+                    return {status: 'error'};
+                } catch (e) { return {status: 'error'}; }
+            };
+
+            const submitRoleLogin = async (e) => {
+                e.preventDefault();
+                setIsVerifyingLogin(true);
+
+                const res = await sendPostRequest({ action: 'verifyPin', pin: rolePinInput });
+                setIsVerifyingLogin(false);
+
+                if (res.status === 'success' && (res.role === 'admin' || res.role === 'dept_head')) { 
+                    setUserRole(res.role); 
+                    setShowRoleLogin(false); 
+                    unlockScroll(); 
+                    setRolePinInput(''); 
+                    setShowAddMemo(true);
+                } else { 
+                    showAlert("Access Denied", "Invalid PIN or insufficient permissions to generate memos.", "error");
+                    setRolePinInput('');
+                }
+            };
+
+            const handleFixGrammar = () => {
+                if (!memoData.body.trim()) {
+                    showAlert("Missing Content", "Please type something in the memo body first before fixing grammar.", "error");
+                    return;
+                }
+                setIsFixingGrammar(true);
+                
+                setTimeout(() => {
+                    let text = memoData.body;
+                    text = text.replace(/ +/g, ' '); 
+                    text = text.replace(/ \s*([,.;?!:])/g, '$1'); 
+                    text = text.replace(/([,.;?!:])([a-zA-Z])/g, '$1 $2'); 
+                    text = text.replace(/(^\s*|[.?!]\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase()); 
+                    text = text.replace(/\n{3,}/g, '\n\n'); 
+                    setMemoData({...memoData, body: text.trim()});
+                    setIsFixingGrammar(false);
+                }, 600); 
+            };
+
+            const handleNativeMemoSubmit = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                const payload = {
+                    action: 'generateMemo',
+                    forDept: memoData.forDept,
+                    fromName: memoData.fromName,
+                    subject: memoData.subject,
+                    urgency: memoData.urgency,
+                    body: memoData.body
+                };
+                
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+                
+                if(res.status === 'success') {
+                    showAlert(
+                        "Memo Sent for Approval", 
+                        `Your memo has been successfully generated and routed to the Admin queue for final review.\n\nOnce approved, it will be published to the portal.\n\nTracking Ref: ${res.refNo}`, 
+                        "success"
+                    );
+                    setShowAddMemo(false);
+                    unlockScroll();
+                    setMemoData({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+                } else {
+                    showAlert("Submission Failed", "Failed to submit memo to the database. Please try again.", "error");
+                }
+            };
+
+            const handleSignatureSubmit = async (signatureBase64) => {
+                if (!signatureBase64) {
+                    showAlert("Missing Signature", "Please physically draw your signature on the pad before confirming.", "error");
+                    return;
+                }
+                if (!signData.name.trim() || !signData.dept.trim()) { 
+                    showAlert("Missing Details", "Please enter your full name and department.", "error");
+                    return; 
+                }
+
+                setIsSubmitting(true);
+                const payload = {
+                    action: 'submitSignature',
+                    refNo: signModal.refNo,
+                    name: signData.name,
+                    dept: signData.dept,
+                    signature: signatureBase64 
+                };
+
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+
+                if (res.status === 'success') {
+                    showAlert("Acknowledgment Saved", `Thank you, ${signData.name}!\n\nYour digital signature for ${signModal.refNo} has been saved securely to the master records.`, "success");
+                    setSignModal({isOpen: false, refNo: ''});
+                    setSignData({name: '', dept: ''});
+                    unlockScroll();
+                } else {
+                    showAlert("Network Error", "Failed to save signature. Please check your connection.", "error");
+                }
+            };
+
+            const visibleMemos = memos.filter(m => String(m.Status || m[6]).toUpperCase() === 'PUBLISHED' || String(m.Status || m[6]).toUpperCase() === 'APPROVED');
+
+            if (isSyncing && memos.length === 0) {
+                return (<div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 text-white flex-col"><Icons.Sync className="w-12 h-12 animate-spin mb-4 text-tdmh-green" /><p className="font-bold tracking-widest uppercase text-sm">Connecting to Database...</p></div>);
+            }
+
+            return (
+                <div className="flex flex-col min-h-screen bg-pattern">
+                    
+                    {/* CUSTOM ALERTS MODAL */}
+                    {customAlert.isOpen && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setCustomAlert({...customAlert, isOpen: false})}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden relative transform animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
+                                <div className={`p-8 text-center ${customAlert.type === 'error' ? 'bg-red-50 border-b border-red-100' : 'bg-slate-50 border-b border-slate-100'}`}>
+                                    <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm border ${customAlert.type === 'error' ? 'bg-red-100 text-red-600 border-red-200' : 'bg-tdmh-blue text-white border-blue-800'}`}>
+                                        {customAlert.type === 'error' ? <Icons.X className="w-10 h-10"/> : <Icons.Bell className="w-10 h-10"/>}
+                                    </div>
+                                    <h3 className="font-black text-slate-800 text-2xl tracking-tight">{customAlert.title}</h3>
+                                </div>
+                                <div className="p-8">
+                                    <p className="text-slate-600 text-center mb-8 whitespace-pre-line leading-relaxed font-medium">{customAlert.message}</p>
+                                    <button onClick={() => setCustomAlert({...customAlert, isOpen: false})} className={`w-full font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-transform hover:-translate-y-1 shadow-lg ${customAlert.type === 'error' ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-900/20' : 'bg-tdmh-blue hover:bg-blue-900 text-white shadow-blue-900/20'}`}>
+                                        Acknowledge
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ROLE LOGIN MODAL */}
+                    {showRoleLogin && (
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200 my-auto shrink-0">
+                                <button onClick={() => {setShowRoleLogin(false); unlockScroll(); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors"><Icons.X className="w-5 h-5" /></button>
+                                <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"><Icons.Shield className="w-8 h-8" /></div>
+                                <h3 className="text-xl font-black text-slate-800 mb-2">Role Verification</h3>
+                                <p className="text-xs text-slate-500 mb-6 font-medium">Only Authorized Heads and Admins may generate new memos.</p>
+                                
+                                <form onSubmit={submitRoleLogin}>
+                                    <input type="password" value={rolePinInput} onChange={(e)=>setRolePinInput(e.target.value)} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all" placeholder="••••••••" />
+                                    <button type="submit" disabled={isVerifyingLogin} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors disabled:opacity-50">
+                                        {isVerifyingLogin ? "Verifying..." : "Unlock Access"}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* SIGNATURE MODAL */}
+                    {signModal.isOpen && (
+                        <div className="fixed inset-0 z-[130] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-sm animate-fade-in overflow-y-auto" onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}}>
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0" onClick={e => e.stopPropagation()}>
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                    <div>
+                                        <h3 className="font-black text-slate-800 text-xl tracking-tight">Memo Acknowledgment</h3>
+                                        <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-1">Ref: {signModal.refNo}</p>
+                                    </div>
+                                    <button onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <div className="p-6 space-y-4">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Your Full Name</label>
+                                        <input type="text" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} required className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:border-tdmh-green font-medium" placeholder="e.g. Jane Doe" />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Department</label>
+                                        <input type="text" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} required className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:border-tdmh-green font-medium" placeholder="e.g. Pediatrics" />
+                                    </div>
+                                    <div className="pt-2 border-t border-slate-100">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3 text-center">Draw Your Signature</label>
+                                        <SignaturePad onSave={handleSignatureSubmit} onCancel={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}} />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* NEW MEMO MODAL (TEXT GENERATOR) */}
+                    {showAddMemo && (
+                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden relative transform animate-slide-up my-auto shrink-0">
+                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg"><Icons.FileText className="w-6 h-6"/></div>
+                                        <div>
+                                            <h3 className="font-black text-slate-800 text-xl tracking-tight leading-tight">Draft Official Memo</h3>
+                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">Automated PDF Template Generation</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => { setShowAddMemo(false); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <form className="p-6 md:p-8 space-y-6" onSubmit={handleNativeMemoSubmit}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">To / For <span className="text-red-500">*</span></label>
+                                            <input type="text" value={memoData.forDept} onChange={(e)=>setMemoData({...memoData, forDept: e.target.value})} required className="w-full p-3 rounded-xl border-2 border-slate-100 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700" placeholder="e.g. All Department Heads" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">From <span className="text-red-500">*</span></label>
+                                            <input type="text" value={memoData.fromName} onChange={(e)=>setMemoData({...memoData, fromName: e.target.value})} required className="w-full p-3 rounded-xl border-2 border-slate-100 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700" placeholder="e.g. HR Department" />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div className="md:col-span-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Subject <span className="text-red-500">*</span></label>
+                                            <input type="text" value={memoData.subject} onChange={(e)=>setMemoData({...memoData, subject: e.target.value})} required className="w-full p-3 rounded-xl border-2 border-slate-100 outline-none focus:border-tdmh-blue transition-colors font-bold text-slate-800" placeholder="e.g. Updated Holiday Schedule" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Urgency</label>
+                                            <select value={memoData.urgency} onChange={(e)=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3 rounded-xl border-2 border-slate-100 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700">
+                                                <option>Normal</option>
+                                                <option>High</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="pt-2">
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Raw Memo Content <span className="text-red-500">*</span></label>
+                                            <button type="button" onClick={handleFixGrammar} disabled={isFixingGrammar} className="text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors disabled:opacity-50">
+                                                <Icons.Sparkles className="w-3.5 h-3.5" /> {isFixingGrammar ? "Formatting..." : "✨ Auto-Format Draft"}
+                                            </button>
+                                        </div>
+                                        <textarea spellCheck="true" value={memoData.body} onChange={(e)=>setMemoData({...memoData, body: e.target.value})} required className="w-full p-4 rounded-xl border-2 border-slate-100 outline-none focus:border-tdmh-blue transition-colors font-medium text-slate-700 h-48 resize-y leading-relaxed" placeholder="Type or paste your raw draft here. Use your browser's spellcheck (red lines) for typos. Click the 'Auto-Format' button above to instantly clean up messy spacing, fix punctuation gaps, and capitalize your sentences before you submit..."></textarea>
+                                    </div>
+
+                                    <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl mt-2 hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0">
+                                        {isSubmitting ? "Generating PDF Template..." : "Submit to Admin Review"}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TOP HEADER */}
+                    <nav className="bg-tdmh-blue text-white shadow-xl z-40 sticky top-0 border-b-2 border-blue-900">
+                        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16 md:h-20 gap-4">
+                                <div className="flex items-center gap-3">
+                                    <Icons.FileText className="w-6 h-6 md:w-8 md:h-8" />
+                                    <div>
+                                        <h1 className="font-black text-sm md:text-lg tracking-wider leading-tight">TDMH MEMO SYSTEM</h1>
+                                        <p className="text-[8px] md:text-[10px] text-blue-200 uppercase tracking-widest font-bold">Public Repository & E-Signatures</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    {userRole !== 'guest' && <span className="hidden md:inline-block bg-yellow-500 text-yellow-900 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-sm border border-yellow-600">Authorized Access</span>}
+                                    <button onClick={() => { userRole === 'guest' ? setShowRoleLogin(true) : setShowAddMemo(true) }} className="flex items-center gap-2 bg-tdmh-green text-white px-5 py-2.5 rounded-lg text-xs md:text-sm font-bold shadow-md hover:bg-green-700 transition-colors">
+                                        {userRole === 'guest' ? <><Icons.Lock className="w-4 h-4" /> Admin/H.O.D Login</> : <><Icons.Plus className="w-4 h-4" /> Generate New Memo</>}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* MAIN CONTENT */}
+                    <main className="flex-grow max-w-5xl mx-auto px-4 py-8 w-full">
+                        <div className="bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-200">
+                            <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h2 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Inter-Office Memos</h2>
+                                    <p className="text-slate-500 font-medium mt-1">Official repository for published hospital memorandums.</p>
+                                </div>
+                                <div className="bg-blue-50 text-tdmh-blue text-xs font-bold px-4 py-2 rounded-lg border border-blue-100 flex items-center gap-2">
+                                    <Icons.Activity className="w-4 h-4" /> {visibleMemos.length} Active Records
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                {visibleMemos.length === 0 ? <p className="text-slate-500 italic text-center p-10 bg-slate-50 rounded-xl border border-slate-200">No published memos currently available in the database.</p> : visibleMemos.map((m, i) => (
+                                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-6 relative group hover:shadow-md transition-shadow">
+                                        <div className="bg-blue-50 text-tdmh-blue p-4 rounded-xl flex flex-col items-center justify-center min-w-[90px] border border-blue-100 shrink-0">
+                                            <span className="text-xs font-bold uppercase tracking-widest">{String(m.Date || m[1]).split(' ')[0] || 'N/A'}</span>
+                                            <span className="text-3xl font-black">{String(m.Date || m[1]).split(' ')[1]?.replace(',','') || '--'}</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex gap-2 items-center mb-1">
+                                                <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded border border-slate-200 uppercase tracking-widest">REF: {m['Ref No'] || m[0]}</span>
+                                                {(m.Urgency || m.urgency || m[7]) === 'High' && <span className="text-[10px] font-bold bg-red-50 text-red-600 px-2.5 py-1 rounded border border-red-200 uppercase tracking-widest">Urgent</span>}
+                                            </div>
+                                            <h3 className="text-xl font-bold text-slate-800 mt-2 leading-tight truncate">{m.Subject || m[4]}</h3>
+                                            <p className="text-slate-500 text-sm mt-1 truncate">From: {m.From || m[3]} &bull; For: {m.For || m[2]}</p>
+                                        </div>
+                                        <div className="flex sm:flex-col gap-3 shrink-0 mt-4 sm:mt-0 w-full sm:w-auto">
+                                            <a href={m['PDF Link'] || m.Link || m[8] || '#'} target="_blank" className="flex-1 sm:flex-none justify-center text-tdmh-blue font-bold text-xs bg-blue-50 px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm"><Icons.FileText className="w-4 h-4" /> View PDF</a>
+                                            <button onClick={() => { setSignModal({isOpen: true, refNo: m['Ref No'] || m[0]}); }} className="flex-1 sm:flex-none justify-center text-white font-bold text-xs bg-tdmh-green px-4 py-2.5 rounded-lg flex items-center gap-2 hover:bg-green-700 transition-colors shadow-md"><Icons.PenTool className="w-4 h-4" /> Sign Receipt</button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="mt-auto bg-tdmh-blue py-6 text-center text-white text-[10px] font-bold">
+                        <p className="uppercase tracking-widest text-blue-200">&copy; {new Date().getFullYear()} TAYTAY DOCTORS MULTISPECIALTY HOSPITAL.</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        if (window.ReactDOM) {
+            const root = window.ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        } else {
+            document.getElementById('root').innerHTML = '<div style="padding: 40px; text-align: center; color: #ef4444; font-family: sans-serif;"><h2>System Loading Error</h2><p>The React framework failed to load. Please check your internet connection or IT firewall settings.</p></div>';
+        }
+    </script>
+</body>
+</html>
