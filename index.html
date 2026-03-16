@@ -344,8 +344,10 @@
             const [resolveId, setResolveId] = useState('');
             const [isResolving, setIsResolving] = useState(false);
             
+            // MODAL STATES
             const [eventData, setEventData] = useState({ title: '', date: '', time: '' });
             const [editEventData, setEditEventData] = useState({ oldDateText: '', oldTitle: '', newTime: '' });
+            const [newsData, setNewsData] = useState({ title: '', content: '', type: 'Standard' });
 
             const TABS = [
                 { id: 'home', label: 'Dashboard', icon: 'Home' },
@@ -547,10 +549,34 @@
                 }
             };
 
+            // ADD NEWS HANDLER
+            const handleAddNewsSubmit = async (e) => {
+                e.preventDefault();
+                setIsSubmitting(true);
+                const payload = { 
+                    action: 'addNews', 
+                    title: newsData.title, 
+                    content: newsData.content, 
+                    type: newsData.type,
+                    author: userRole
+                };
+                const res = await sendPostRequest(payload);
+                setIsSubmitting(false);
+                if (res.status === 'success') {
+                    showAlert("News Published", "The announcement has been posted successfully.", "success");
+                    setShowAddNews(false);
+                    unlockScroll();
+                    setNewsData({ title: '', content: '', type: 'Standard' });
+                    fetchDatabase(true);
+                } else {
+                    showAlert("Error", "Failed to post news.", "error");
+                }
+            };
+
+            // ADD EVENT HANDLER
             const handleEventSubmit = async (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
-                
                 const payload = { action: 'addEvent', title: eventData.title, date: eventData.date, time: eventData.time };
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
@@ -566,10 +592,10 @@
                 }
             };
 
+            // EDIT EVENT TIME HANDLER
             const handleEditEventSubmit = async (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
-                
                 const payload = { action: 'editEventTime', dateText: editEventData.oldDateText, title: editEventData.oldTitle, newTime: editEventData.newTime };
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
@@ -588,7 +614,6 @@
             const handleGlobalUnlock = async (e) => { 
                 e.preventDefault(); 
                 setIsVerifyingLogin(true);
-                
                 const payload = { action: 'verifyPin', pin: globalPinInput };
                 const res = await sendPostRequest(payload);
                 setIsVerifyingLogin(false);
@@ -609,7 +634,6 @@
             const submitRoleLogin = async (e) => {
                 e.preventDefault();
                 setIsVerifyingLogin(true);
-
                 const payload = { action: 'verifyPin', pin: rolePinInput };
                 const res = await sendPostRequest(payload);
                 setIsVerifyingLogin(false);
@@ -1695,6 +1719,108 @@
             return (
                 <div className="flex flex-col min-h-screen bg-pattern">
                     
+                    {/* ADD EVENT MODAL (RESTORED) */}
+                    {showAddEvent && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => {setShowAddEvent(false); unlockScroll();}}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 relative animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => {setShowAddEvent(false); unlockScroll();}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200"><Icons.X className="w-5 h-5"/></button>
+                                <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                                    <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center border border-purple-100"><Icons.Calendar className="w-5 h-5"/></div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-800 leading-tight">Add Master Event</h3>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">Schedule & Alert System</p>
+                                    </div>
+                                </div>
+                                <form onSubmit={handleEventSubmit} className="space-y-5">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Event Title <span className="text-red-500">*</span></label>
+                                        <input type="text" required value={eventData.title} onChange={e=>setEventData({...eventData, title: e.target.value})} className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-purple-500 outline-none transition-colors text-sm font-bold" placeholder="e.g. Monthly Dept Meeting" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Date <span className="text-red-500">*</span></label>
+                                            <input type="date" required value={eventData.date} onChange={e=>setEventData({...eventData, date: e.target.value})} className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-purple-500 outline-none transition-colors text-sm font-bold text-slate-600" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Time (Optional)</label>
+                                            <input type="time" value={eventData.time} onChange={e=>setEventData({...eventData, time: e.target.value})} className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-purple-500 outline-none transition-colors text-sm font-bold text-slate-600" />
+                                        </div>
+                                    </div>
+                                    <button type="submit" disabled={isSubmitting} className="w-full bg-purple-600 text-white font-black tracking-widest uppercase py-4 rounded-xl mt-4 hover:bg-purple-700 transition-transform hover:-translate-y-1 shadow-lg shadow-purple-600/20 disabled:opacity-50 disabled:hover:translate-y-0 text-sm">
+                                        {isSubmitting ? 'Saving to Database...' : 'Schedule Event'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* EDIT EVENT MODAL (RESTORED) */}
+                    {showEditEvent && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => {setShowEditEvent(false); unlockScroll();}}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm p-8 relative animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => {setShowEditEvent(false); unlockScroll();}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200"><Icons.X className="w-5 h-5"/></button>
+                                <div className="mb-6">
+                                    <h3 className="text-xl font-black text-slate-800 mb-1 leading-tight">Edit Event Time</h3>
+                                    <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 mt-2">
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mb-1">{editEventData.oldDateText}</p>
+                                        <p className="text-sm font-bold text-slate-700 leading-tight">{editEventData.oldTitle}</p>
+                                    </div>
+                                </div>
+                                <form onSubmit={handleEditEventSubmit} className="space-y-5">
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Select New Time <span className="text-red-500">*</span></label>
+                                        <input type="time" required value={editEventData.newTime} onChange={e=>setEditEventData({...editEventData, newTime: e.target.value})} className="w-full p-4 border border-slate-300 rounded-xl focus:border-blue-500 outline-none transition-colors text-base font-bold text-slate-600 text-center" />
+                                    </div>
+                                    <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-blue text-white font-black tracking-widest uppercase py-4 rounded-xl mt-2 hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0 text-sm">
+                                        {isSubmitting ? 'Updating...' : 'Update Time'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ADD NEWS MODAL (RESTORED) */}
+                    {showAddNews && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto" onClick={() => {setShowAddNews(false); unlockScroll();}}>
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl p-8 relative animate-slide-up border border-slate-200 my-auto shrink-0" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => {setShowAddNews(false); unlockScroll();}} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2.5 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
+                                <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                                    <div className="w-12 h-12 bg-blue-50 text-tdmh-blue rounded-xl flex items-center justify-center border border-blue-100"><Icons.Bell className="w-6 h-6"/></div>
+                                    <div>
+                                        <h3 className="text-2xl font-black text-slate-800 leading-tight">Post Announcement</h3>
+                                        <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Global System Broadcast</p>
+                                    </div>
+                                </div>
+                                <form onSubmit={handleAddNewsSubmit} className="space-y-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        <div className="md:col-span-2">
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Headline / Title <span className="text-red-500">*</span></label>
+                                            <input type="text" required value={newsData.title} onChange={e=>setNewsData({...newsData, title: e.target.value})} className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none transition-colors text-sm font-bold" placeholder="e.g. Server Maintenance Notice" />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Notice Type</label>
+                                            <select value={newsData.type} onChange={e=>setNewsData({...newsData, type: e.target.value})} className="w-full p-3.5 border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none transition-colors text-sm font-bold text-slate-700 bg-white">
+                                                <option value="Standard">Standard</option>
+                                                <option value="Urgent">Urgent (Red)</option>
+                                                <option value="System Update">System Update</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">Full Message Body <span className="text-red-500">*</span></label>
+                                        <textarea required value={newsData.content} onChange={e=>setNewsData({...newsData, content: e.target.value})} className="w-full p-4 border border-slate-300 rounded-xl h-40 focus:border-tdmh-blue outline-none transition-colors text-sm leading-relaxed text-slate-700 resize-y" placeholder="Type the full announcement details here..."></textarea>
+                                    </div>
+                                    <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center sm:text-left">Posting as: <span className="text-tdmh-blue">{userRole}</span></p>
+                                        <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-tdmh-blue text-white font-black tracking-widest uppercase px-8 py-4 rounded-xl hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0 text-sm">
+                                            {isSubmitting ? 'Broadcasting...' : 'Publish to News Feed'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                    
                     {/* CUSTOM ALERTS/NOTIFICATIONS MODAL */}
                     {customAlert.isOpen && (
                         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={() => setCustomAlert({...customAlert, isOpen: false})}>
@@ -1780,23 +1906,23 @@
                                     <ul className="space-y-5 mb-10">
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Menu className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">The Top Navigation</strong> <span className="text-slate-600 text-xs leading-snug block">All your tools are now located in the tabs at the top of your screen. You can scroll horizontally through them!</span></div>
+                                            <div><strong className="text-slate-800 block text-sm mb-0.5">The Top Navigation</strong> <span className="text-slate-500 text-xs">Tools are safely tucked in tabs at the top. Hover over tabs and use your mouse wheel to scroll horizontally.</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Box className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Departments Tab</strong> <span className="text-slate-600 text-xs leading-snug block">Clicking a department is open to everyone. Logging in is only required if you are uploading restricted tools.</span></div>
+                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Departments</strong> <span className="text-slate-500 text-xs">Clicking a department is open to everyone. Logging in is only required if you are uploading restricted tools.</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.Folder className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">DCC & Forms Tab</strong> <span className="text-slate-600 text-xs leading-snug block">We have consolidated all documents! Go here to find Universal Forms (DERF, Incident Reports), ISO Requirements, or to request a new Control Number.</span></div>
+                                            <div><strong className="text-slate-800 block text-sm mb-0.5">DCC & Forms</strong> <span className="text-slate-500 text-xs">Consolidated area to find Universal Forms, ISO Requirements, or request new Control Numbers.</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-xs leading-snug block">Viewing is open to all staff. Authorized Dept Heads and Admins must log in to generate new Memos or Events.</span></div>
+                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-500 text-xs">Viewing is open to all staff. Authorized Dept Heads and Admins must log in to generate new Memos or Events.</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div>
-                                            <div><strong className="text-emerald-900 block text-sm mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs leading-snug block">Check the Home Dashboard for live patient tracking. (Note: Only the Admitting Department can edit these numbers using a secure PIN).</span></div>
+                                            <div><strong className="text-emerald-900 block text-sm mb-0.5">Daily Census</strong> <span className="text-emerald-700 text-xs">Live patient tracking metrics. (Updated securely by the Admitting Department via the locked Census tab).</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div>
