@@ -29,7 +29,8 @@
                     },
                     animation: { 
                         'fade-in': 'fadeIn 0.3s ease-out forwards', 
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards' 
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: {
                         fadeIn: { 
@@ -234,41 +235,6 @@
                     <path d="M12 21v-1"/>
                 </svg>
             ),
-            Landmark: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="3" x2="21" y1="22" y2="22"/>
-                    <line x1="6" x2="6" y1="18" y2="11"/>
-                    <line x1="10" x2="10" y1="18" y2="11"/>
-                    <line x1="14" x2="14" y1="18" y2="11"/>
-                    <line x1="18" x2="18" y1="18" y2="11"/>
-                    <polygon points="12 2 20 7 4 7"/>
-                </svg>
-            ),
-            Briefcase: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
-                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                </svg>
-            ),
-            HeartPulse: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                    <path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/>
-                </svg>
-            ),
-            CreditCard: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="14" x="2" y="5" rx="2"/>
-                    <line x1="2" x2="22" y1="10" y2="10"/>
-                </svg>
-            ),
-            ClipboardCheck: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2-2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                    <path d="m9 14 2 2 4-4"/>
-                </svg>
-            ),
             Microscope: (props) => (
                 <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M6 18h8"/>
@@ -303,42 +269,6 @@
                     <path d="m8.5 8.5 7 7"/>
                 </svg>
             ),
-            Scan: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
-                    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
-                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
-                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
-                    <path d="M7 12h10"/>
-                </svg>
-            ),
-            HeartHandshake: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-                    <path d="M12 15v3.8l-2.1-2.1c-.8-.8-2-.8-2.8 0-.8.8-.8 2 0 2.8l5.4 5.4c.8.8 2 .8 2.8 0l5.4-5.4c.8-.8.8-2 0-2.8-.8-.8-2-.8-2.8 0l-2.1 2.1V15"/>
-                </svg>
-            ),
-            Bed: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 4v16"/>
-                    <path d="M2 8h18a2 2 0 0 1 2 2v10"/>
-                    <path d="M2 17h20"/>
-                    <path d="M6 8v9"/>
-                </svg>
-            ),
-            Monitor: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="14" x="2" y="3" rx="2"/>
-                    <line x1="8" x2="16" y1="21" y2="21"/>
-                    <line x1="12" x2="12" y1="17" y2="21"/>
-                </svg>
-            ),
-            Plus: (props) => (
-                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-            ),
             Car: (props) => (
                 <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
@@ -359,21 +289,30 @@
                     <path d="M12 12v.01"/>
                 </svg>
             ),
-            Sparkles: (props) => (
+            Monitor: (props) => (
                 <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
-                    <path d="M5 3v4"/>
-                    <path d="M19 17v4"/>
-                    <path d="M3 5h4"/>
-                    <path d="M17 19h4"/>
+                    <rect width="20" height="14" x="2" y="3" rx="2"/>
+                    <line x1="8" x2="16" y1="21" y2="21"/>
+                    <line x1="12" x2="12" y1="17" y2="21"/>
                 </svg>
             ),
-            PenTool: (props) => (
+            Mail: (props) => (
                 <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m12 19 7-7 3 3-7 7-3-3z"/>
-                    <path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
-                    <path d="m2 2 7.586 7.586"/>
-                    <circle cx="11" cy="11" r="2"/>
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+            ),
+            Clock: (props) => (
+                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            ),
+            AlertCircle: (props) => (
+                <svg className={props.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
             )
         };
@@ -393,30 +332,14 @@
                 const colors = ['red', 'orange', 'yellow', 'green', 'purple', 'pink', 'blue', 'brown'];
                 c = colors[len % colors.length];
             }
-            if (c.includes('red') && !c.includes('orange')) {
-                return 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white border-red-200';
-            }
-            if (c.includes('orange')) {
-                return 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white border-orange-200';
-            }
-            if (c.includes('yellow')) {
-                return 'bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white border-yellow-200';
-            }
-            if (c.includes('green') || c.includes('teal')) {
-                return 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white border-emerald-200';
-            }
-            if (c.includes('purple') || c.includes('indigo')) {
-                return 'bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white border-purple-200';
-            }
-            if (c.includes('pink') || c.includes('maroon')) {
-                return 'bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white border-pink-200';
-            }
-            if (c.includes('blue')) {
-                return 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white border-blue-200';
-            }
-            if (c.includes('brown')) {
-                return 'bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white border-amber-200';
-            }
+            if (c.includes('red') && !c.includes('orange')) return 'bg-red-50 text-red-600 group-hover:bg-red-600 group-hover:text-white border-red-200';
+            if (c.includes('orange')) return 'bg-orange-50 text-orange-600 group-hover:bg-orange-600 group-hover:text-white border-orange-200';
+            if (c.includes('yellow')) return 'bg-yellow-50 text-yellow-600 group-hover:bg-yellow-600 group-hover:text-white border-yellow-200';
+            if (c.includes('green') || c.includes('teal')) return 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white border-emerald-200';
+            if (c.includes('purple') || c.includes('indigo')) return 'bg-purple-50 text-purple-600 group-hover:bg-purple-600 group-hover:text-white border-purple-200';
+            if (c.includes('pink') || c.includes('maroon')) return 'bg-pink-50 text-pink-600 group-hover:bg-pink-600 group-hover:text-white border-pink-200';
+            if (c.includes('blue')) return 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white border-blue-200';
+            if (c.includes('brown')) return 'bg-amber-50 text-amber-700 group-hover:bg-amber-600 group-hover:text-white border-amber-200';
             return 'bg-slate-50 text-slate-500 group-hover:bg-slate-600 group-hover:text-white border-slate-200';
         };
 
@@ -451,9 +374,7 @@
         };
 
         const getDriveImage = (url) => {
-            if(!url) {
-                return '';
-            }
+            if(!url) return '';
             const strUrl = String(url);
             const match = strUrl.match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
             if (match && match[1]) {
@@ -462,149 +383,11 @@
             return strUrl;
         }
 
-        const formatMemoDate = (dateVal) => {
-            if (!dateVal) {
-                return { month: 'N/A', day: '--' };
-            }
-            let str = String(dateVal);
-            
-            let d = new Date(str);
-            if (!isNaN(d.getTime())) {
-                const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-                return { 
-                    month: monthNames[d.getMonth()], 
-                    day: d.getDate().toString().padStart(2, '0') 
-                };
-            }
-            
-            const parts = str.split(' ');
-            return { 
-                month: parts[0] ? parts[0].substring(0, 3).toUpperCase() : 'N/A', 
-                day: parts[1] ? parts[1].replace(',', '') : '--' 
-            };
-        };
-
-        const SignaturePad = ({ onSave, onCancel }) => {
-            const canvasRef = useRef(null);
-            const [isDrawing, setIsDrawing] = useState(false);
-
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                ctx.lineWidth = 3;
-                ctx.lineCap = 'round';
-                ctx.strokeStyle = '#0f172a';
-                
-                const resizeCanvas = () => {
-                    const parent = canvas.parentElement;
-                    canvas.width = parent.clientWidth;
-                    canvas.height = 200; 
-                };
-                
-                resizeCanvas();
-                window.addEventListener('resize', resizeCanvas);
-                
-                return () => {
-                    window.removeEventListener('resize', resizeCanvas);
-                };
-            }, []);
-
-            const getCoordinates = (e) => {
-                const canvas = canvasRef.current;
-                const rect = canvas.getBoundingClientRect();
-                
-                if (e.touches && e.touches.length > 0) {
-                    return { 
-                        x: e.touches[0].clientX - rect.left, 
-                        y: e.touches[0].clientY - rect.top 
-                    };
-                }
-                return { 
-                    x: e.clientX - rect.left, 
-                    y: e.clientY - rect.top 
-                };
-            };
-
-            const startDrawing = (e) => {
-                e.preventDefault();
-                setIsDrawing(true);
-                const { x, y } = getCoordinates(e);
-                const ctx = canvasRef.current.getContext('2d');
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-            };
-
-            const draw = (e) => {
-                e.preventDefault();
-                if (!isDrawing) {
-                    return;
-                }
-                const { x, y } = getCoordinates(e);
-                const ctx = canvasRef.current.getContext('2d');
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            };
-
-            const stopDrawing = () => {
-                setIsDrawing(false);
-                canvasRef.current.getContext('2d').closePath();
-            };
-
-            const clearCanvas = () => {
-                const canvas = canvasRef.current;
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            };
-
-            return (
-                <div className="w-full">
-                    <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-slate-50 mb-3 relative cursor-crosshair">
-                        <canvas 
-                            ref={canvasRef}
-                            onMouseDown={startDrawing} 
-                            onMouseMove={draw} 
-                            onMouseUp={stopDrawing} 
-                            onMouseLeave={stopDrawing}
-                            onTouchStart={startDrawing} 
-                            onTouchMove={draw} 
-                            onTouchEnd={stopDrawing}
-                            className="w-full touch-none"
-                        />
-                        <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">
-                            Sign Here
-                        </div>
-                    </div>
-                    <div className="flex justify-between gap-3">
-                        <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                            Clear
-                        </button>
-                        <div className="flex gap-2">
-                            <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
-                                Cancel
-                            </button>
-                            <button type="button" onClick={() => {
-                                const canvas = canvasRef.current;
-                                const blank = document.createElement('canvas');
-                                blank.width = canvas.width; 
-                                blank.height = canvas.height;
-                                
-                                if (canvas.toDataURL() === blank.toDataURL()) {
-                                    onSave(null); 
-                                } else {
-                                    onSave(canvas.toDataURL('image/png'));
-                                }
-                            }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">
-                                Confirm Signature
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
         function App() {
             const [isSyncing, setIsSyncing] = useState(true);
             const [globalPinRequired, setGlobalPinRequired] = useState(false);
+            const [emailQuota, setEmailQuota] = useState(null);
+            const [timeUntilReset, setTimeUntilReset] = useState('');
             
             const [departments, setDepartments] = useState([]);
             const [tools, setTools] = useState([]); 
@@ -614,7 +397,6 @@
                 {Department: 'Station 3', 'Patient Count': 0}, 
                 {Department: 'Station 4B', 'Patient Count': 0}
             ]);
-            const [memos, setMemos] = useState([]);
             const [newsList, setNewsList] = useState([
                 { id: 1, Date: 'Today', Type: 'System Update', Title: 'TDMH CQI Portal V2 is Live!', Content: 'Welcome to your upgraded administrative command center.'}
             ]);
@@ -655,13 +437,6 @@
 
             const [showNewsFlyer, setShowNewsFlyer] = useState(true); 
             const [showAdminConsole, setShowAdminConsole] = useState(false);
-            const [showAddMemo, setShowAddMemo] = useState(false);
-            const [isApprovingMemo, setIsApprovingMemo] = useState(false);
-            
-            // ARCHIVE STATES
-            const [showArchiveModal, setShowArchiveModal] = useState(false);
-            const [isArchiving, setIsArchiving] = useState(false);
-            const [archiveResult, setArchiveResult] = useState(null);
             
             const [showAddEvent, setShowAddEvent] = useState(false);
             const [showEditEvent, setShowEditEvent] = useState(false);
@@ -674,17 +449,6 @@
             const resolveFileRef = useRef(null);
             const [resolveId, setResolveId] = useState('');
             const [isResolving, setIsResolving] = useState(false);
-
-            const [memoData, setMemoData] = useState({ 
-                forDept: '', 
-                fromName: '', 
-                subject: '', 
-                urgency: 'Normal', 
-                body: '' 
-            });
-            const [isFixingGrammar, setIsFixingGrammar] = useState(false);
-            const [signModal, setSignModal] = useState({ isOpen: false, refNo: '' });
-            const [signData, setSignData] = useState({ name: '', dept: '' });
             
             const [eventData, setEventData] = useState({ title: '', date: '', time: '' });
             const [editEventData, setEditEventData] = useState({ oldDateText: '', oldTitle: '', newTime: '' });
@@ -692,7 +456,7 @@
             const TABS = [
                 { id: 'home', label: 'Dashboard', icon: 'Home' },
                 { id: 'news', label: 'News', icon: 'Bell' },
-                { id: 'memos', label: 'Memos', icon: 'FileText' },
+                { id: 'memos', label: 'Memos & Signatures', icon: 'FileText' },
                 { id: 'dcc', label: 'DCC & Forms', icon: 'Folder' },
                 { id: 'track', label: 'Track Request', icon: 'Search' },
                 { id: 'departments', label: 'Departments', icon: 'Box' },
@@ -715,8 +479,36 @@
                 document.body.style.overflow = 'auto'; 
             };
 
+            // GOOGLE QUOTA RESET TIMER
             useEffect(() => {
-                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddMemo || showAddEvent || showEditEvent || showAddNews || showArchiveModal || slideshowIndex !== null || qrLightbox !== null || signModal.isOpen || customAlert.isOpen;
+                const calculateTime = () => {
+                    const now = new Date();
+                    const ptDateString = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false }).format(now);
+                    const ptDate = new Date(ptDateString);
+                    
+                    const nextMidnightPT = new Date(ptDate);
+                    nextMidnightPT.setHours(24, 0, 0, 0); 
+                    
+                    const diff = nextMidnightPT - ptDate;
+                    if (diff <= 0) return "00:00:00";
+                    
+                    const h = Math.floor(diff / (1000 * 60 * 60));
+                    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const s = Math.floor((diff % (1000 * 60)) / 1000);
+                    
+                    return `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
+                };
+
+                const timer = setInterval(() => {
+                    setTimeUntilReset(calculateTime());
+                }, 1000);
+                setTimeUntilReset(calculateTime()); 
+                
+                return () => clearInterval(timer);
+            }, []);
+
+            useEffect(() => {
+                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen;
                 if (hasModal) {
                     document.body.classList.add('modal-open');
                     document.body.style.overflow = 'hidden';
@@ -726,27 +518,21 @@
                 return () => {
                     unlockScroll();
                 }
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddMemo, showAddEvent, showEditEvent, showAddNews, showArchiveModal, slideshowIndex, qrLightbox, signModal.isOpen, customAlert.isOpen]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, customAlert.isOpen]);
 
             useEffect(() => {
-                if (slideshow.length <= 1 || slideshowIndex !== null) {
-                    return;
-                }
+                if (slideshow.length <= 1 || slideshowIndex !== null) return;
                 const timer = setInterval(() => { 
                     setCurrentSlide((prev) => (prev + 1) % slideshow.length); 
                 }, 5000);
-                return () => {
-                    clearInterval(timer);
-                }
+                return () => clearInterval(timer);
             }, [slideshow.length, slideshowIndex]);
 
             useEffect(() => {
                 const timer = setInterval(() => {
                     setLiveTime(new Date());
                 }, 1000);
-                return () => {
-                    clearInterval(timer);
-                }
+                return () => clearInterval(timer);
             }, []);
 
             useEffect(() => {
@@ -757,134 +543,60 @@
                         unlockScroll();
                     }
                     if (slideshowIndex !== null) {
-                        if (e.key === 'ArrowRight') {
-                            setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
-                        }
-                        if (e.key === 'ArrowLeft') {
-                            setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
-                        }
+                        if (e.key === 'ArrowRight') setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
+                        if (e.key === 'ArrowLeft') setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
                     }
                 };
                 window.addEventListener('keydown', handleKeyDown);
-                return () => {
-                    window.removeEventListener('keydown', handleKeyDown);
-                }
+                return () => window.removeEventListener('keydown', handleKeyDown);
             }, [slideshowIndex, slideshow.length]);
 
             useEffect(() => {
                 const container = tabsContainerRef.current;
-                if (!container) {
-                    return;
-                }
+                if (!container) return;
                 const handleWheel = (e) => { 
                     e.preventDefault(); 
                     container.scrollLeft += e.deltaY; 
                 };
                 container.addEventListener('wheel', handleWheel, { passive: false });
-                return () => {
-                    container.removeEventListener('wheel', handleWheel);
-                }
+                return () => container.removeEventListener('wheel', handleWheel);
             }, []);
             
             const scrollTabs = (direction) => {
                 if (tabsContainerRef.current) {
-                    if (direction === 'left') {
-                        tabsContainerRef.current.scrollBy({ left: -250, behavior: 'smooth' });
-                    } else {
-                        tabsContainerRef.current.scrollBy({ left: 250, behavior: 'smooth' });
-                    }
+                    if (direction === 'left') tabsContainerRef.current.scrollBy({ left: -250, behavior: 'smooth' });
+                    else tabsContainerRef.current.scrollBy({ left: 250, behavior: 'smooth' });
                 }
             };
 
             const populateData = (data) => {
-                if (data.globalPinRequired === true) {
-                    setGlobalPinRequired(true);
-                } else {
-                    setGlobalPinRequired(false);
-                }
+                setGlobalPinRequired(data.globalPinRequired === true);
+                if (!data.globalPinRequired) setGlobalUnlocked(true);
                 
-                if (!data.globalPinRequired) {
-                    setGlobalUnlocked(true);
-                }
-                
-                if (data.census) {
-                    setCensus(data.census);
-                } else {
-                    setCensus([]);
-                }
-                
+                if (data.emailQuota !== undefined) setEmailQuota(data.emailQuota);
+
+                setCensus(data.census || []);
                 if (data.news) {
-                    const newsData = data.news;
-                    setNewsList(newsData);
-                    
-                    const hasWelcome = newsData.some(function(n) {
-                        const titleString = String(n.Title || n.title || n[3] || '');
-                        return titleString.includes('V2 is Live');
-                    });
+                    setNewsList(data.news);
+                    const hasWelcome = data.news.some(n => String(n.Title || n.title || n[3] || '').includes('V2 is Live'));
                     setShowNewsFlyer(hasWelcome);
                 }
-
-                if (data.memos) {
-                    setMemos(data.memos);
-                } else {
-                    setMemos([]);
-                }
-                
-                if (data.departments) {
-                    setDepartments(data.departments);
-                } else {
-                    setDepartments([]);
-                }
-                
-                if (data.tools) {
-                    setTools(data.tools);
-                } else {
-                    setTools([]);
-                }
-                
-                if (data.calendar) {
-                    setCalendar(data.calendar);
-                } else {
-                    setCalendar([]);
-                }
-                
-                if (data.universalForms) {
-                    setUniversalForms(data.universalForms);
-                } else {
-                    setUniversalForms([]);
-                }
-                
-                if (data.isoRequirements) {
-                    setIsoRequirements(data.isoRequirements);
-                } else {
-                    setIsoRequirements([]);
-                }
-                
-                if (data.agimat) {
-                    setAgimat(data.agimat);
-                } else {
-                    setAgimat([]);
-                }
-                
-                if (data.monitoring) {
-                    setMonitors(data.monitoring);
-                } else {
-                    setMonitors([]);
-                }
+                setDepartments(data.departments || []);
+                setTools(data.tools || []);
+                setCalendar(data.calendar || []);
+                setUniversalForms(data.universalForms || []);
+                setIsoRequirements(data.isoRequirements || []);
+                setAgimat(data.agimat || []);
+                setMonitors(data.monitoring || []);
                 
                 if (data.slideshow) {
-                    const activeSlides = data.slideshow.filter(function(s) {
-                        const activeVal = String(s['Active (Yes/No)'] || '').trim().toUpperCase();
-                        return activeVal === 'YES';
-                    });
+                    const activeSlides = data.slideshow.filter(s => String(s['Active (Yes/No)'] || '').trim().toUpperCase() === 'YES');
                     setSlideshow(activeSlides);
                 }
             };
 
             const fetchDatabase = async (isBackgroundSync = false) => {
-                if (!isBackgroundSync) {
-                    setIsSyncing(true);
-                }
+                if (!isBackgroundSync) setIsSyncing(true);
                 
                 if (!isBackgroundSync) {
                     try {
@@ -896,19 +608,13 @@
                                 setIsSyncing(false);
                             }
                         }
-                    } catch(e) {
-                        console.warn("Failed to load cache");
-                    }
+                    } catch(e) {}
                 }
                 
                 try {
-                    if (isBackgroundSync) {
-                        setIsSyncing(true); 
-                    }
+                    if (isBackgroundSync) setIsSyncing(true); 
                     
-                    const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(function(err) { 
-                        return { ok: false }; 
-                    });
+                    const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(() => ({ ok: false }));
                     
                     if (response && response.ok) {
                         const result = await response.json();
@@ -917,23 +623,15 @@
                             populateData(result.data);
                         }
                     } else {
-                        const currentCache = localStorage.getItem('tdmh_cqi_portal_cache');
-                        if (!currentCache) {
-                            setGlobalUnlocked(true);
-                        }
+                        if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true);
                     }
                 } catch (error) { 
-                    const currentCache = localStorage.getItem('tdmh_cqi_portal_cache');
-                    if (!currentCache) {
-                        setGlobalUnlocked(true); 
-                    }
+                    if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true); 
                 }
                 setIsSyncing(false);
             };
 
-            useEffect(() => { 
-                fetchDatabase(); 
-            }, []);
+            useEffect(() => { fetchDatabase(); }, []);
 
             const sendPostRequest = async (payload) => {
                 if (API_URL === "PASTE_YOUR_WEB_APP_URL_HERE") { 
@@ -946,128 +644,20 @@
                         headers: { "Content-Type": "text/plain;charset=utf-8" }, 
                         body: JSON.stringify(payload), 
                         redirect: "follow" 
-                    }).catch(function(err) { 
-                        return { ok: false }; 
-                    });
+                    }).catch(() => ({ ok: false }));
                     
-                    if (response && response.ok) {
-                        return await response.json();
-                    }
-                    
+                    if (response && response.ok) return await response.json();
                     return {status: 'error', message: 'Failed to parse JSON response from server.'};
                 } catch (e) { 
                     return {status: 'error', message: e.toString()}; 
                 }
             };
 
-            const handleFixGrammar = () => {
-                if (!memoData.body.trim()) {
-                    showAlert("Missing Content", "Please type something in the memo body first before fixing grammar.", "error");
-                    return;
-                }
-                
-                setIsFixingGrammar(true);
-                
-                setTimeout(() => {
-                    let text = memoData.body;
-                    text = text.replace(/ +/g, ' '); 
-                    text = text.replace(/ \s*([,.;?!:])/g, '$1'); 
-                    text = text.replace(/([,.;?!:])([a-zA-Z])/g, '$1 $2'); 
-                    text = text.replace(/(^\s*|[.?!]\s+)([a-z])/g, function(match, p1, p2) {
-                        return p1 + p2.toUpperCase();
-                    }); 
-                    text = text.replace(/\n{3,}/g, '\n\n'); 
-                    
-                    setMemoData({
-                        ...memoData, 
-                        body: text.trim()
-                    });
-                    
-                    setIsFixingGrammar(false);
-                }, 600); 
-            };
-
-            const handleNativeMemoSubmit = async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                
-                const payload = {
-                    action: 'generateMemo',
-                    forDept: memoData.forDept,
-                    fromName: memoData.fromName,
-                    subject: memoData.subject,
-                    urgency: memoData.urgency,
-                    body: memoData.body
-                };
-                
-                const res = await sendPostRequest(payload);
-                setIsSubmitting(false);
-                
-                if (res.status === 'success') {
-                    showAlert(
-                        "Memo Sent for Approval", 
-                        `Your memo has been successfully generated and routed to the Admin queue for final review.\n\nOnce approved, it will be published to the portal.\n\nTracking Ref: ${res.refNo}`, 
-                        "success"
-                    );
-                    setShowAddMemo(false);
-                    unlockScroll();
-                    setMemoData({ 
-                        forDept: '', 
-                        fromName: '', 
-                        subject: '', 
-                        urgency: 'Normal', 
-                        body: '' 
-                    });
-                    fetchDatabase(true);
-                } else {
-                    showAlert("Submission Failed", res.message || "Failed to submit memo to the database. Please try again.", "error");
-                }
-            };
-
-            const handleArchiveDrafts = async () => {
-                setIsArchiving(true);
-                const res = await sendPostRequest({ action: 'archiveMemos' });
-                setIsArchiving(false);
-
-                if (res.status === 'success') {
-                    setArchiveResult({ 
-                        url: res.url, 
-                        count: res.count 
-                    });
-                } else {
-                    showAlert("Notice", res.message || "Archive process encountered an issue.", "info");
-                    setShowArchiveModal(false);
-                    unlockScroll();
-                }
-            };
-
-            const handleApproveMemo = async (refNo) => {
-                setIsApprovingMemo(true);
-                const res = await sendPostRequest({ 
-                    action: 'approveMemo', 
-                    refNo: refNo 
-                });
-                setIsApprovingMemo(false);
-
-                if (res.status === 'success') {
-                    showAlert("Memo Approved", `Memo ${refNo} has been successfully approved and published to the live portal.`, "success");
-                    fetchDatabase(true); 
-                } else {
-                    showAlert("Approval Failed", `Error: ${res.message || 'Unknown network error'}\n\nIMPORTANT: If this says 'Unknown action', it means you forgot to deploy your Apps Script as a NEW VERSION!`, "error");
-                }
-            };
-            
             const handleEventSubmit = async (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
                 
-                const payload = {
-                    action: 'addEvent',
-                    title: eventData.title,
-                    date: eventData.date,
-                    time: eventData.time 
-                };
-                
+                const payload = { action: 'addEvent', title: eventData.title, date: eventData.date, time: eventData.time };
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
                 
@@ -1075,11 +665,7 @@
                     showAlert("Event Scheduled", "The event has been successfully added to the Master Calendar.", "success");
                     setShowAddEvent(false);
                     unlockScroll();
-                    setEventData({ 
-                        title: '', 
-                        date: '', 
-                        time: '' 
-                    });
+                    setEventData({ title: '', date: '', time: '' });
                     fetchDatabase(true); 
                 } else {
                     showAlert("Network Error", "Failed to add event. Please check your connection.", "error");
@@ -1090,13 +676,7 @@
                 e.preventDefault();
                 setIsSubmitting(true);
                 
-                const payload = {
-                    action: 'editEventTime',
-                    dateText: editEventData.oldDateText,
-                    title: editEventData.oldTitle,
-                    newTime: editEventData.newTime 
-                };
-                
+                const payload = { action: 'editEventTime', dateText: editEventData.oldDateText, title: editEventData.oldTitle, newTime: editEventData.newTime };
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
                 
@@ -1104,54 +684,10 @@
                     showAlert("Time Updated", "The event time has been successfully updated.", "success");
                     setShowEditEvent(false);
                     unlockScroll();
-                    setEditEventData({ 
-                        oldDateText: '', 
-                        oldTitle: '', 
-                        newTime: '' 
-                    });
+                    setEditEventData({ oldDateText: '', oldTitle: '', newTime: '' });
                     fetchDatabase(true); 
                 } else {
                     showAlert("Update Failed", "Could not locate event or connection failed.", "error");
-                }
-            };
-
-            const handleSignatureSubmit = async (signatureBase64) => {
-                if (!signatureBase64) {
-                    showAlert("Missing Signature", "Please physically draw your signature on the pad before confirming.", "error");
-                    return;
-                }
-                
-                if (!signData.name.trim() || !signData.dept.trim()) { 
-                    showAlert("Missing Details", "Please enter your full name and department.", "error");
-                    return; 
-                }
-
-                setIsSubmitting(true);
-                
-                const payload = {
-                    action: 'submitSignature',
-                    refNo: signModal.refNo,
-                    name: signData.name,
-                    dept: signData.dept,
-                    signature: signatureBase64 
-                };
-
-                const res = await sendPostRequest(payload);
-                setIsSubmitting(false);
-
-                if (res.status === 'success') {
-                    showAlert("Acknowledgment Saved", `Thank you, ${signData.name}!\n\nYour digital signature for ${signModal.refNo} has been saved securely to the master records.`, "success");
-                    setSignModal({
-                        isOpen: false, 
-                        refNo: ''
-                    });
-                    setSignData({
-                        name: '', 
-                        dept: ''
-                    });
-                    unlockScroll();
-                } else {
-                    showAlert("Network Error", "Failed to save signature. Please check your connection.", "error");
                 }
             };
 
@@ -1159,32 +695,20 @@
                 e.preventDefault(); 
                 setIsVerifyingLogin(true);
                 
-                const payload = { 
-                    action: 'verifyPin', 
-                    pin: globalPinInput 
-                };
-                
+                const payload = { action: 'verifyPin', pin: globalPinInput };
                 const res = await sendPostRequest(payload);
                 setIsVerifyingLogin(false);
 
                 if (res.status === 'success') { 
-                    setGlobalPinFeedback({ 
-                        type: 'success', 
-                        text: 'Verification Successful. Unlocking...' 
-                    });
+                    setGlobalPinFeedback({ type: 'success', text: 'Verification Successful. Unlocking...' });
                     setTimeout(() => { 
                         setGlobalUnlocked(true); 
                         setGlobalPinFeedback(null); 
                     }, 1000);
                 } else { 
-                    setGlobalPinFeedback({ 
-                        type: 'error', 
-                        text: 'Invalid Site PIN. Please check your credentials.' 
-                    });
+                    setGlobalPinFeedback({ type: 'error', text: 'Invalid Site PIN. Please check your credentials.' });
                     setGlobalPinInput('');
-                    setTimeout(() => {
-                        setGlobalPinFeedback(null);
-                    }, 3000);
+                    setTimeout(() => setGlobalPinFeedback(null), 3000);
                 } 
             };
 
@@ -1192,20 +716,13 @@
                 e.preventDefault();
                 setIsVerifyingLogin(true);
 
-                const payload = { 
-                    action: 'verifyPin', 
-                    pin: rolePinInput 
-                };
-
+                const payload = { action: 'verifyPin', pin: rolePinInput };
                 const res = await sendPostRequest(payload);
                 setIsVerifyingLogin(false);
 
                 if (res.status === 'success' && res.role !== 'portal_lock') { 
                     const newRole = res.role; 
-                    setRoleLoginFeedback({ 
-                        type: 'success', 
-                        text: 'Access Granted! Unlocking module...' 
-                    });
+                    setRoleLoginFeedback({ type: 'success', text: 'Access Granted! Unlocking module...' });
                     
                     setTimeout(() => {
                         setUserRole(newRole); 
@@ -1221,9 +738,6 @@
                         } else if (pendingAction === 'admin' && newRole === 'admin') { 
                             setShowAdminConsole(true); 
                             setMobileMenuOpen(false); 
-                        } else if (pendingAction === 'memo_gen' && (newRole === 'admin' || newRole === 'dept_head')) { 
-                            setShowAddMemo(true); 
-                            setMobileMenuOpen(false); 
                         } else if (pendingAction === 'add_event' && (newRole === 'admin' || newRole === 'dept_head')) { 
                             setShowAddEvent(true); 
                         } else if (pendingAction === 'add_news' && (newRole === 'admin' || newRole === 'dept_head')) { 
@@ -1232,14 +746,9 @@
                         setPendingAction(null);
                     }, 1000);
                 } else { 
-                    setRoleLoginFeedback({ 
-                        type: 'error', 
-                        text: 'Invalid PIN or insufficient permissions.' 
-                    });
+                    setRoleLoginFeedback({ type: 'error', text: 'Invalid PIN or insufficient permissions.' });
                     setRolePinInput('');
-                    setTimeout(() => {
-                        setRoleLoginFeedback(null);
-                    }, 3000);
+                    setTimeout(() => setRoleLoginFeedback(null), 3000);
                 }
             };
 
@@ -1259,14 +768,6 @@
                         setMobileMenuOpen(false); 
                     } else { 
                         setPendingAction('admin'); 
-                        setShowRoleLogin(true); 
-                    }
-                } else if (actionType === 'memo_gen') {
-                    if (userRole === 'admin' || userRole === 'dept_head') { 
-                        setShowAddMemo(true); 
-                        setMobileMenuOpen(false); 
-                    } else { 
-                        setPendingAction('memo_gen'); 
                         setShowRoleLogin(true); 
                     }
                 } else if (actionType === 'add_event') {
@@ -1302,6 +803,13 @@
                     return;
                 }
                 
+                // --- 35MB FILE SIZE CHECKER ---
+                const MAX_FILE_SIZE = 35 * 1024 * 1024; // 35 MB
+                if (file.size > MAX_FILE_SIZE) {
+                    showAlert("File Too Large", "This file exceeds the 35MB safe upload limit.\n\nPlease compress any images inside your document or remove them before uploading.", "error");
+                    return;
+                }
+
                 if (file.type === "application/pdf") {
                     showAlert("Invalid File Type", "PDFs are blocked for draft submissions. Please upload an editable format (.docx, .xlsx).", "error");
                     return;
@@ -1312,14 +820,7 @@
                     setIsSubmitting(true);
                     
                     const base64 = reader.result.split(',')[1];
-                    const payload = { 
-                        action: "submitDCC", 
-                        email: email, 
-                        title: title, 
-                        fileName: file.name, 
-                        mimeType: file.type, 
-                        fileBase64: base64 
-                    };
+                    const payload = { action: "submitDCC", email: email, title: title, fileName: file.name, mimeType: file.type, fileBase64: base64 };
                     
                     const res = await sendPostRequest(payload);
                     setIsSubmitting(false);
@@ -1327,6 +828,7 @@
                     if (res.status === 'success') { 
                         showAlert("Submission Successful", `Your document draft has been pushed to the Temp Folder.\n\nTracking ID: ${res.trackingId}\n\nA receipt has been emailed to you for your records.`, "success");
                         e.target.reset(); 
+                        fetchDatabase(true); // Sync to update email quota
                     }
                 };
                 reader.readAsDataURL(file);
@@ -1347,13 +849,7 @@
                     setIsResolving(true);
                     
                     const base64 = reader.result.split(',')[1];
-                    const payload = { 
-                        action: "resolveDCC", 
-                        trackingId: resolveId, 
-                        stampedFileName: file.name, 
-                        mimeType: file.type, 
-                        stampedFileBase64: base64 
-                    };
+                    const payload = { action: "resolveDCC", trackingId: resolveId, stampedFileName: file.name, mimeType: file.type, stampedFileBase64: base64 };
                     
                     const res = await sendPostRequest(payload);
                     setIsResolving(false);
@@ -1362,6 +858,7 @@
                         showAlert("Resolution Complete", "The file was successfully saved to the Vault.\n\nThe Temp draft has been purged, and the department has been emailed their stamped copy.", "success");
                         e.target.reset(); 
                         setResolveId(''); 
+                        fetchDatabase(true); // Sync to update email quota
                     } else { 
                         showAlert("Resolution Failed", "Failed to resolve request. Ensure the Tracking ID is correct and network is stable.", "error");
                     }
@@ -1373,17 +870,10 @@
                 setIsSubmitting(true);
                 
                 const updatesArray = census.map(function(c) {
-                    return { 
-                        department: c.Department || c[0], 
-                        count: c['Patient Count'] || c[1] 
-                    };
+                    return { department: c.Department || c[0], count: c['Patient Count'] || c[1] };
                 });
                 
-                const payload = { 
-                    action: 'updateCensus', 
-                    updates: updatesArray 
-                };
-                
+                const payload = { action: 'updateCensus', updates: updatesArray };
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
                 
@@ -1397,37 +887,23 @@
 
             const handleTrackRequest = async (e) => {
                 e.preventDefault();
-                
-                if (!trackQuery) {
-                    return;
-                }
+                if (!trackQuery) return;
                 
                 setIsTracking(true);
-                
                 try {
                     const fetchUrl = `${API_URL}?action=trackRequest&query=${encodeURIComponent(trackQuery)}`;
-                    const response = await fetch(fetchUrl, { redirect: "follow" }).catch(function(err) {
-                        return { ok: false };
-                    });
+                    const response = await fetch(fetchUrl, { redirect: "follow" }).catch(() => ({ ok: false }));
                     
                     if (response && response.ok) {
                         const result = await response.json();
-                        if (result.status === 'success') { 
-                            setTrackResult(result.data); 
-                        } else { 
-                            setTrackResult({ error: result.message }); 
-                        }
+                        if (result.status === 'success') setTrackResult(result.data); 
+                        else setTrackResult({ error: result.message }); 
                     } else { 
-                        setTrackResult({ 
-                            'Tracking ID': trackQuery, 
-                            'Title': 'System Test Form', 
-                            'Status': 'PENDING REVIEW' 
-                        }); 
+                        setTrackResult({ 'Tracking ID': trackQuery, 'Title': 'System Test Form', 'Status': 'PENDING REVIEW' }); 
                     }
                 } catch(e) { 
                     setTrackResult({ error: "Network error tracking request." }); 
                 }
-                
                 setIsTracking(false);
             };
 
@@ -1650,97 +1126,18 @@
                         );
                         
                     case 'memos': 
-                        const visibleMemos = memos.filter(function(m) {
-                            const stat = String(m.Status || m[6]).toUpperCase();
-                            return stat === 'PUBLISHED' || stat === 'APPROVED';
-                        });
-                        
                         return (
-                        <div className="animate-fade-in structured-card overflow-hidden">
-                            <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div>
-                                    <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.FileText className="w-6 h-6 text-tdmh-blue" /> Inter-Office Memos</h3>
-                                    <p className="text-sm text-slate-500 mt-2 max-w-2xl leading-relaxed"><strong>Notice:</strong> Viewing this repository is open to all staff. Authorized Department Heads and Admins must log in to draft new memos via the portal. Drafted memos are routed to Admin for final approval.</p>
-                                </div>
-                                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-4 md:mt-0">
-                                    {(userRole === 'admin') && (
-                                        <button onClick={() => setShowArchiveModal(true)} className="flex items-center justify-center gap-2 bg-slate-200 text-slate-700 px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-300 transition-colors shrink-0">
-                                            <Icons.Folder className="w-4 h-4" /> Archive Drafts
-                                        </button>
-                                    )}
-                                    {(userRole === 'admin' || userRole === 'dept_head') && (
-                                        <button onClick={() => handleSecureAction('memo_gen')} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm hover:bg-blue-900 transition-colors shrink-0">
-                                            <Icons.Plus className="w-4 h-4" /> Generate Memo
-                                        </button>
-                                    )}
-                                </div>
+                        <div className="animate-fade-in structured-card p-10 text-center flex flex-col items-center justify-center min-h-[60vh] border-t-4 border-tdmh-blue">
+                            <div className="w-24 h-24 bg-blue-50 text-tdmh-blue rounded-3xl flex items-center justify-center mb-6 shadow-inner border border-blue-100">
+                                <Icons.FileText className="w-12 h-12" />
                             </div>
-                            <div className="p-6 space-y-4">
-                                {visibleMemos.length === 0 ? <p className="text-slate-500 italic text-center py-8">No published memos found.</p> : visibleMemos.map((m, i) => {
-                                    
-                                    const parsedDate = formatMemoDate(m.Date || m[1]);
-                                    
-                                    // Bulletproof Link Extractor - checks common header naming issues
-                                    const pdfLinkVal = m['PDF Link'] || m['PDF Link '] || m[' PDF Link '] || m.Link || m.pdfLink || Object.values(m)[8];
-                                    const pdfLink = String(pdfLinkVal || '').trim();
-                                    
-                                    const isErrorLink = pdfLink.startsWith('ERROR:');
-                                    const hasValidLink = pdfLink !== '' && pdfLink !== '#' && pdfLink !== 'undefined' && !isErrorLink;
-
-                                    return (
-                                        <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row gap-6 items-start relative group hover:shadow-md transition-shadow">
-                                            {(userRole === 'admin') && (
-                                                <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => showAlert("Delete Restricted", "Delete row feature is accessible via the Master Google Sheet.", "info")} className="p-2 bg-slate-100 text-slate-600 rounded hover:text-red-600">
-                                                        <Icons.Trash className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            )}
-                                            
-                                            <div className="bg-blue-50 text-tdmh-blue p-4 rounded-xl flex flex-col items-center justify-center min-w-[90px] border border-blue-100">
-                                                <span className="text-xs font-bold uppercase tracking-widest">{parsedDate.month}</span>
-                                                <span className="text-3xl font-black">{parsedDate.day}</span>
-                                            </div>
-                                            
-                                            <div className="flex-1 pr-0 sm:pr-12 w-full">
-                                                <div className="flex gap-2 items-center mb-1">
-                                                    <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded border border-slate-200 uppercase tracking-widest">
-                                                        REF: {m['Ref No'] || m[0]}
-                                                    </span>
-                                                    {(m.Urgency || m.urgency || m[7]) === 'High' && (
-                                                        <span className="text-[10px] font-bold bg-red-50 text-red-600 px-2.5 py-1 rounded border border-red-200 uppercase tracking-widest">
-                                                            Urgent
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                
-                                                <h3 className="text-xl font-bold text-slate-800 mt-2 leading-tight">{m.Subject || m[4]}</h3>
-                                                <p className="text-slate-500 text-sm mt-1">From: {m.From || m[3]} &bull; For: {m.For || m[2]}</p>
-                                                
-                                                <div className="flex flex-col sm:flex-row items-center gap-3 mt-4 flex-wrap w-full">
-                                                    {hasValidLink ? (
-                                                        <a href={pdfLink} target="_blank" className="text-tdmh-blue font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-blue-100 transition-colors shadow-sm">
-                                                            <Icons.FileText className="w-4 h-4" /> View Document
-                                                        </a>
-                                                    ) : isErrorLink ? (
-                                                        <button onClick={() => showAlert("PDF Generation Failed", `The server encountered this exact error when trying to create the PDF:\n\n${pdfLink}\n\nPlease check your Apps Script Google Drive IDs or template format.`, "error")} className="text-red-600 font-bold text-sm bg-red-50 border border-red-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-red-100 transition-colors shadow-sm">
-                                                            <Icons.FileText className="w-4 h-4" /> Link Unavailable
-                                                        </button>
-                                                    ) : (
-                                                        <button disabled className="text-slate-400 font-bold text-sm bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 cursor-not-allowed shadow-sm">
-                                                            <Icons.Sync className="w-4 h-4 animate-spin" /> Processing PDF...
-                                                        </button>
-                                                    )}
-                                                    
-                                                    <button onClick={() => { setSignModal({isOpen: true, refNo: m['Ref No'] || m[0]}); }} className="text-emerald-700 font-bold text-sm bg-emerald-50 px-4 py-2 rounded-lg flex w-full sm:w-max justify-center items-center gap-2 hover:bg-emerald-100 transition-colors shadow-sm">
-                                                        <Icons.PenTool className="w-4 h-4" /> Sign & Acknowledge
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-4">Memo System Migrated</h2>
+                            <p className="text-slate-500 font-medium max-w-lg mb-8 text-base md:text-lg leading-relaxed">
+                                The Inter-Office Memo and E-Signature system has been upgraded and migrated to its own dedicated standalone portal. 
+                            </p>
+                            <a href="https://tdmh-cqi.github.io/Portal/memo.html" target="_blank" rel="noopener noreferrer" className="bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm px-10 py-5 rounded-xl transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 flex items-center gap-3">
+                                Access New Memo Portal <Icons.ChevronRight className="w-4 h-4" />
+                            </a>
                         </div>
                         );
                         
@@ -1813,15 +1210,48 @@
                                 </div>
 
                                 {dccActiveCategory === 'request control no.' && (
-                                    <div className="text-center py-4">
-                                        <div className="w-20 h-20 bg-emerald-50 text-tdmh-green rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
-                                            <Icons.Upload className="w-10 h-10" />
+                                    <div className="text-left">
+                                        
+                                        {/* NEW: LIVE EMAIL QUOTA CARD */}
+                                        <div className="flex flex-col sm:flex-row justify-between items-center bg-slate-900 text-white rounded-2xl p-6 mb-8 shadow-md">
+                                            <div className="flex items-center gap-4 mb-4 sm:mb-0">
+                                                <div className="p-3 bg-slate-800 rounded-xl border border-slate-700 shadow-inner">
+                                                    <Icons.Mail className="w-6 h-6 text-tdmh-green" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-base md:text-lg leading-tight">System Email Capacity</h4>
+                                                    <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">Receipts & Routing</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex gap-6 items-center">
+                                                <div className="text-center">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Remaining Today</div>
+                                                    <div className={`text-3xl font-black ${emailQuota !== null && emailQuota < 10 ? 'text-red-400 animate-pulse-slow' : 'text-tdmh-green'}`}>
+                                                        {emailQuota !== null ? emailQuota : '--'}
+                                                    </div>
+                                                </div>
+                                                <div className="w-px h-10 bg-slate-700"></div>
+                                                <div className="text-center">
+                                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center justify-center gap-1"><Icons.Clock className="w-3 h-3"/> Resets In</div>
+                                                    <div className="text-xl font-black text-blue-200 tracking-wider font-mono">
+                                                        {timeUntilReset || '--:--:--'}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Request Control Number</h2>
-                                        <p className="text-slate-500 mb-8 max-w-lg mx-auto leading-relaxed">
-                                            Upload drafted forms here. CQI will assign an official ISO Control Number, store it in the Vault, and email the finalized document back to you.
-                                        </p>
-                                        <form onSubmit={handleDccUpload} className="text-left bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto">
+
+                                        <div className="text-center py-4 mb-6">
+                                            <div className="w-20 h-20 bg-emerald-50 text-tdmh-green rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
+                                                <Icons.Upload className="w-10 h-10" />
+                                            </div>
+                                            <h2 className="text-3xl font-black text-slate-800 mb-3 tracking-tight">Request Control Number</h2>
+                                            <p className="text-slate-500 max-w-lg mx-auto leading-relaxed">
+                                                Upload drafted forms here. CQI will assign an official ISO Control Number, store it in the Vault, and email the finalized document back to you.
+                                            </p>
+                                        </div>
+                                        
+                                        <form onSubmit={handleDccUpload} className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm max-w-xl mx-auto">
                                             <div className="mb-5">
                                                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Official Dept Email <span className="text-red-500">*</span></label>
                                                 <input name="email" type="email" required className="w-full p-3 border border-slate-300 rounded-xl focus:border-tdmh-green outline-none" placeholder="dept@tdmh.com" />
@@ -1831,12 +1261,17 @@
                                                 <input name="title" type="text" required className="w-full p-3 border border-slate-300 rounded-xl focus:border-tdmh-green outline-none" placeholder="e.g. Daily Temperature Log" />
                                             </div>
                                             <div className="mb-8">
-                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Upload Draft <span className="text-red-500">*</span></label>
-                                                <input ref={fileInputRef} type="file" accept=".docx,.xlsx" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:bg-tdmh-green file:text-white hover:file:bg-green-700 transition-colors cursor-pointer" />
-                                                <p className="text-[10px] text-red-500 font-bold uppercase mt-2 bg-red-50 inline-block px-2 py-1 rounded">NO PDF FILES ALLOWED</p>
+                                                <div className="flex justify-between items-end mb-2">
+                                                    <label className="block text-xs font-bold text-slate-500 uppercase">Upload Draft <span className="text-red-500">*</span></label>
+                                                    <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">MAX: 35MB</span>
+                                                </div>
+                                                <input ref={fileInputRef} type="file" accept=".docx,.xlsx,.doc,.xls" required className="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:bg-emerald-50 file:text-tdmh-green file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 transition-colors cursor-pointer border border-slate-200 p-1 rounded-2xl" />
+                                                <div className="flex items-center gap-2 mt-3 text-[10px] text-red-500 font-bold uppercase tracking-wider bg-red-50 px-3 py-2 rounded-lg border border-red-100 w-max">
+                                                    <Icons.AlertCircle className="w-4 h-4" /> NO PDF FILES ALLOWED
+                                                </div>
                                             </div>
-                                            <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-green text-white font-black tracking-wider uppercase py-4 rounded-xl shadow-lg hover:bg-green-700 transition-colors">
-                                                {isSubmitting ? "Uploading..." : "Submit to CQI Queue"}
+                                            <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-green text-white font-black tracking-wider uppercase py-4 rounded-xl shadow-lg shadow-green-900/20 hover:bg-green-700 transition-transform hover:-translate-y-1 disabled:opacity-50 disabled:hover:translate-y-0">
+                                                {isSubmitting ? "Uploading Securely..." : "Submit to CQI Queue"}
                                             </button>
                                         </form>
                                     </div>
@@ -1933,7 +1368,7 @@
                                     <Icons.Search className="w-8 h-8" />
                                 </div>
                                 <h2 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Track Request Status</h2>
-                                <p className="text-slate-500">Enter your Reference ID or Dept Email to check the live status of your Form or Memo.</p>
+                                <p className="text-slate-500">Enter your Reference ID or Dept Email to check the live status of your Form.</p>
                             </div>
                             <form onSubmit={handleTrackRequest} className="flex flex-col sm:flex-row gap-3 mb-10">
                                 <input type="text" value={trackQuery} onChange={(e)=>setTrackQuery(e.target.value)} className="flex-1 p-4 border-2 rounded-xl focus:border-tdmh-blue outline-none text-lg font-medium" placeholder="e.g. CQI-1029 or dept@tdmh.com" />
@@ -1967,7 +1402,7 @@
                             )}
                         </div>
                         );
-                    
+                        
                     case 'departments': 
                         if (selectedDept) {
                             
@@ -2386,79 +1821,6 @@
                         </div>
                     )}
 
-                    {/* ARCHIVE DRAFTS MODAL */}
-                    {showArchiveModal && (
-                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200">
-                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2.5 bg-slate-100 text-slate-600 rounded-xl shadow-sm border border-slate-200"><Icons.Folder className="w-5 h-5"/></div>
-                                        <div>
-                                            <h3 className="font-black text-slate-800 text-xl tracking-tight leading-tight">Archive Drafts</h3>
-                                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">ZIP & Clean Up Drive</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => { setShowArchiveModal(false); setArchiveResult(null); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2.5 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
-                                </div>
-                                <div className="p-6 md:p-8 text-center">
-                                    {archiveResult ? (
-                                        <div className="animate-fade-in">
-                                            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-200 shadow-inner"><Icons.ClipboardCheck className="w-8 h-8"/></div>
-                                            <h4 className="text-xl font-black text-slate-800 mb-2">Archive Generated!</h4>
-                                            <p className="text-sm text-slate-500 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">Successfully compressed <strong className="text-emerald-700">{archiveResult.count} left-over drafts</strong>. <br/><br/>The original Google Docs have now been deleted from the active Drive folder to save space.</p>
-                                            <a href={archiveResult.url} target="_blank" onClick={() => { setShowArchiveModal(false); setArchiveResult(null); unlockScroll(); }} className="w-full inline-flex justify-center items-center gap-2 bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20">
-                                                <Icons.Upload className="w-4 h-4" /> Download ZIP File
-                                            </a>
-                                        </div>
-                                    ) : (
-                                        <div className="animate-fade-in">
-                                            <p className="text-sm text-slate-600 mb-8 leading-relaxed">This action will gather all left-over editable Google Doc drafts and compress them into a single downloadable ZIP file.<br/><br/>Once successfully compressed, the original draft files will be permanently removed from the active folder.</p>
-                                            <button onClick={handleArchiveDrafts} disabled={isArchiving} className="w-full flex justify-center items-center gap-2 bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0">
-                                                {isArchiving ? (
-                                                    <>
-                                                        <Icons.Sync className="w-4 h-4 animate-spin"/> 
-                                                        Packaging Files...
-                                                    </>
-                                                ) : (
-                                                    "Generate Archive & Clean Folder"
-                                                )}
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* SIGNATURE MODAL */}
-                    {signModal.isOpen && (
-                        <div className="fixed inset-0 z-[130] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-sm animate-fade-in overflow-y-auto" onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}}>
-                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative transform animate-slide-up my-auto shrink-0 border border-slate-200" onClick={e => e.stopPropagation()}>
-                                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                                    <div>
-                                        <h3 className="font-black text-slate-800 text-xl tracking-tight mb-1">Memo Acknowledgment</h3>
-                                        <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Ref: {signModal.refNo}</p>
-                                    </div>
-                                    <button onClick={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
-                                </div>
-                                <div className="p-6 space-y-5">
-                                    <div>
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Your Full Name</label>
-                                        <input type="text" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} required className="w-full p-4 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Jane Doe" />
-                                    </div>
-                                    <div className="mb-4">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1.5">Department</label>
-                                        <input type="text" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} required className="w-full p-4 rounded-xl border border-slate-300 outline-none focus:border-emerald-500 font-medium transition-colors" placeholder="e.g. Pediatrics" />
-                                    </div>
-                                    <div className="pt-2 border-t border-slate-100">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3 text-center">Draw Your Signature Below</label>
-                                        <SignaturePad onSave={handleSignatureSubmit} onCancel={() => {setSignModal({isOpen: false, refNo: ''}); unlockScroll();}} />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* FULLSCREEN SLIDESHOW OVERLAY */}
                     {slideshowIndex !== null && slideshow[slideshowIndex] && (
                         <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl animate-fade-in" onClick={() => { setSlideshowIndex(null); unlockScroll(); }}>
@@ -2536,7 +1898,7 @@
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-blue-50 text-tdmh-blue rounded-lg mt-0.5 shrink-0"><Icons.FileText className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-xs leading-snug block">Viewing is open to all staff. Authorized Admin/Heads must log in to generate new Memos or Events.</span></div>
+                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Memos & Calendar</strong> <span className="text-slate-600 text-xs leading-snug block">Viewing is open to all staff. Authorized Dept Heads and Admins must log in to generate new Memos or Events.</span></div>
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-emerald-50 text-tdmh-green rounded-lg mt-0.5 shrink-0"><Icons.Activity className="w-5 h-5"/></div>
@@ -2544,7 +1906,7 @@
                                         </li>
                                         <li className="flex items-start gap-4">
                                             <div className="p-2 bg-red-50 text-red-500 rounded-lg mt-0.5 shrink-0"><Icons.Shield className="w-5 h-5"/></div>
-                                            <div><strong className="text-slate-800 block text-sm mb-0.5">Enhanced Security</strong> <span className="text-slate-600 text-xs leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div>
+                                            <div><strong className="text-slate-800 block text-base mb-0.5">Enhanced Security</strong> <span className="text-slate-600 text-sm leading-snug block">You will notice a Shield Icon (Admin) and options to "Add Memos/Events". These actions require the Master PIN to ensure our data remains secure.</span></div>
                                         </li>
                                     </ul>
 
@@ -2589,10 +1951,6 @@
                     
                     {/* MASTER ADMIN CONSOLE MODAL */}
                     {showAdminConsole && (() => {
-                        const pendingMemosList = memos.filter(function(m) {
-                            return String(m.Status || m.status || m[6] || '').toUpperCase().includes('PENDING');
-                        });
-                        
                         return (
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto">
                             <div className="bg-slate-50 rounded-[2rem] shadow-2xl w-full max-w-[95vw] overflow-hidden flex flex-col h-[95vh] animate-slide-up border border-slate-700 my-auto shrink-0">
@@ -2638,14 +1996,10 @@
                                             </form>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4">
                                             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
                                                 <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Forms</div>
                                                 <div className="text-3xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div>
-                                            </div>
-                                            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Active Memos</div>
-                                                <div className="text-3xl font-black text-emerald-600">{memos.length || 0}</div>
                                             </div>
                                         </div>
                                         
@@ -2672,8 +2026,6 @@
                                     </div>
                                     
                                     <div className="w-full lg:w-2/3 flex flex-col gap-6">
-                                        
-                                        {/* Master Index Ref Frame embedded accurately */}
                                         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[400px] lg:h-[500px] shrink-0">
                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-100 pb-4 shrink-0 gap-3">
                                                 <h3 className="font-black text-slate-800 flex items-center gap-2 text-lg"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
@@ -2681,72 +2033,6 @@
                                             </div>
                                             <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative shadow-inner">
                                                 <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
-                                            </div>
-                                        </div>
-
-                                        {/* Pending Memos Queue Section */}
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg flex flex-col flex-1 border-t-4 border-t-amber-400">
-                                            <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center border border-amber-100"><Icons.FileText className="w-5 h-5"/></div>
-                                                    <div>
-                                                        <h3 className="font-black text-slate-800 text-lg leading-tight">Pending Memos Queue</h3>
-                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Awaiting Final Admin Approval</p>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-amber-100 border border-amber-200 text-amber-700 font-black text-xl px-4 py-1 rounded-xl shadow-sm">{pendingMemosList.length}</div>
-                                            </div>
-                                            
-                                            <div className="space-y-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
-                                                {pendingMemosList.length === 0 ? (
-                                                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                                                        <Icons.ClipboardCheck className="w-12 h-12 mb-3 opacity-50"/>
-                                                        <p className="text-base font-bold">No pending memos in the queue.</p>
-                                                        <p className="text-xs mt-1">All drafted memos have been resolved.</p>
-                                                    </div>
-                                                ) : (
-                                                    pendingMemosList.map((m, i) => {
-                                                        const parsedDate = formatMemoDate(m.Date || m[1]);
-                                                        const pdfLinkVal = m['PDF Link'] || m['PDF Link '] || m[' PDF Link '] || m.Link || m.pdfLink || Object.values(m)[8];
-                                                        const pdfLink = String(pdfLinkVal || '').trim();
-                                                        const isErrorLink = pdfLink.startsWith('ERROR:');
-                                                        const hasValidLink = pdfLink !== '' && pdfLink !== '#' && pdfLink !== 'undefined' && !isErrorLink;
-
-                                                        return (
-                                                        <div key={i} className="p-5 border border-slate-200 rounded-xl bg-slate-50 hover:bg-white hover:border-tdmh-blue transition-all relative group shadow-sm">
-                                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
-                                                                <span className="text-[10px] font-bold bg-white text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200 uppercase tracking-widest shadow-sm">REF: {m['Ref No'] || m[0]}</span>
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{parsedDate.month} {parsedDate.day}</span>
-                                                            </div>
-                                                            <h4 className="font-black text-slate-800 text-base leading-tight mb-2">{m.Subject || m[4]}</h4>
-                                                            <p className="text-xs text-slate-600 mb-5 border-l-2 border-slate-300 pl-3 bg-white/50 py-1"><strong>From:</strong> {m.From || m[3]}</p>
-                                                            
-                                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                                {hasValidLink ? (
-                                                                    <a href={pdfLink} target="_blank" className="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-2.5 rounded-lg hover:bg-slate-50 hover:text-tdmh-blue transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
-                                                                        <Icons.FileText className="w-4 h-4" /> View Draft
-                                                                    </a>
-                                                                ) : isErrorLink ? (
-                                                                    <button onClick={() => showAlert("PDF Generation Failed", `The server encountered this exact error when trying to create the PDF:\n\n${pdfLink}\n\nPlease check your Apps Script Google Drive IDs.`, "error")} className="flex-1 bg-red-50 border border-red-200 text-red-600 font-bold py-2.5 rounded-lg hover:bg-red-100 transition-colors flex items-center justify-center gap-2 text-xs shadow-sm">
-                                                                        <Icons.FileText className="w-4 h-4" /> Link Unavailable
-                                                                    </button>
-                                                                ) : (
-                                                                    <button disabled className="flex-1 bg-slate-100 border border-slate-200 text-slate-400 font-bold py-2.5 rounded-lg cursor-not-allowed flex items-center justify-center gap-2 text-xs shadow-sm">
-                                                                        <Icons.Sync className="w-4 h-4 animate-spin" /> Processing PDF...
-                                                                    </button>
-                                                                )}
-                                                                <button 
-                                                                    onClick={() => handleApproveMemo(m['Ref No'] || m[0])} 
-                                                                    disabled={isApprovingMemo} 
-                                                                    className="flex-1 bg-tdmh-blue text-white font-bold py-2.5 rounded-lg hover:bg-blue-900 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-xs shadow-sm"
-                                                                >
-                                                                    <Icons.ClipboardCheck className="w-4 h-4" /> {isApprovingMemo ? 'Approving...' : 'Approve & Publish'}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        )
-                                                    })
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -2862,7 +2148,7 @@
                     </main>
 
                     <footer className="mt-auto bg-tdmh-blue border-t-2 border-blue-900 py-6 text-center text-white text-[10px] font-bold flex flex-col md:flex-row justify-center items-center gap-6 relative z-20 shrink-0">
-                        <p className="uppercase tracking-widest text-blue-200">&copy; {new Date().getFullYear()} TAYTAY DOCTORS MULTISPECIALTY HOSPITAL.</p>
+                        <p className="uppercase tracking-widest text-blue-200">© {new Date().getFullYear()} TAYTAY DOCTORS MULTISPECIALTY HOSPITAL.</p>
                         <button onClick={() => fetchDatabase(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-900 border border-blue-800 text-tdmh-green hover:bg-blue-800 transition-colors uppercase tracking-widest text-xs font-black shadow-lg">
                             <Icons.Sync className="w-4 h-4" /> {isSyncing ? 'Syncing...' : 'System Sync'}
                         </button>
