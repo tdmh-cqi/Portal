@@ -19,13 +19,7 @@
                         serif: ['"Playfair Display"', 'serif'] 
                     },
                     colors: { 
-                        tdmh: { 
-                            blue: '#1e3a8a', 
-                            green: '#16a34a', 
-                            dark: '#0f172a', 
-                            surface: '#f4f7f9', 
-                            border: '#e2e8f0' 
-                        } 
+                        tdmh: { blue: '#1e3a8a', green: '#16a34a', dark: '#0f172a', surface: '#f4f7f9', border: '#e2e8f0' } 
                     },
                     animation: { 
                         'fade-in': 'fadeIn 0.3s ease-out forwards', 
@@ -57,6 +51,7 @@
         .bg-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
         .print-area { white-space: pre-wrap; word-wrap: break-word; }
         
+        /* MAGIC NATIVE PDF PRINTER CSS */
         @media print {
             body * { visibility: hidden; }
             .printable-memo, .printable-memo * { visibility: visible; }
@@ -160,7 +155,6 @@
         const getToolIcon = (iconStr, fallbackStr) => {
             let s = String(iconStr || '').toLowerCase().trim();
             if (!s && fallbackStr) s = String(fallbackStr).toLowerCase().trim();
-            
             if (s.includes('form') || s.includes('paper') || s.includes('pen') || s.includes('document') || s.includes('request') || s.includes('sheet') || s.includes('report') || s.includes('score card') || s.includes('abstract')) return Icons.FileText;
             if (s.includes('needle') || s.includes('syringe')) return Icons.Syringe;
             if (s.includes('car') || s.includes('vehicle')) return Icons.Car;
@@ -319,6 +313,7 @@
             const [memos, setMemos] = useState([]);
             const [signatures, setSignatures] = useState([]);
             const [inquiries, setInquiries] = useState([]);
+            const [memoRequests, setMemoRequests] = useState([]);
 
             const [trackQuery, setTrackQuery] = useState('');
             const [trackResult, setTrackResult] = useState(null);
@@ -339,7 +334,10 @@
             const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
             const [dccActiveCategory, setDccActiveCategory] = useState('universal');
             
+            // Department Login State
             const [selectedDept, setSelectedDept] = useState(null); 
+            const [deptAuthModal, setDeptAuthModal] = useState({ isOpen: false, targetDept: null, pinInput: '', isLoading: false, feedback: null });
+            
             const [currentSlide, setCurrentSlide] = useState(0);
             const [slideshowIndex, setSlideshowIndex] = useState(null); 
             const [qrLightbox, setQrLightbox] = useState(null); 
@@ -357,7 +355,6 @@
             const [showEditEvent, setShowEditEvent] = useState(false);
             const [showAddNews, setShowAddNews] = useState(false);
             
-            // Floating Support Chat States
             const [showSupportChat, setShowSupportChat] = useState(false);
             const [inquiryData, setInquiryData] = useState({ email: '', category: 'General Help', refNo: '', message: '' });
             const [adminReplyData, setAdminReplyData] = useState({ reply: '' });
@@ -372,7 +369,6 @@
             const [editEventData, setEditEventData] = useState({ oldDateText: '', oldTitle: '', newTime: '' });
             const [newsData, setNewsData] = useState({ title: '', content: '', type: 'Standard' });
 
-            // Memo specific states
             const [showAddMemo, setShowAddMemo] = useState(false);
             const [viewingMemo, setViewingMemo] = useState(null); 
             const [signModalOpen, setSignModalOpen] = useState(false);
@@ -381,13 +377,15 @@
             const [isFixingGrammar, setIsFixingGrammar] = useState(false);
             const [isApprovingMemo, setIsApprovingMemo] = useState(false);
             const [editMemoRef, setEditMemoRef] = useState(null); 
+            const [memoRequestMode, setMemoRequestMode] = useState(false);
 
-            // Calculate derived state lists AT THE TOP OF THE COMPONENT safely
+            // Safe Top-Level Derived States
             const pendingDccRequests = useMemo(() => dccQueue.filter(r => String(r.Status || r.status || r[4] || '').toUpperCase().includes('PENDING')), [dccQueue]);
             const visibleMemos = useMemo(() => memos.filter(m => String(m.Status || m[6]).toUpperCase() === 'PUBLISHED' || String(m.Status || m[6]).toUpperCase() === 'APPROVED'), [memos]);
             const pendingMemosList = useMemo(() => memos.filter(m => String(m.Status || m[6]).toUpperCase().includes('PENDING')), [memos]);
             const openInquiries = useMemo(() => inquiries.filter(i => String(i.Status || i[6]).toUpperCase().includes('OPEN')), [inquiries]);
             const currentMemoSigs = useMemo(() => viewingMemo ? signatures.filter(s => (s['Memo Ref No'] || s[0]) === (viewingMemo['Ref No'] || viewingMemo[0])) : [], [viewingMemo, signatures]);
+            const pendingMemoRequests = useMemo(() => memoRequests.filter(r => String(r.Status || r.status || r[6] || '').toUpperCase().includes('PENDING')), [memoRequests]);
 
             const TABS = [
                 { id: 'home', label: 'Dashboard', icon: 'Home' },
@@ -418,18 +416,17 @@
                     const s = Math.floor((diff % (1000 * 60)) / 1000);
                     return `${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`;
                 };
-
                 const timer = setInterval(() => setTimeUntilReset(calculateTime()), 1000);
                 setTimeUntilReset(calculateTime()); 
                 return () => clearInterval(timer);
             }, []);
 
             useEffect(() => {
-                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen || showAddMemo || viewingMemo !== null || signModalOpen;
+                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen || showAddMemo || viewingMemo !== null || signModalOpen || deptAuthModal.isOpen;
                 if (hasModal) { document.body.classList.add('modal-open'); document.body.style.overflow = 'hidden'; } 
                 else { unlockScroll(); }
                 return () => unlockScroll();
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, customAlert.isOpen, showAddMemo, viewingMemo, signModalOpen]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, customAlert.isOpen, showAddMemo, viewingMemo, signModalOpen, deptAuthModal.isOpen]);
 
             useEffect(() => {
                 if (slideshow.length <= 1 || slideshowIndex !== null) return;
@@ -494,6 +491,7 @@
                 setMemos(data.memos || []);
                 setSignatures(data.signatures || []);
                 setInquiries(data.inquiries || []);
+                setMemoRequests(data.memoRequests || []);
                 
                 if (data.slideshow) {
                     const activeSlides = data.slideshow.filter(s => String(s['Active (Yes/No)'] || '').trim().toUpperCase() === 'YES');
@@ -535,13 +533,40 @@
             const sendPostRequest = async (payload) => {
                 if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") { 
                     showAlert("System Offline", "The database is currently running in offline developer mode.", "error");
-                    return {status: 'success', trackingId: 'CQI-TEST-000'}; 
+                    return {status: 'success'}; 
                 }
                 try {
                     const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" }).catch(() => ({ ok: false }));
                     if (response && response.ok) return await response.json();
                     return {status: 'error', message: 'Failed to parse JSON response from server.'};
                 } catch (e) { return {status: 'error', message: e.toString()}; }
+            };
+
+            // ---- DEPT PASSWORDS ----
+            const handleDeptClick = (dept) => {
+                if (dept.HasPassword && userRole !== 'admin') {
+                    setDeptAuthModal({ isOpen: true, targetDept: dept, pinInput: '', isLoading: false, feedback: null });
+                } else {
+                    setSelectedDept(dept);
+                }
+            };
+
+            const submitDeptAuth = async (e) => {
+                e.preventDefault();
+                setDeptAuthModal(prev => ({...prev, isLoading: true}));
+                const payload = { action: 'verifyDeptPin', pin: deptAuthModal.pinInput, deptId: deptAuthModal.targetDept.ID || deptAuthModal.targetDept.id || deptAuthModal.targetDept.Name || deptAuthModal.targetDept.name };
+                const res = await sendPostRequest(payload);
+                
+                if (res.status === 'success') {
+                    setDeptAuthModal(prev => ({...prev, isLoading: false, feedback: {type: 'success', text: 'Access Granted'}}));
+                    setTimeout(() => {
+                        setSelectedDept(deptAuthModal.targetDept);
+                        setDeptAuthModal({ isOpen: false, targetDept: null, pinInput: '', isLoading: false, feedback: null });
+                    }, 800);
+                } else {
+                    setDeptAuthModal(prev => ({...prev, isLoading: false, pinInput: '', feedback: {type: 'error', text: 'Incorrect Department Password'}}));
+                    setTimeout(() => setDeptAuthModal(prev => ({...prev, feedback: null})), 3000);
+                }
             };
 
             // ---- CHAT / INQUIRY HANDLERS ----
@@ -588,16 +613,34 @@
             const handleNativeMemoSubmit = async (e) => {
                 e.preventDefault();
                 setIsSubmitting(true);
-                const payload = {
-                    action: editMemoRef ? 'updateMemo' : 'generateMemo',
-                    refNo: editMemoRef,
-                    forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body
-                };
+                let payload = {};
+
+                if (memoRequestMode && editMemoRef) {
+                    payload = {
+                        action: 'requestMemoAction',
+                        requestType: 'EDIT',
+                        refNo: editMemoRef,
+                        requestedBy: userRole,
+                        newData: { forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body }
+                    };
+                } else {
+                    payload = {
+                        action: editMemoRef ? 'updateMemo' : 'generateMemo',
+                        refNo: editMemoRef,
+                        forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body
+                    };
+                }
+
                 const res = await sendPostRequest(payload);
                 setIsSubmitting(false);
+
                 if(res.status === 'success') {
-                    showAlert(editMemoRef ? "Memo Updated" : "Memo Sent for Approval", editMemoRef ? `Memo ${editMemoRef} has been successfully updated in the database.` : `Your digital memo has been generated and routed to the Admin queue for final review.\n\nTracking Ref: ${res.refNo}`, "success");
-                    setShowAddMemo(false); setEditMemoRef(null); setViewingMemo(null); unlockScroll(); setMemoData({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); fetchDatabase(); 
+                    if (memoRequestMode) {
+                        showAlert("Modification Request Sent", `Your edit request for Memo ${editMemoRef} has been sent to the Master Admin for review.\nReq ID: ${res.reqId}`, "success");
+                    } else {
+                        showAlert(editMemoRef ? "Memo Updated" : "Memo Sent for Approval", editMemoRef ? `Memo ${editMemoRef} has been successfully updated in the database.` : `Your digital memo has been generated and routed to the Admin queue for final review.\n\nTracking Ref: ${res.refNo}`, "success");
+                    }
+                    setShowAddMemo(false); setEditMemoRef(null); setViewingMemo(null); setMemoRequestMode(false); unlockScroll(); setMemoData({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); fetchDatabase(true); 
                 } else { showAlert("Submission Failed", "Failed to process memo in database.", "error"); }
             };
 
@@ -607,19 +650,40 @@
                 setIsApprovingMemo(false);
                 if (res.status === 'success') {
                     showAlert("Memo Approved", `Memo ${refNo} has been successfully published to the live portal.`, "success");
-                    setViewingMemo(null); fetchDatabase();
+                    setViewingMemo(null); fetchDatabase(true);
                 } else { showAlert("Approval Failed", "Failed to approve memo.", "error"); }
             };
 
             const handleArchiveMemo = async (refNo) => {
-                if(!window.confirm(`Are you sure you want to Archive (Delete) memo ${refNo}? It will be hidden from the portal.`)) return;
-                setIsApprovingMemo(true);
-                const res = await sendPostRequest({ action: 'archiveMemo', refNo: refNo });
-                setIsApprovingMemo(false);
+                if(userRole === 'admin') {
+                    if(!window.confirm(`Are you sure you want to Archive (Delete) memo ${refNo}? It will be hidden from the portal.`)) return;
+                    setIsApprovingMemo(true);
+                    const res = await sendPostRequest({ action: 'archiveMemo', refNo: refNo });
+                    setIsApprovingMemo(false);
+                    if (res.status === 'success') {
+                        showAlert("Memo Archived", `Memo ${refNo} has been removed from the portal.`, "success");
+                        setViewingMemo(null); fetchDatabase(true);
+                    } else { showAlert("Archive Failed", "Failed to archive memo.", "error"); }
+                } else {
+                    if(!window.confirm(`Are you sure you want to request Archiving for memo ${refNo}? The Master Admin must approve this action.`)) return;
+                    setIsApprovingMemo(true);
+                    const res = await sendPostRequest({ action: 'requestMemoAction', requestType: 'ARCHIVE', refNo: refNo, requestedBy: userRole });
+                    setIsApprovingMemo(false);
+                    if (res.status === 'success') {
+                        showAlert("Archive Request Sent", `Your request to archive Memo ${refNo} has been sent to the Master Admin.\nReq ID: ${res.reqId}`, "success");
+                        setViewingMemo(null); fetchDatabase(true);
+                    } else { showAlert("Request Failed", "Failed to send archive request.", "error"); }
+                }
+            };
+
+            const handleResolveMemoRequest = async (reqId, actionVal) => {
+                setIsResolving(reqId);
+                const res = await sendPostRequest({ action: 'resolveMemoRequest', reqId: reqId, action: actionVal });
+                setIsResolving(null);
                 if (res.status === 'success') {
-                    showAlert("Memo Archived", `Memo ${refNo} has been removed from the portal.`, "success");
-                    setViewingMemo(null); fetchDatabase();
-                } else { showAlert("Archive Failed", "Failed to archive memo.", "error"); }
+                    showAlert("Request Processed", `The modification request has been ${actionVal === 'APPROVE' ? 'Approved & Applied' : 'Rejected'}.`, "success");
+                    fetchDatabase(true);
+                } else { showAlert("Error", res.message || "Failed to process request.", "error"); }
             };
 
             const handleSignatureSubmit = async (signatureBase64) => {
@@ -631,7 +695,7 @@
                 setIsSubmitting(false);
                 if (res.status === 'success') {
                     showAlert("Acknowledgment Saved", `Thank you, ${signData.name}!\n\nYour digital signature has been saved to the receiving record.`, "success");
-                    setSignModalOpen(false); setSignData({name: '', dept: ''}); fetchDatabase(); 
+                    setSignModalOpen(false); setSignData({name: '', dept: ''}); fetchDatabase(true); 
                 } else { showAlert("Network Error", "Failed to save signature.", "error"); }
             };
 
@@ -793,60 +857,10 @@
                 setIsTracking(false);
             };
 
-            // --- LOADING SCREEN ---
-            if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
-                return (
-                    <div className="min-h-screen bg-tdmh-blue flex items-center justify-center p-4 flex-col relative overflow-hidden">
-                        <div className="absolute inset-0 bg-pattern opacity-10"></div>
-                        <div className="relative z-10 flex flex-col items-center">
-                            <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center shadow-2xl mb-8 animate-pulse-slow">
-                                <Icons.Sync className="w-12 h-12 text-tdmh-blue animate-spin-slow" />
-                            </div>
-                            <h2 className="text-white font-black text-2xl tracking-widest uppercase mb-2">TDMH CQI Portal</h2>
-                            <p className="text-blue-200 font-bold tracking-widest uppercase text-[10px] animate-pulse">Establishing Secure Connection...</p>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (globalPinRequired && !globalUnlocked) {
-                return (
-                    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-                        <div className="bg-white p-10 rounded-[2rem] shadow-2xl max-w-md w-full text-center relative z-10 border border-slate-200 animate-slide-up">
-                            <div className="w-20 h-20 bg-blue-50 text-tdmh-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border border-blue-100">
-                                <Icons.Lock className="w-10 h-10" />
-                            </div>
-                            <h1 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">TDMH CQI Portal</h1>
-                            <p className="text-slate-500 font-medium mb-6 text-sm">Restricted Intranet. Enter global access key.</p>
-                            
-                            {globalPinFeedback && (
-                                <div className={`mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all ${globalPinFeedback.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
-                                    {globalPinFeedback.text}
-                                </div>
-                            )}
-
-                            <form onSubmit={handleGlobalUnlock}>
-                                <input 
-                                    type="password" 
-                                    value={globalPinInput} 
-                                    onChange={(e) => setGlobalPinInput(e.target.value)} 
-                                    className="w-full px-6 py-4 border-2 border-slate-200 rounded-xl focus:border-tdmh-blue mb-4 text-center text-xl tracking-widest font-bold outline-none transition-colors" 
-                                    placeholder="••••••••••••" 
-                                    autoFocus 
-                                />
-                                <button type="submit" disabled={isVerifyingLogin} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg transition-colors disabled:opacity-50">
-                                    {isVerifyingLogin ? "Verifying..." : "Enter System"}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
-
+            // --- RENDER SAFE COMPONENTS ---
             const renderActiveTabContent = () => {
-                switch(activeTab) {
-                    case 'home': 
-                        return (
+                if (activeTab === 'home') {
+                    return (
                         <div className="animate-fade-in space-y-8">
                             <div className="structured-card p-0 overflow-hidden flex flex-col md:flex-row bg-tdmh-blue border-tdmh-blue">
                                 <div className="p-8 md:p-12 lg:p-16 flex-1 flex flex-col justify-center relative z-10">
@@ -861,8 +875,7 @@
                                     <div className="absolute top-4 right-4 z-30 bg-black/70 backdrop-blur text-white px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSlideshowIndex(currentSlide)}>
                                         <Icons.Maximize className="w-5 h-5" /> View Fullscreen
                                     </div>
-                                    {slideshow.map((slide, index) => {
-                                        return (
+                                    {slideshow.map((slide, index) => (
                                         <div key={index} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`} onClick={() => setSlideshowIndex(currentSlide)}>
                                             <div className="absolute inset-0 bg-slate-900 overflow-hidden pointer-events-none">
                                                 <img src={getDriveImage(slide['Image URL'])} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl scale-110" alt="bg" />
@@ -873,8 +886,7 @@
                                                 <p className="font-bold tracking-widest uppercase text-sm md:text-base text-blue-200 drop-shadow-md">{slide['Subtitle']}</p>
                                             </div>
                                         </div>
-                                        )
-                                    })}
+                                    ))}
                                     <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2" onClick={e => e.stopPropagation()}>
                                         {slideshow.map((_, index) => (
                                             <button key={index} onClick={(e) => { e.stopPropagation(); setCurrentSlide(index); }} className={`h-2.5 rounded-full transition-all duration-300 shadow-sm ${index === currentSlide ? 'bg-tdmh-green w-8' : 'bg-white/70 w-2.5 hover:bg-white'}`}></button>
@@ -900,20 +912,18 @@
                                         const label = c.Department || c.dept || c[0];
                                         const colors = ['bg-blue-600', 'bg-emerald-600', 'bg-purple-600', 'bg-pink-600', 'bg-red-600'];
                                         const textColors = ['text-blue-600', 'text-emerald-600', 'text-purple-600', 'text-pink-600', 'text-red-600'];
-                                        const barColor = colors[i % colors.length];
-                                        const iconColor = textColors[i % textColors.length];
                                         let widthPercentage = Math.max(5, Math.min(100, (count / 50) * 100));
                                         
                                         return (
                                             <div key={i} className="flex flex-col gap-4 group p-5 rounded-2xl hover:bg-slate-50 transition-colors border border-slate-200 shadow-sm bg-white">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 ${iconColor}`}>
+                                                    <div className={`w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center shrink-0 ${textColors[i % textColors.length]}`}>
                                                         <Icons.Activity className="w-5 h-5"/>
                                                     </div>
                                                     <div className="text-sm font-black text-slate-700 uppercase tracking-wider leading-tight">{label}</div>
                                                 </div>
                                                 <div className="flex-1 w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                                                    <div className={`h-full ${barColor} transition-all duration-1000 ease-out rounded-full`} style={{ width: `${widthPercentage}%` }}></div>
+                                                    <div className={`h-full ${colors[i % colors.length]} transition-all duration-1000 ease-out rounded-full`} style={{ width: `${widthPercentage}%` }}></div>
                                                 </div>
                                                 <div className="text-right font-black text-3xl text-slate-800">{count}</div>
                                             </div>
@@ -922,10 +932,47 @@
                                 </div>
                             </div>
                         </div>
-                        );
-                        
-                    case 'news': 
-                        return (
+                    );
+                }
+
+                if (activeTab === 'census') {
+                    return (
+                        <div className="animate-fade-in structured-card p-8 md:p-12 border-t-4 border-t-tdmh-green">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                                <div>
+                                    <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight mb-2">Hospital Daily Census</h3>
+                                    <p className="text-sm text-slate-500">Live patient tracking metrics across major medical departments. Update the counts below and click Save.</p>
+                                </div>
+                                <div className="bg-slate-50 border border-slate-200 px-5 py-3 rounded-xl text-left md:text-right shrink-0 shadow-sm w-full md:w-auto flex flex-row md:flex-col justify-between md:justify-center items-center md:items-end">
+                                    <div className="text-xs font-black text-tdmh-green uppercase tracking-widest mb-0.5">{liveTime.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                    <div className="text-xl font-black text-tdmh-blue tracking-tight">{liveTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 mb-10">
+                                {census.map((c, i) => (
+                                    <div key={i} className="bg-white p-6 rounded-2xl border-2 border-slate-100 text-center focus-within:border-tdmh-green transition-colors">
+                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-4">{c.Department || c[0]}</label>
+                                        {(userRole === 'admin' || userRole === 'admitting') ? (
+                                            <input type="number" value={c['Patient Count'] || c[1] || ''} onChange={(e) => { const newCensus = [...census]; newCensus[i] = {...newCensus[i], 'Patient Count': e.target.value}; setCensus(newCensus); }} className="w-full p-4 rounded-xl border border-slate-300 font-black text-4xl text-tdmh-blue text-center focus:border-tdmh-green focus:ring-1 outline-none transition-colors" />
+                                        ) : (
+                                            <div className="w-full p-4 rounded-xl border border-slate-100 bg-slate-50 font-black text-4xl text-tdmh-blue text-center">{c['Patient Count'] || c[1] || '0'}</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                            {(userRole === 'admin' || userRole === 'admitting') && (
+                                <div className="flex justify-end gap-4 border-t border-slate-200 pt-8">
+                                    <button onClick={handleSaveCensus} disabled={isSubmitting} className="px-8 py-4 bg-tdmh-green text-white font-black uppercase rounded-xl hover:bg-green-700 shadow-lg disabled:opacity-50 transition-colors w-full sm:w-auto">
+                                        {isSubmitting ? "Saving..." : "Save & Publish"}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    );
+                }
+
+                if (activeTab === 'news') {
+                    return (
                         <div className="animate-fade-in structured-card p-6 md:p-10">
                             <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div>
@@ -988,10 +1035,11 @@
                                 })}
                             </div>
                         </div>
-                        );
-                        
-                    case 'memos': 
-                        return (
+                    );
+                }
+
+                if (activeTab === 'memos') {
+                    return (
                         <div className="animate-fade-in structured-card p-6 md:p-10">
                             <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div>
@@ -1021,12 +1069,12 @@
                                     const parsedDate = formatDateFriendly(m.Date || m[1]);
 
                                     return (
-                                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row gap-5 relative group hover:shadow-md transition-shadow hover:border-tdmh-blue cursor-pointer" onClick={() => setViewingMemo(m)}>
-                                        <div className="bg-blue-50 text-tdmh-blue p-4 rounded-xl flex flex-col items-center justify-center w-full sm:w-[90px] border border-blue-100 shrink-0">
+                                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row gap-5 relative group hover:shadow-md transition-shadow hover:border-tdmh-blue">
+                                        <div className="bg-blue-50 text-tdmh-blue p-4 rounded-xl flex flex-col items-center justify-center w-full sm:w-[90px] border border-blue-100 shrink-0 cursor-pointer" onClick={() => setViewingMemo(m)}>
                                             <span className="text-xs font-bold uppercase tracking-widest">{parsedDate.month}</span>
                                             <span className="text-3xl font-black">{parsedDate.day}</span>
                                         </div>
-                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center cursor-pointer" onClick={() => setViewingMemo(m)}>
                                             <div className="flex gap-2 items-center mb-1">
                                                 <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded border border-slate-200 uppercase tracking-widest">REF: {m['Ref No'] || m[0]}</span>
                                                 {(m.Urgency || m.urgency || m[7]) === 'High' && <span className="text-[10px] font-bold bg-red-50 text-red-600 px-2.5 py-1 rounded border border-red-200 uppercase tracking-widest">Urgent</span>}
@@ -1034,11 +1082,23 @@
                                             <h3 className="text-lg font-black text-slate-800 mt-1 leading-tight truncate group-hover:text-tdmh-blue transition-colors">{m.Subject || m[4]}</h3>
                                             <p className="text-slate-500 text-xs mt-1.5 truncate">From: {m.From || m[3]} &bull; For: {m.For || m[2]}</p>
                                         </div>
-                                        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center shrink-0 gap-2 mt-2 sm:mt-0 border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0">
-                                            <div className="text-tdmh-blue font-bold text-xs bg-blue-50 px-4 py-2 rounded-lg flex items-center justify-center gap-2 border border-blue-100 shadow-sm hover:bg-blue-100 transition-colors">
-                                                <Icons.Eye className="w-4 h-4" /> Read
-                                            </div>
-                                            <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase flex items-center gap-1">
+                                        <div className="flex flex-col items-end shrink-0 gap-2 mt-2 sm:mt-0 border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0">
+                                            {(userRole === 'admin' || userRole === 'dept_head') && (
+                                                <div className="flex gap-2 w-full sm:w-auto">
+                                                    <button onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setMemoData({ forDept: m.For || m[2], fromName: m.From || m[3], subject: m.Subject || m[4], body: m.Body || m[5], urgency: m.Urgency || m[7] || 'Normal' });
+                                                        setEditMemoRef(m['Ref No'] || m[0]); 
+                                                        setMemoRequestMode(userRole !== 'admin');
+                                                        setShowAddMemo(true);
+                                                    }} className="flex-1 sm:flex-none text-tdmh-blue hover:bg-blue-100 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200 shadow-sm transition-colors" title="Edit Memo"><Icons.Edit className="w-4 h-4"/></button>
+                                                    <button onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleArchiveMemo(m['Ref No'] || m[0]);
+                                                    }} className="flex-1 sm:flex-none text-red-600 hover:bg-red-100 bg-red-50 px-3 py-2 rounded-lg border border-red-200 shadow-sm transition-colors" title="Archive Memo"><Icons.Trash className="w-4 h-4"/></button>
+                                                </div>
+                                            )}
+                                            <div className="text-[10px] text-slate-400 font-bold tracking-widest uppercase flex items-center gap-1 w-full sm:w-auto justify-end mt-auto pt-2">
                                                 <Icons.PenTool className="w-3 h-3" /> {sigCount} Sigs
                                             </div>
                                         </div>
@@ -1047,20 +1107,14 @@
                                 })}
                             </div>
                         </div>
-                        );
-                        
-                    case 'dcc': 
-                        const dccCategories = [
-                            { id: 'universal', label: 'Universal Forms', note: 'Access standardized, hospital-wide documents applicable to all departments.' },
-                            { id: 'iso requirements', label: 'ISO Requirements', note: 'Retrieve official Document Control Center (DCC) and ISO compliance documentation.' },
-                            { id: 'request control no.', label: 'Request Control No.', note: 'Submit a formal request to the DCC to assign an official ISO Control Number to a newly drafted document.' }
-                        ];
-                        const activeNoteObj = dccCategories.find(c => c.id === dccActiveCategory);
-                        const activeNote = activeNoteObj ? activeNoteObj.note : '';
-                        const sortedUniversal = [...universalForms].sort((a, b) => String(a['Form Title'] || a[0] || '').localeCompare(String(b['Form Title'] || b[0] || '')));
-                        const sortedISO = [...isoRequirements].sort((a, b) => String(a['Form Title'] || a[0] || '').localeCompare(String(b['Form Title'] || b[0] || '')));
+                    );
+                }
 
-                        return (
+                if (activeTab === 'dcc') {
+                    const sortedUniversal = [...universalForms].sort((a, b) => String(a['Form Title'] || a[0] || '').localeCompare(String(b['Form Title'] || b[0] || '')));
+                    const sortedISO = [...isoRequirements].sort((a, b) => String(a['Form Title'] || a[0] || '').localeCompare(String(b['Form Title'] || b[0] || '')));
+                    
+                    return (
                         <div className="animate-fade-in flex flex-col xl:flex-row gap-6">
                             <div className="w-full xl:w-72 shrink-0 flex flex-col gap-3">
                                 <div className="bg-slate-900 p-5 rounded-xl text-white mb-2 shadow-md">
@@ -1068,7 +1122,10 @@
                                     <p className="text-[10px] text-slate-400 uppercase tracking-wider">Official Repository Center</p>
                                 </div>
                                 <div className="flex flex-col gap-3">
-                                    {dccCategories.map(cat => (
+                                    {[{ id: 'universal', label: 'Universal Forms', note: 'Access standardized, hospital-wide documents.' },
+                                      { id: 'iso requirements', label: 'ISO Requirements', note: 'Retrieve official Document Control Center (DCC) and ISO compliance documentation.' },
+                                      { id: 'request control no.', label: 'Request Control No.', note: 'Submit a formal request to the DCC to assign an official ISO Control Number.' }]
+                                      .map(cat => (
                                         <button key={cat.id} onClick={() => setDccActiveCategory(cat.id)} className={`w-full text-left px-5 py-4 rounded-xl font-black text-sm transition-all border ${dccActiveCategory === cat.id ? 'bg-tdmh-blue text-white border-transparent shadow-lg scale-[1.02]' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'}`}>
                                             {cat.label}
                                         </button>
@@ -1079,7 +1136,6 @@
                             <div className="flex-1 structured-card p-6 md:p-10 min-h-[500px]">
                                 <div className="border-b border-slate-200 pb-6 mb-6">
                                     <h3 className="text-2xl font-black text-slate-800 capitalize mb-3 tracking-tight">{dccActiveCategory === 'iso requirements' ? 'ISO Requirements' : `${dccActiveCategory}`}</h3>
-                                    <div className="bg-slate-50 border-l-4 border-slate-300 p-3 text-sm text-slate-600 font-medium">{activeNote}</div>
                                 </div>
 
                                 {dccActiveCategory === 'request control no.' && (
@@ -1162,10 +1218,11 @@
                                 })()}
                             </div>
                         </div>
-                        );
-                        
-                    case 'track': 
-                        return (
+                    );
+                }
+
+                if (activeTab === 'track') {
+                    return (
                         <div className="animate-fade-in structured-card p-8 md:p-12 max-w-3xl mx-auto">
                             <div className="text-center mb-10">
                                 <div className="w-16 h-16 bg-blue-50 text-tdmh-blue rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-100">
@@ -1188,9 +1245,7 @@
                                         <>
                                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-                                                        Tracking ID: {trackResult['Tracking ID']}
-                                                    </p>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tracking ID: {trackResult['Tracking ID']}</p>
                                                     <h3 className="text-xl font-black text-slate-800">{trackResult['Title']}</h3>
                                                 </div>
                                                 <span className={`px-4 py-1.5 font-black text-xs rounded-lg uppercase tracking-widest ${trackResult['Status'] === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
@@ -1205,134 +1260,140 @@
                                 </div>
                             )}
                         </div>
-                        );
-                        
-                    case 'departments': 
-                        if (selectedDept) {
-                            const deptTools = tools.filter(function(t) {
-                                const targetIdsStr = String(t['Target Dept ID'] || t['Target ID'] || t.TargetID || t.targetID || '').toLowerCase();
-                                const selectedId = String(selectedDept['ID'] || selectedDept.id || selectedDept['Name'] || selectedDept.name || '').toLowerCase().trim();
-                                const targetArray = targetIdsStr.split(',').map(s => s.trim());
-                                return targetArray.includes(selectedId) || targetArray.includes('universal');
-                            });
+                    );
+                }
 
-                            return (
-                                <div className="animate-fade-in structured-card p-6 md:p-10 min-h-[500px]">
-                                    <div className="mb-6 flex items-center gap-4 border-b border-slate-200 pb-6">
-                                        <button onClick={() => setSelectedDept(null)} className="p-2 bg-slate-100 hover:bg-tdmh-blue hover:text-white rounded-lg text-slate-600 transition-colors shadow-sm">
-                                            <Icons.ChevronLeft className="w-6 h-6" />
-                                        </button>
-                                        <div>
-                                            <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight">
-                                                {selectedDept['Name'] || selectedDept.Name} Forms & Tools
-                                            </h2>
-                                            <p className="text-sm text-slate-500 font-medium mt-1">Select a document or tool below to open it in a new window.</p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {deptTools.length === 0 && (
-                                            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center p-10 bg-slate-50 rounded-xl border border-slate-200">
-                                                <Icons.Folder className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-                                                <p className="text-slate-500 italic mb-2">No specific tools mapped for this department yet.</p>
-                                            </div>
-                                        )}
-                                        {deptTools.map((t, i) => {
-                                            const toolColorClass = getToolColor(t.Color || t.color || t[4], t['Tool Name'] || t['Name'] || t.name || t[0]);
-                                            const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[5] || '').trim();
-                                            const ToolIconCmp = getToolIcon(toolIconStr, t['Tool Name'] || t['Name'] || t.name || t[0]);
-
-                                            return (
-                                                <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
-                                                    <div className="flex items-start gap-4 mb-5">
-                                                        <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border transition-colors shadow-sm ${toolColorClass}`}>
-                                                            <ToolIconCmp className="w-5 h-5" />
-                                                        </div>
-                                                        <div className="pt-0.5">
-                                                            <h4 className="font-bold text-slate-800 text-sm leading-tight transition-colors group-hover:text-tdmh-blue">{t['Tool Name'] || t['Name'] || t.name || t[0]}</h4>
-                                                            <p className="text-xs text-slate-500 mt-1.5 leading-snug">{t.Description || t.description || t[1]}</p>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
-                                                        <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
-                                                        <button onClick={() => { setQrLightbox({url: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`, title: t['Tool Name'] || t['Name'] || t.name || t[0]}); unlockScroll(); }} className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"><Icons.QrCode className="w-4 h-4" /> QR</button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            );
-                        }
+                if (activeTab === 'departments') {
+                    if (selectedDept) {
+                        const deptTools = tools.filter(function(t) {
+                            const targetIdsStr = String(t['Target Dept ID'] || t['Target ID'] || t.TargetID || t.targetID || '').toLowerCase();
+                            const selectedId = String(selectedDept['ID'] || selectedDept.id || selectedDept['Name'] || selectedDept.name || '').toLowerCase().trim();
+                            const targetArray = targetIdsStr.split(',').map(s => s.trim());
+                            return targetArray.includes(selectedId) || targetArray.includes('universal');
+                        });
 
                         return (
-                            <div className="animate-fade-in structured-card p-6 md:p-10">
-                                <div className="mb-4 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div className="animate-fade-in structured-card p-6 md:p-10 min-h-[500px]">
+                                <div className="mb-6 flex items-center gap-4 border-b border-slate-200 pb-6">
+                                    <button onClick={() => setSelectedDept(null)} className="p-2 bg-slate-100 hover:bg-tdmh-blue hover:text-white rounded-lg text-slate-600 transition-colors shadow-sm">
+                                        <Icons.ChevronLeft className="w-6 h-6" />
+                                    </button>
                                     <div>
-                                        <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.Box className="w-6 h-6 text-tdmh-blue" /> Hospital Departments</h2>
-                                        <p className="text-sm text-slate-500 font-medium mt-2">Access specialized forms, clinical tools, and operational resources designated specifically for your unit.</p>
+                                        <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight">
+                                            {selectedDept['Name'] || selectedDept.Name} Forms & Tools
+                                        </h2>
+                                        <p className="text-sm text-slate-500 font-medium mt-1">Select a document or tool below to open it in a new window.</p>
                                     </div>
                                 </div>
-                                <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-8 flex gap-4 items-start">
-                                    <Icons.Users className="w-6 h-6 text-tdmh-blue shrink-0 mt-0.5" />
-                                    <div>
-                                        <strong className="text-sm text-blue-900 block mb-1">Public Directory Notice</strong>
-                                        <p className="text-xs text-blue-800 leading-relaxed">Viewing the directory and clicking into departments to access standard forms is <strong>open to all staff</strong>. Logging in is only required if you are a Department Head updating restricted portal content via the Master Admin Console.</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                    {departments.map((dept, i) => {
-                                        const iconKeyStr = String(dept['Icon'] || dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
-                                        const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
-                                        let IconCmp = Icons.Box; 
-                                        if (matchedKey) IconCmp = Icons[matchedKey];
-                                        else {
-                                            const catStr = String(dept['Category'] || dept.category || '').toLowerCase();
-                                            if (catStr.includes('admin') || catStr.includes('finance')) IconCmp = Icons.Users;
-                                            else if (catStr.includes('medical') || catStr.includes('ward') || catStr.includes('ancillary')) IconCmp = Icons.Stethoscope;
-                                            else if (catStr.includes('support')) IconCmp = Icons.Activity;
-                                        }
-                                        const colorTheme = DEPT_COLORS[i % DEPT_COLORS.length];
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {deptTools.length === 0 && (
+                                        <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center p-10 bg-slate-50 rounded-xl border border-slate-200">
+                                            <Icons.Folder className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                                            <p className="text-slate-500 italic mb-2">No specific tools mapped for this department yet.</p>
+                                        </div>
+                                    )}
+                                    {deptTools.map((t, i) => {
+                                        const toolColorClass = getToolColor(t.Color || t.color || t[4], t['Tool Name'] || t['Name'] || t.name || t[0]);
+                                        const toolIconStr = String(t.Icon || t.icon || t['Icon Name'] || t[5] || '').trim();
+                                        const ToolIconCmp = getToolIcon(toolIconStr, t['Tool Name'] || t['Name'] || t.name || t[0]);
+
                                         return (
-                                            <div key={dept.id || i} onClick={() => setSelectedDept(dept)} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all group bg-white shadow-sm hover:shadow-md ${colorTheme.border}`}>
-                                                <div className={`p-2.5 rounded-lg shrink-0 transition-colors ${colorTheme.bg} ${colorTheme.text} ${colorTheme.hover}`}><IconCmp className="w-6 h-6" /></div>
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className="font-bold text-sm text-slate-800 group-hover:text-tdmh-blue truncate leading-tight transition-colors">{dept['Name'] || dept.Name}</span>
-                                                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate mt-0.5">{dept['Category'] || dept.category || 'Standard'}</span>
+                                            <div key={i} className="flex flex-col p-5 rounded-xl border border-slate-200 hover:border-tdmh-blue hover:bg-slate-50 transition-colors bg-white shadow-sm group">
+                                                <div className="flex items-start gap-4 mb-5">
+                                                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border transition-colors shadow-sm ${toolColorClass}`}>
+                                                        <ToolIconCmp className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="pt-0.5">
+                                                        <h4 className="font-bold text-slate-800 text-sm leading-tight transition-colors group-hover:text-tdmh-blue">{t['Tool Name'] || t['Name'] || t.name || t[0]}</h4>
+                                                        <p className="text-xs text-slate-500 mt-1.5 leading-snug">{t.Description || t.description || t[1]}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-auto pt-4 border-t border-slate-100">
+                                                    <a href={t.Link || t.link || t[2] || '#'} target="_blank" className="flex-1 bg-tdmh-blue text-white text-center py-2.5 rounded-lg text-xs font-bold hover:bg-blue-900 transition-colors shadow-sm">Open Document</a>
+                                                    <button onClick={() => { setQrLightbox({url: `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(t.Link || t.link || t[2] || '')}`, title: t['Tool Name'] || t['Name'] || t.name || t[0]}); unlockScroll(); }} className="px-4 py-2.5 bg-white text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-50 transition-colors flex items-center gap-1.5 border border-slate-200 shadow-sm hover:text-slate-800"><Icons.QrCode className="w-4 h-4" /> QR</button>
                                                 </div>
                                             </div>
-                                        )
+                                        );
                                     })}
                                 </div>
                             </div>
                         );
+                    }
 
-                    case 'calendar': 
-                        const calYear = currentCalDate.getFullYear();
-                        const calMonth = currentCalDate.getMonth();
-                        const monthName = currentCalDate.toLocaleString('default', { month: 'long' });
-                        const daysInMonthCount = new Date(calYear, calMonth + 1, 0).getDate();
-                        const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay(); 
-                        
-                        const daysInMonthArray = Array.from({length: daysInMonthCount}, (_, i) => i + 1);
-                        const blankDays = Array.from({length: firstDayOfMonth}, (_, i) => i);
+                    return (
+                        <div className="animate-fade-in structured-card p-6 md:p-10">
+                            <div className="mb-4 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div>
+                                    <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight"><Icons.Box className="w-6 h-6 text-tdmh-blue" /> Hospital Departments</h2>
+                                    <p className="text-sm text-slate-500 font-medium mt-2">Access specialized forms, clinical tools, and operational resources designated specifically for your unit.</p>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-8 flex gap-4 items-start">
+                                <Icons.Lock className="w-6 h-6 text-tdmh-blue shrink-0 mt-0.5" />
+                                <div>
+                                    <strong className="text-sm text-blue-900 block mb-1">Department Security Lock</strong>
+                                    <p className="text-xs text-blue-800 leading-relaxed">Some departments contain restricted forms. If a department requires a password, a lock screen will appear when you click it. Master Admins bypass these locks automatically.</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                {departments.map((dept, i) => {
+                                    const iconKeyStr = String(dept['Icon'] || dept['IconName'] || dept['Icon Name'] || dept.iconName || '').trim();
+                                    const matchedKey = Object.keys(Icons).find(k => k.toLowerCase() === iconKeyStr.toLowerCase());
+                                    let IconCmp = Icons.Box; 
+                                    if (matchedKey) IconCmp = Icons[matchedKey];
+                                    else {
+                                        const catStr = String(dept['Category'] || dept.category || '').toLowerCase();
+                                        if (catStr.includes('admin') || catStr.includes('finance')) IconCmp = Icons.Users;
+                                        else if (catStr.includes('medical') || catStr.includes('ward') || catStr.includes('ancillary')) IconCmp = Icons.Stethoscope;
+                                        else if (catStr.includes('support')) IconCmp = Icons.Activity;
+                                    }
+                                    const colorTheme = DEPT_COLORS[i % DEPT_COLORS.length];
+                                    return (
+                                        <div key={dept.id || i} onClick={() => handleDeptClick(dept)} className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all group bg-white shadow-sm hover:shadow-md ${colorTheme.border} relative`}>
+                                            <div className={`p-2.5 rounded-lg shrink-0 transition-colors ${colorTheme.bg} ${colorTheme.text} ${colorTheme.hover}`}>
+                                                <IconCmp className="w-6 h-6" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0 pr-4">
+                                                <span className="font-bold text-sm text-slate-800 group-hover:text-tdmh-blue truncate leading-tight transition-colors">{dept['Name'] || dept.Name}</span>
+                                                <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest truncate mt-0.5">{dept['Category'] || dept.category || 'Standard'}</span>
+                                            </div>
+                                            {dept.HasPassword && (
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-300 group-hover:text-tdmh-blue transition-colors">
+                                                    <Icons.Lock className="w-4 h-4"/>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    );
+                }
 
-                        const getSafeDate = (val) => {
-                            if (!val) return null;
-                            let str = String(val).trim();
-                            if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return new Date(str + 'T12:00:00');
-                            let d = new Date(str);
-                            if (isNaN(d.getTime())) return null;
-                            return d;
-                        };
-
-                        const eventDaysThisMonth = calendar.map(function(e) {
-                            const d = getSafeDate(e.date || e['Date Text'] || e['Date'] || e[0] || e[1]);
-                            if (d && d.getMonth() === calMonth && d.getFullYear() === calYear) return d.getDate();
-                            return null;
-                        }).filter(Boolean);
-                        
-                        return (
+                if (activeTab === 'calendar') {
+                    const calYear = currentCalDate.getFullYear();
+                    const calMonth = currentCalDate.getMonth();
+                    const monthName = currentCalDate.toLocaleString('default', { month: 'long' });
+                    const daysInMonthCount = new Date(calYear, calMonth + 1, 0).getDate();
+                    const firstDayOfMonth = new Date(calYear, calMonth, 1).getDay(); 
+                    const daysInMonthArray = Array.from({length: daysInMonthCount}, (_, i) => i + 1);
+                    const blankDays = Array.from({length: firstDayOfMonth}, (_, i) => i);
+                    const getSafeDate = (val) => {
+                        if (!val) return null;
+                        let str = String(val).trim();
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return new Date(str + 'T12:00:00');
+                        let d = new Date(str);
+                        if (isNaN(d.getTime())) return null;
+                        return d;
+                    };
+                    const eventDaysThisMonth = calendar.map(function(e) {
+                        const d = getSafeDate(e.date || e['Date Text'] || e['Date'] || e[0] || e[1]);
+                        if (d && d.getMonth() === calMonth && d.getFullYear() === calYear) return d.getDate();
+                        return null;
+                    }).filter(Boolean);
+                    
+                    return (
                         <div className="animate-fade-in structured-card p-6 md:p-10">
                             <div className="mb-8 border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div>
@@ -1403,10 +1464,11 @@
                                 </div>
                             </div>
                         </div>
-                        );
-                        
-                    case 'agimat': 
-                        return (
+                    );
+                }
+
+                if (activeTab === 'agimat') {
+                    return (
                         <div className="animate-fade-in max-w-5xl mx-auto py-6">
                             <div className="flex flex-col items-center justify-center mb-10 text-center">
                                 <img src="https://raw.githubusercontent.com/tdmh-cqi/Portal/main/images%20logo/agimat-logo.png" alt="Agimat" className="h-16 md:h-24 object-contain mb-4 drop-shadow-sm" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
@@ -1456,17 +1518,293 @@
                                 )}
                             </div>
                         </div>
-                        );
-                        
-                    default: 
-                        return null;
+                    );
                 }
-            }
+
+                return null;
+            };
+
+            const renderAdminConsoleTabs = () => {
+                if (adminConsoleTab === 'dcc') {
+                    return (
+                        <div className="flex flex-col lg:flex-row gap-6 h-full">
+                            <div className="w-full lg:w-1/3 flex flex-col gap-6">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-emerald-500">
+                                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Icons.Upload className="w-5 h-5"/></div>
+                                            <div>
+                                                <h3 className="font-black text-slate-800 text-lg leading-tight">DCC Request Queue</h3>
+                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Stamp & Move to Vault</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 rounded-lg text-sm shadow-sm">{pendingDccRequests.length}</div>
+                                    </div>
+                                    
+                                    <div className="overflow-y-auto flex-1 custom-scrollbar pr-2 space-y-4">
+                                        {pendingDccRequests.length === 0 ? (
+                                            <div className="text-center py-10 text-slate-400">
+                                                <Icons.ClipboardCheck className="w-12 h-12 mx-auto mb-3 opacity-50"/>
+                                                <p className="font-bold">Queue is empty</p>
+                                                <p className="text-xs mt-1">All DCC requests have been resolved.</p>
+                                            </div>
+                                        ) : (
+                                            pendingDccRequests.map((req, idx) => (
+                                                <form key={req['Tracking ID'] || idx} onSubmit={(e) => handleResolveDCC(e, req['Tracking ID'])} className="border border-slate-200 p-4 rounded-xl bg-slate-50 relative group shadow-sm hover:border-emerald-300 transition-colors">
+                                                    <div className="flex justify-between items-start mb-3">
+                                                        <div className="min-w-0 pr-2">
+                                                            <span className="text-[10px] font-bold bg-white text-slate-600 px-2 py-1 rounded-md border border-slate-200 uppercase tracking-widest shadow-sm">{req['Tracking ID']}</span>
+                                                            <h4 className="font-bold text-slate-800 text-sm mt-3 leading-tight truncate">{req.Title}</h4>
+                                                            <p className="text-[10px] text-slate-500 mt-1 truncate">{req['Dept Email']}</p>
+                                                        </div>
+                                                        <a href={`https://drive.google.com/uc?export=download&id=${req['Temp File ID']}`} target="_blank" className="text-tdmh-blue bg-blue-50 p-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm shrink-0" title="Download Raw Draft">
+                                                            <Icons.Download className="w-4 h-4"/>
+                                                        </a>
+                                                    </div>
+                                                    <div className="mt-3 pt-3 border-t border-slate-200">
+                                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Upload Stamped Final File <span className="text-red-500">*</span></label>
+                                                        <input name="stampedFile" type="file" accept="application/pdf" required className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-emerald-50 file:text-emerald-700 file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-lg p-1 mb-3 bg-white" />
+                                                        <button type="submit" disabled={isResolving === req['Tracking ID']} className="w-full bg-emerald-600 text-white font-black tracking-widest uppercase text-xs py-2.5 rounded-lg shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                                                            {isResolving === req['Tracking ID'] ? "Processing..." : "Approve & Route File"}
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="w-full lg:w-2/3 flex flex-col gap-6">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[400px] lg:h-[500px] shrink-0">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-100 pb-4 shrink-0 gap-3">
+                                        <h3 className="font-black text-slate-800 flex items-center gap-2 text-lg"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
+                                        <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold bg-blue-50 text-tdmh-blue px-3 py-1.5 rounded hover:bg-blue-100 transition-colors border border-blue-100">Open Full Window</a>
+                                    </div>
+                                    <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative shadow-inner">
+                                        <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center">
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Mapped Forms</div>
+                                        <div className="text-3xl font-black text-tdmh-blue">{universalForms.length + isoRequirements.length || 0}</div>
+                                    </div>
+                                    
+                                    {monitors.length > 0 && (
+                                        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-48">
+                                            <h3 className="font-black text-slate-800 text-sm flex items-center gap-2 mb-3 shrink-0 border-b border-slate-100 pb-2">
+                                                <Icons.Activity className="w-4 h-4 text-tdmh-blue"/> System Monitors
+                                            </h3>
+                                            <div className="space-y-2 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                                {monitors.map((m, i) => (
+                                                    <a key={i} href={m.Link || m.link || m[1]} target="_blank" className="flex items-start gap-2 p-2 rounded-lg border border-slate-100 hover:border-tdmh-blue hover:bg-slate-50 transition-colors group">
+                                                        <div className="p-1.5 bg-slate-100 text-slate-500 rounded flex items-center justify-center group-hover:bg-tdmh-blue group-hover:text-white transition-colors shrink-0 mt-0.5">
+                                                            <Icons.Activity className="w-3 h-3" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <h5 className="text-xs font-bold text-slate-800 group-hover:text-tdmh-blue truncate">{m['System Name'] || m.Name || m.name || m[0]}</h5>
+                                                            <p className="text-[9px] text-slate-500 truncate mt-0.5">{m.Description || m.desc || m[2]}</p>
+                                                        </div>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (adminConsoleTab === 'memos') {
+                    return (
+                        <div className="flex flex-col lg:flex-row gap-6 h-full">
+                            <div className="w-full lg:w-1/2 flex flex-col gap-6">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-tdmh-blue">
+                                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-blue-50 text-tdmh-blue rounded-xl flex items-center justify-center"><Icons.FileText className="w-5 h-5"/></div>
+                                            <div>
+                                                <h3 className="font-black text-slate-800 text-lg leading-tight">Digital Memo Queue</h3>
+                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Awaiting Final Approval</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-blue-100 text-tdmh-blue font-black text-xl px-4 py-1.5 rounded-xl shadow-sm">{pendingMemosList.length}</div>
+                                    </div>
+                                    
+                                    <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                        {pendingMemosList.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                                <Icons.ClipboardCheck className="w-16 h-16 mb-4 opacity-50"/>
+                                                <p className="text-lg font-bold">No pending memos in the queue.</p>
+                                                <p className="text-sm mt-1">All drafted memos have been processed.</p>
+                                            </div>
+                                        ) : (
+                                            pendingMemosList.map((m, i) => (
+                                                <div key={i} className="p-6 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-white hover:border-tdmh-blue transition-all relative group shadow-sm flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <span className="text-[10px] font-bold bg-white text-slate-600 px-2.5 py-1 rounded-md border border-slate-200 uppercase tracking-widest shadow-sm">REF: {m['Ref No'] || m[0]}</span>
+                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.Date || m[1]}</span>
+                                                        </div>
+                                                        <h4 className="font-black text-slate-800 text-lg leading-tight mb-2 truncate">{m.Subject || m[4]}</h4>
+                                                        <p className="text-xs text-slate-500"><strong>From:</strong> {m.From || m[3]} &bull; <strong>For:</strong> {m.For || m[2]}</p>
+                                                    </div>
+                                                    <div className="flex gap-3 w-full xl:w-auto shrink-0">
+                                                        <button onClick={() => {
+                                                            setMemoData({ forDept: m.For || m[2], fromName: m.From || m[3], subject: m.Subject || m[4], body: m.Body || m[5], urgency: m.Urgency || m[7] || 'Normal' });
+                                                            setEditMemoRef(m['Ref No'] || m[0]); setMemoRequestMode(false); setShowAddMemo(true);
+                                                        }} className="bg-white border border-slate-200 text-slate-600 font-bold p-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center shadow-sm" title="Edit Draft">
+                                                            <Icons.Edit className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => setViewingMemo(m)} className="flex-1 xl:flex-none bg-blue-50 text-tdmh-blue border border-blue-100 font-bold px-6 py-3 rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                                                            <Icons.Eye className="w-4 h-4" /> Review & Publish
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="w-full lg:w-1/2 flex flex-col gap-6">
+                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-amber-500">
+                                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center"><Icons.Sparkles className="w-5 h-5"/></div>
+                                            <div>
+                                                <h3 className="font-black text-slate-800 text-lg leading-tight">Modification Requests</h3>
+                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Edit/Archive Approvals</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-amber-100 text-amber-700 font-black text-xl px-4 py-1.5 rounded-xl shadow-sm">{pendingMemoRequests.length}</div>
+                                    </div>
+                                    
+                                    <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                        {pendingMemoRequests.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                                <Icons.CheckCircle className="w-16 h-16 mb-4 opacity-50"/>
+                                                <p className="text-lg font-bold">No pending requests.</p>
+                                            </div>
+                                        ) : (
+                                            pendingMemoRequests.map((req, i) => (
+                                                <div key={i} className="p-5 border border-slate-200 rounded-2xl bg-slate-50 flex flex-col gap-4 shadow-sm">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className={`text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-widest ${req['Request Type'] === 'ARCHIVE' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-blue-50 text-tdmh-blue border-blue-200'}`}>{req['Request Type']}</span>
+                                                                <span className="text-[10px] font-bold bg-white text-slate-600 px-2 py-1 rounded border border-slate-200 uppercase tracking-widest shadow-sm">REF: {req['Memo Ref No']}</span>
+                                                            </div>
+                                                            <p className="text-xs text-slate-500 font-bold mt-2">Requested By: <span className="text-slate-800">{req['Requested By']}</span></p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {req['Request Type'] === 'EDIT' && req['New Data'] && (
+                                                        <div className="bg-white p-3 rounded-lg border border-slate-200 text-xs text-slate-600 h-24 overflow-y-auto custom-scrollbar italic shadow-inner">
+                                                            <p className="font-bold text-slate-800 mb-1">Proposed Subject: {JSON.parse(req['New Data']).subject}</p>
+                                                            {JSON.parse(req['New Data']).body}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <div className="flex gap-3 pt-2">
+                                                        <button onClick={() => handleResolveMemoRequest(req['Request ID'], 'REJECT')} disabled={isResolving === req['Request ID']} className="flex-1 bg-white border border-slate-300 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50">Reject</button>
+                                                        <button onClick={() => handleResolveMemoRequest(req['Request ID'], 'APPROVE')} disabled={isResolving === req['Request ID']} className="flex-1 bg-tdmh-green text-white px-4 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-green-700 transition-colors shadow-md disabled:opacity-50">Approve</button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                if (adminConsoleTab === 'inquiries') {
+                    return (
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-purple-500">
+                            <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center"><Icons.MessageCircle className="w-5 h-5"/></div>
+                                    <div>
+                                        <h3 className="font-black text-slate-800 text-lg leading-tight">Support Inquiries</h3>
+                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Respond & Resolve Tickets</p>
+                                    </div>
+                                </div>
+                                <div className="bg-purple-100 text-purple-700 font-black text-xl px-4 py-1.5 rounded-xl shadow-sm">{openInquiries.length}</div>
+                            </div>
+                            
+                            <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
+                                {openInquiries.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                        <Icons.CheckCircle className="w-16 h-16 mb-4 opacity-50"/>
+                                        <p className="text-lg font-bold">No active inquiries.</p>
+                                        <p className="text-sm mt-1">Inbox is zero.</p>
+                                    </div>
+                                ) : (
+                                    openInquiries.map((inq, i) => (
+                                        <form key={i} onSubmit={(e) => handleResolveInquiry(e, inq['Ticket ID'] || inq[0])} className="p-6 border border-slate-200 rounded-2xl bg-slate-50 flex flex-col gap-4 shadow-sm focus-within:border-purple-300 transition-colors">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-[10px] font-bold bg-white text-slate-600 px-2 py-1 rounded border border-slate-200 uppercase tracking-widest">{inq['Ticket ID'] || inq[0]}</span>
+                                                        <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded border border-purple-200 uppercase tracking-widest">{inq.Category || inq[3]}</span>
+                                                        {(inq['Ref No'] || inq[4]) !== 'N/A' && <span className="text-[10px] font-bold bg-blue-100 text-tdmh-blue px-2 py-1 rounded border border-blue-200 uppercase tracking-widest">MEMO: {inq['Ref No'] || inq[4]}</span>}
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-500 font-bold tracking-wider">{inq.Timestamp || inq[1]}</p>
+                                                    <p className="text-sm font-bold text-slate-700 mt-1">{inq['Dept Email'] || inq[2]}</p>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-4 rounded-xl border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                                                {inq.Message || inq[5]}
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                                <input type="text" required placeholder="Type your official admin reply here..." value={adminReplyData.reply} onChange={e=>setAdminReplyData({reply: e.target.value})} className="flex-1 p-3.5 border border-slate-300 rounded-xl focus:border-purple-500 outline-none text-sm font-medium transition-colors" />
+                                                <button type="submit" disabled={isResolving === (inq['Ticket ID'] || inq[0])} className="bg-purple-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm tracking-wide hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 shrink-0 whitespace-nowrap">
+                                                    {isResolving === (inq['Ticket ID'] || inq[0]) ? 'Sending...' : 'Reply & Resolve'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    );
+                }
+                return null;
+            };
 
             return (
                 <div className="flex flex-col min-h-screen bg-pattern">
                     
-                    {/* FLOATING SUPPORT WIDGET (NEW) */}
+                    {/* DEPT PASSWORD MODAL (NEW) */}
+                    {deptAuthModal.isOpen && (
+                        <div className="fixed inset-0 z-[200] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto no-print">
+                            <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 text-center relative animate-slide-up border border-slate-200 my-auto shrink-0">
+                                <button onClick={() => setDeptAuthModal({ isOpen: false, targetDept: null, pinInput: '', isLoading: false, feedback: null })} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full"><Icons.X className="w-5 h-5" /></button>
+                                <div className="w-16 h-16 bg-slate-100 text-slate-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-inner"><Icons.Lock className="w-8 h-8" /></div>
+                                <h3 className="text-xl font-black text-slate-800 mb-2">Department Locked</h3>
+                                <p className="text-xs text-slate-500 mb-6 font-medium">Please enter the specific password for <b>{deptAuthModal.targetDept?.Name}</b> to access these forms.</p>
+                                
+                                {deptAuthModal.feedback && (
+                                    <div className={`mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all animate-fade-in ${deptAuthModal.feedback.type === 'success' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                                        {deptAuthModal.feedback.text}
+                                    </div>
+                                )}
+
+                                <form onSubmit={submitDeptAuth}>
+                                    <input type="password" value={deptAuthModal.pinInput} onChange={(e) => setDeptAuthModal({...deptAuthModal, pinInput: e.target.value})} autoFocus className="w-full p-4 bg-slate-50 border border-slate-300 rounded-xl text-center text-2xl font-black tracking-[0.3em] mb-4 focus:border-tdmh-blue outline-none transition-all shadow-inner" placeholder="••••••••" />
+                                    <button type="submit" disabled={deptAuthModal.isLoading} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-bold py-3.5 rounded-xl shadow-md transition-colors disabled:opacity-50 tracking-widest uppercase text-sm">
+                                        {deptAuthModal.isLoading ? "Verifying..." : "Unlock Forms"}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FLOATING SUPPORT WIDGET */}
                     <div className="fixed bottom-6 right-6 z-[90] no-print">
                         <button onClick={() => setShowSupportChat(!showSupportChat)} className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 ${showSupportChat ? 'bg-red-500 text-white' : 'bg-tdmh-blue text-white'}`}>
                             {showSupportChat ? <Icons.X className="w-6 h-6" /> : <Icons.MessageCircle className="w-6 h-6" />}
@@ -1576,9 +1914,9 @@
                                         {String(viewingMemo.Status || viewingMemo[6]).toUpperCase().includes('PENDING') && (
                                             <span className="bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 text-xs font-bold uppercase tracking-widest shadow-sm">Preview Mode</span>
                                         )}
-                                        {String(viewingMemo.Status || viewingMemo[6]).toUpperCase() === 'PUBLISHED' && (
+                                        {String(viewingMemo.Status || viewingMemo[6]).toUpperCase() === 'PUBLISHED' || String(viewingMemo.Status || viewingMemo[6]).toUpperCase() === 'APPROVED' ? (
                                             <span className="hidden sm:inline-block bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 text-xs font-bold uppercase tracking-widest shadow-sm">Official Record</span>
-                                        )}
+                                        ) : null}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button onClick={handlePrintMemo} className="text-tdmh-blue hover:text-white hover:bg-tdmh-blue transition-colors bg-white px-3 py-1.5 rounded-lg border border-blue-200 shadow-sm flex items-center gap-2 text-xs font-bold uppercase tracking-widest"><Icons.Download className="w-4 h-4"/> PDF</button>
@@ -1645,8 +1983,8 @@
                                     {String(viewingMemo.Status || viewingMemo[6]).toUpperCase().includes('PENDING') && userRole === 'admin' ? (
                                         <div className="w-full flex justify-end gap-4">
                                             <button onClick={() => setViewingMemo(null)} className="px-6 py-3 bg-white text-slate-600 font-bold text-sm rounded-xl border border-slate-300 hover:bg-slate-50 transition-colors">Cancel</button>
-                                            <button onClick={() => handleApproveMemo(viewingMemo['Ref No'] || viewingMemo[0])} disabled={isSubmitting} className="flex-1 sm:flex-none px-10 py-3 bg-tdmh-green text-white font-black uppercase tracking-widest text-sm rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50">
-                                                {isSubmitting ? 'Approving...' : 'Approve & Publish Memo'}
+                                            <button onClick={() => handleApproveMemo(viewingMemo['Ref No'] || viewingMemo[0])} disabled={isApprovingMemo} className="flex-1 sm:flex-none px-10 py-3 bg-tdmh-green text-white font-black uppercase tracking-widest text-sm rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-900/20 disabled:opacity-50">
+                                                {isApprovingMemo ? 'Approving...' : 'Approve & Publish Memo'}
                                             </button>
                                         </div>
                                     ) : (
@@ -1655,23 +1993,6 @@
                                                 <Icons.MessageCircle className="w-4 h-4" /> Raise Inquiry
                                             </button>
                                             <div className="flex gap-3 w-full sm:w-auto">
-                                                {userRole === 'admin' && (
-                                                    <>
-                                                        <button onClick={() => { 
-                                                            setMemoData({
-                                                                forDept: viewingMemo.For || viewingMemo[2],
-                                                                fromName: viewingMemo.From || viewingMemo[3],
-                                                                subject: viewingMemo.Subject || viewingMemo[4],
-                                                                body: viewingMemo.Body || viewingMemo[5],
-                                                                urgency: viewingMemo.Urgency || viewingMemo[7] || 'Normal'
-                                                            });
-                                                            setEditMemoRef(viewingMemo['Ref No'] || viewingMemo[0]);
-                                                            setShowAddMemo(true);
-                                                        }} className="flex-1 sm:flex-none bg-blue-50 border border-blue-200 text-tdmh-blue px-5 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-blue-100 transition-colors shadow-sm">Edit</button>
-                                                        
-                                                        <button onClick={() => handleArchiveMemo(viewingMemo['Ref No'] || viewingMemo[0])} className="flex-1 sm:flex-none bg-red-50 border border-red-200 text-red-600 px-5 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-red-100 transition-colors shadow-sm">Archive</button>
-                                                    </>
-                                                )}
                                                 <button onClick={() => setSignModalOpen(true)} className="flex-1 sm:flex-none bg-tdmh-blue text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2">
                                                     <Icons.PenTool className="w-4 h-4" /> Acknowledge
                                                 </button>
@@ -1696,7 +2017,7 @@
                                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">{editMemoRef ? `Updating Record: ${editMemoRef}` : 'Digital Memo Format'}</p>
                                         </div>
                                     </div>
-                                    <button onClick={() => { setShowAddMemo(false); setEditMemoRef(null); setViewingMemo(null); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
+                                    <button onClick={() => { setShowAddMemo(false); setEditMemoRef(null); setViewingMemo(null); setMemoRequestMode(false); unlockScroll(); }} className="text-slate-400 hover:text-slate-800 transition-colors bg-white p-2 rounded-full border border-slate-200 shadow-sm hover:bg-slate-50"><Icons.X className="w-5 h-5"/></button>
                                 </div>
                                 <form className="p-6 md:p-8 space-y-6" onSubmit={handleNativeMemoSubmit}>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -1733,14 +2054,14 @@
                                     </div>
 
                                     <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-blue text-white font-black tracking-widest uppercase text-sm py-4 rounded-xl mt-4 hover:bg-blue-900 transition-transform hover:-translate-y-1 shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:hover:translate-y-0">
-                                        {isSubmitting ? "Processing..." : (editMemoRef ? "Update Memo Database" : "Submit to Admin Review")}
+                                        {isSubmitting ? "Processing..." : (memoRequestMode ? "Send Request to Admin" : (editMemoRef ? "Update Memo Database" : "Submit to Admin Review"))}
                                     </button>
                                 </form>
                             </div>
                         </div>
                     )}
 
-                    {/* SIGNATURE PAD MODAL (OPENS OVER THE VIEWER) */}
+                    {/* SIGNATURE PAD MODAL */}
                     {signModalOpen && viewingMemo && (
                         <div className="fixed inset-0 z-[170] flex items-end sm:items-center justify-center p-0 sm:p-8 bg-slate-900/80 backdrop-blur-sm animate-fade-in no-print" onClick={() => setSignModalOpen(false)}>
                             <div className="bg-white rounded-t-3xl sm:rounded-[2rem] shadow-2xl w-full max-w-sm p-8 text-center relative animate-slide-up border border-slate-200" onClick={e => e.stopPropagation()}>
@@ -1764,207 +2085,7 @@
                     )}
 
                     {/* MASTER ADMIN CONSOLE MODAL */}
-                    {showAdminConsole && (
-                        <div className="fixed inset-0 z-[100] flex items-start justify-center p-0 sm:p-8 bg-slate-900/90 backdrop-blur-md animate-fade-in overflow-y-auto no-print">
-                            <div className="bg-slate-50 rounded-none sm:rounded-[2rem] shadow-2xl w-full max-w-[95vw] xl:max-w-[90rem] overflow-hidden flex flex-col h-screen sm:h-[95vh] animate-slide-up border border-slate-700 my-auto shrink-0">
-                                
-                                <div className="bg-slate-900 p-4 sm:p-6 flex justify-between items-center text-white shrink-0 shadow-md z-10 border-b border-slate-800">
-                                    <div className="flex items-center gap-3 sm:gap-4">
-                                        <div className="p-2 sm:p-2.5 bg-slate-800 border border-slate-700 rounded-xl shadow-inner">
-                                            <Icons.Shield className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-lg sm:text-2xl font-black tracking-tight leading-none">Master Admin Console</h2>
-                                            <p className="text-[8px] sm:text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-1">System Management & Routing</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => { setShowAdminConsole(false); unlockScroll(); }} className="text-slate-400 hover:text-white p-2.5 bg-slate-800 border border-slate-700 rounded-full transition-colors shadow-sm"><Icons.X className="w-5 h-5" /></button>
-                                </div>
-                                
-                                <div className="flex bg-slate-800 p-2 gap-2 overflow-x-auto no-scrollbar shrink-0 shadow-inner">
-                                    <button onClick={() => setAdminConsoleTab('dcc')} className={`px-4 sm:px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap ${adminConsoleTab === 'dcc' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}>
-                                        <Icons.Upload className="w-4 h-4"/> DCC Queue
-                                        {pendingDccRequests.length > 0 && <span className="bg-emerald-800 px-1.5 py-0.5 rounded text-[9px]">{pendingDccRequests.length}</span>}
-                                    </button>
-                                    <button onClick={() => setAdminConsoleTab('memos')} className={`px-4 sm:px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap ${adminConsoleTab === 'memos' ? 'bg-tdmh-blue text-white shadow-md' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}>
-                                        <Icons.FileText className="w-4 h-4"/> Memo Queue
-                                        {pendingMemosList.length > 0 && <span className="bg-blue-800 px-1.5 py-0.5 rounded text-[9px]">{pendingMemosList.length}</span>}
-                                    </button>
-                                    <button onClick={() => setAdminConsoleTab('inquiries')} className={`px-4 sm:px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors flex items-center gap-2 whitespace-nowrap ${adminConsoleTab === 'inquiries' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-400 hover:bg-slate-700 hover:text-white'}`}>
-                                        <Icons.MessageCircle className="w-4 h-4"/> Inquiries
-                                        {openInquiries.length > 0 && <span className="bg-purple-800 px-1.5 py-0.5 rounded text-[9px]">{openInquiries.length}</span>}
-                                    </button>
-                                </div>
-
-                                <div className="p-4 sm:p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar bg-slate-100 flex flex-col">
-                                    
-                                    {/* DCC TAB */}
-                                    {adminConsoleTab === 'dcc' && (
-                                        <div className="flex flex-col lg:flex-row gap-6 h-full">
-                                            <div className="w-full lg:w-1/3 flex flex-col gap-6">
-                                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-emerald-500">
-                                                    <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Icons.Upload className="w-5 h-5"/></div>
-                                                            <div>
-                                                                <h3 className="font-black text-slate-800 text-lg leading-tight">DCC Request Queue</h3>
-                                                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Stamp & Move to Vault</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-emerald-100 text-emerald-700 font-black px-3 py-1 rounded-lg text-sm shadow-sm">{pendingDccRequests.length}</div>
-                                                    </div>
-                                                    
-                                                    <div className="overflow-y-auto flex-1 custom-scrollbar pr-2 space-y-4">
-                                                        {pendingDccRequests.length === 0 ? (
-                                                            <div className="text-center py-10 text-slate-400">
-                                                                <Icons.ClipboardCheck className="w-12 h-12 mx-auto mb-3 opacity-50"/>
-                                                                <p className="font-bold">Queue is empty</p>
-                                                                <p className="text-xs mt-1">All DCC requests have been resolved.</p>
-                                                            </div>
-                                                        ) : (
-                                                            pendingDccRequests.map((req, idx) => (
-                                                                <form key={req['Tracking ID'] || idx} onSubmit={(e) => handleResolveDCC(e, req['Tracking ID'])} className="border border-slate-200 p-4 rounded-xl bg-slate-50 relative group shadow-sm hover:border-emerald-300 transition-colors">
-                                                                    <div className="flex justify-between items-start mb-3">
-                                                                        <div className="min-w-0 pr-2">
-                                                                            <span className="text-[10px] font-bold bg-white text-slate-600 px-2 py-1 rounded-md border border-slate-200 uppercase tracking-widest shadow-sm">{req['Tracking ID']}</span>
-                                                                            <h4 className="font-bold text-slate-800 text-sm mt-3 leading-tight truncate">{req.Title}</h4>
-                                                                            <p className="text-[10px] text-slate-500 mt-1 truncate">{req['Dept Email']}</p>
-                                                                        </div>
-                                                                        <a href={`https://drive.google.com/uc?export=download&id=${req['Temp File ID']}`} target="_blank" className="text-tdmh-blue bg-blue-50 p-2 rounded-lg hover:bg-blue-100 transition-colors border border-blue-100 shadow-sm shrink-0" title="Download Raw Draft">
-                                                                            <Icons.Download className="w-4 h-4"/>
-                                                                        </a>
-                                                                    </div>
-                                                                    <div className="mt-3 pt-3 border-t border-slate-200">
-                                                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Upload Stamped Final File <span className="text-red-500">*</span></label>
-                                                                        <input name="stampedFile" type="file" accept="application/pdf" required className="block w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:bg-emerald-50 file:text-emerald-700 file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-lg p-1 mb-3 bg-white" />
-                                                                        <button type="submit" disabled={isResolving === req['Tracking ID']} className="w-full bg-emerald-600 text-white font-black tracking-widest uppercase text-xs py-2.5 rounded-lg shadow-sm hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                                                                            {isResolving === req['Tracking ID'] ? "Processing..." : "Approve & Route File"}
-                                                                        </button>
-                                                                    </div>
-                                                                </form>
-                                                            ))
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="w-full lg:w-2/3 flex flex-col gap-6">
-                                                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[400px] lg:h-[500px] shrink-0">
-                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b border-slate-100 pb-4 shrink-0 gap-3">
-                                                        <h3 className="font-black text-slate-800 flex items-center gap-2 text-lg"><Icons.FileText className="w-5 h-5 text-tdmh-blue"/> Master Index Reference</h3>
-                                                        <a href="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/edit" target="_blank" className="text-xs font-bold bg-blue-50 text-tdmh-blue px-3 py-1.5 rounded hover:bg-blue-100 transition-colors border border-blue-100">Open Full Window</a>
-                                                    </div>
-                                                    <div className="flex-1 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative shadow-inner">
-                                                        <iframe src="https://docs.google.com/document/d/14_7i6NVjdQWP9bEw2k_qc4tBSzdzHJp96vVaGidxxgY/preview" className="absolute inset-0 w-full h-full border-none"></iframe>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* MEMOS TAB */}
-                                    {adminConsoleTab === 'memos' && (
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-tdmh-blue">
-                                            <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-blue-50 text-tdmh-blue rounded-xl flex items-center justify-center"><Icons.FileText className="w-5 h-5"/></div>
-                                                    <div>
-                                                        <h3 className="font-black text-slate-800 text-lg leading-tight">Digital Memo Queue</h3>
-                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Awaiting Final Approval</p>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-blue-100 text-tdmh-blue font-black text-xl px-4 py-1.5 rounded-xl shadow-sm">{pendingMemosList.length}</div>
-                                            </div>
-                                            
-                                            <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
-                                                {pendingMemosList.length === 0 ? (
-                                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                                                        <Icons.ClipboardCheck className="w-16 h-16 mb-4 opacity-50"/>
-                                                        <p className="text-lg font-bold">No pending memos in the queue.</p>
-                                                        <p className="text-sm mt-1">All drafted memos have been processed.</p>
-                                                    </div>
-                                                ) : (
-                                                    pendingMemosList.map((m, i) => (
-                                                        <div key={i} className="p-6 border border-slate-200 rounded-2xl bg-slate-50 hover:bg-white hover:border-tdmh-blue transition-all relative group shadow-sm flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-3 mb-2">
-                                                                    <span className="text-[10px] font-bold bg-white text-slate-600 px-2.5 py-1 rounded-md border border-slate-200 uppercase tracking-widest shadow-sm">REF: {m['Ref No'] || m[0]}</span>
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{m.Date || m[1]}</span>
-                                                                </div>
-                                                                <h4 className="font-black text-slate-800 text-lg leading-tight mb-2 truncate">{m.Subject || m[4]}</h4>
-                                                                <p className="text-xs text-slate-500"><strong>From:</strong> {m.From || m[3]} &bull; <strong>For:</strong> {m.For || m[2]}</p>
-                                                            </div>
-                                                            <div className="flex gap-3 w-full md:w-auto shrink-0">
-                                                                <button onClick={() => {
-                                                                    setMemoData({ forDept: m.For || m[2], fromName: m.From || m[3], subject: m.Subject || m[4], body: m.Body || m[5], urgency: m.Urgency || m[7] || 'Normal' });
-                                                                    setEditMemoRef(m['Ref No'] || m[0]); setShowAddMemo(true);
-                                                                }} className="bg-white border border-slate-200 text-slate-600 font-bold p-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center shadow-sm" title="Edit Draft">
-                                                                    <Icons.Edit className="w-4 h-4" />
-                                                                </button>
-                                                                <button onClick={() => setViewingMemo(m)} className="flex-1 md:flex-none bg-blue-50 text-tdmh-blue border border-blue-100 font-bold px-6 py-3 rounded-xl hover:bg-blue-100 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
-                                                                    <Icons.Eye className="w-4 h-4" /> Review & Publish
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* INQUIRIES TAB */}
-                                    {adminConsoleTab === 'inquiries' && (
-                                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-full border-t-4 border-t-purple-500">
-                                            <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center"><Icons.MessageCircle className="w-5 h-5"/></div>
-                                                    <div>
-                                                        <h3 className="font-black text-slate-800 text-lg leading-tight">Support Inquiries</h3>
-                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold mt-0.5">Respond & Resolve Tickets</p>
-                                                    </div>
-                                                </div>
-                                                <div className="bg-purple-100 text-purple-700 font-black text-xl px-4 py-1.5 rounded-xl shadow-sm">{openInquiries.length}</div>
-                                            </div>
-                                            
-                                            <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1">
-                                                {openInquiries.length === 0 ? (
-                                                    <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-                                                        <Icons.CheckCircle className="w-16 h-16 mb-4 opacity-50"/>
-                                                        <p className="text-lg font-bold">No active inquiries.</p>
-                                                        <p className="text-sm mt-1">Inbox is zero.</p>
-                                                    </div>
-                                                ) : (
-                                                    openInquiries.map((inq, i) => (
-                                                        <form key={i} onSubmit={(e) => handleResolveInquiry(e, inq['Ticket ID'] || inq[0])} className="p-6 border border-slate-200 rounded-2xl bg-slate-50 flex flex-col gap-4 shadow-sm focus-within:border-purple-300 transition-colors">
-                                                            <div className="flex justify-between items-start">
-                                                                <div>
-                                                                    <div className="flex items-center gap-2 mb-2">
-                                                                        <span className="text-[10px] font-bold bg-white text-slate-600 px-2 py-1 rounded border border-slate-200 uppercase tracking-widest">{inq['Ticket ID'] || inq[0]}</span>
-                                                                        <span className="text-[10px] font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded border border-purple-200 uppercase tracking-widest">{inq.Category || inq[3]}</span>
-                                                                        {(inq['Ref No'] || inq[4]) !== 'N/A' && <span className="text-[10px] font-bold bg-blue-100 text-tdmh-blue px-2 py-1 rounded border border-blue-200 uppercase tracking-widest">MEMO: {inq['Ref No'] || inq[4]}</span>}
-                                                                    </div>
-                                                                    <p className="text-[10px] text-slate-500 font-bold tracking-wider">{inq.Timestamp || inq[1]}</p>
-                                                                    <p className="text-sm font-bold text-slate-700 mt-1">{inq['Dept Email'] || inq[2]}</p>
-                                                                </div>
-                                                            </div>
-                                                            <div className="bg-white p-4 rounded-xl border border-slate-100 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                                                                {inq.Message || inq[5]}
-                                                            </div>
-                                                            <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                                                <input type="text" required placeholder="Type your official admin reply here..." value={adminReplyData.reply} onChange={e=>setAdminReplyData({reply: e.target.value})} className="flex-1 p-3.5 border border-slate-300 rounded-xl focus:border-purple-500 outline-none text-sm font-medium transition-colors" />
-                                                                <button type="submit" disabled={isResolving === (inq['Ticket ID'] || inq[0])} className="bg-purple-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm tracking-wide hover:bg-purple-700 transition-colors shadow-md disabled:opacity-50 shrink-0 whitespace-nowrap">
-                                                                    {isResolving === (inq['Ticket ID'] || inq[0]) ? 'Sending...' : 'Reply & Resolve'}
-                                                                </button>
-                                                            </div>
-                                                        </form>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {showAdminConsole && renderAdminConsoleTabs()}
 
                     {/* TOP NAVIGATION */}
                     <nav className="no-print bg-tdmh-blue text-white shadow-xl z-40 sticky top-0 border-b-2 border-blue-900">
@@ -1979,7 +2100,7 @@
                                     {(userRole === 'admin' || userRole === 'dept_head') && (
                                         <button onClick={() => handleSecureAction('admin')} className="relative p-2 md:p-2.5 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors shadow-sm" title="Admin Control Center">
                                             <Icons.Shield className="w-5 h-5" />
-                                            {userRole === 'admin' && (dccQueue.filter(r => String(r.Status || r.status || r[4] || '').toUpperCase().includes('PENDING')).length > 0 || pendingMemosList.length > 0 || openInquiries.length > 0) && (
+                                            {userRole === 'admin' && (pendingDccRequests.length > 0 || pendingMemosList.length > 0 || openInquiries.length > 0 || pendingMemoRequests.length > 0) && (
                                                 <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-tdmh-blue shadow-md animate-pulse">!</span>
                                             )}
                                         </button>
@@ -2068,6 +2189,7 @@
             );
         }
 
+        // Added a safety check to ensure ReactDOM is fully loaded before rendering
         if (window.ReactDOM) {
             const root = window.ReactDOM.createRoot(document.getElementById('root'));
             root.render(<App />);
