@@ -130,7 +130,7 @@
         const { useState, useEffect, useRef, useMemo } = React;
 
         // ==========================================
-        // 🚨 PASTE YOUR APPS SCRIPT WEB APP URL HERE 
+        // 🚨 APPS SCRIPT WEB APP URL
         // ==========================================
         const API_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
 
@@ -220,16 +220,6 @@
                     <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/>
                 </svg>
             ),
-            Edit: (p) => (
-                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-            ),
-            Trash: (p) => (
-                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2-2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-            ),
             ChevronLeft: (p) => (
                 <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m15 18-6-6 6-6"/>
@@ -308,6 +298,32 @@
             PenTool: (p) => (
                 <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m12 19 7-7 3 3-7 7-3-3z"/><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="m2 2 7.586 7.586"/><circle cx="11" cy="11" r="2"/>
+                </svg>
+            ),
+            // --- ADDED MISSING ICONS THAT CAUSED THE APP TO CRASH ---
+            Clock: (p) => (
+                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+            ),
+            Mail: (p) => (
+                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+            ),
+            AlertCircle: (p) => (
+                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>
+                </svg>
+            ),
+            Eye: (p) => (
+                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+            ),
+            Monitor: (p) => (
+                <svg className={p.className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>
                 </svg>
             )
         };
@@ -694,7 +710,7 @@
             }, []);
 
             useEffect(() => {
-                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen || showAddMemo || viewingMemo !== null || signModalOpen || deptAuthModal.isOpen;
+                const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen || showAddMemo || viewingMemo !== null || signModalOpen || deptAuthModal.isOpen || showSupportChat;
                 if (hasModal) { 
                     document.body.classList.add('modal-open'); 
                     document.body.style.overflow = 'hidden'; 
@@ -702,7 +718,7 @@
                     unlockScroll(); 
                 }
                 return () => unlockScroll();
-            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, customAlert.isOpen, showAddMemo, viewingMemo, signModalOpen, deptAuthModal.isOpen]);
+            }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, slideshowIndex, qrLightbox, customAlert.isOpen, showAddMemo, viewingMemo, signModalOpen, deptAuthModal.isOpen, showSupportChat]);
 
             useEffect(() => {
                 if (slideshow.length <= 1 || slideshowIndex !== null) return;
@@ -1227,7 +1243,8 @@
                 setIsVerifyingLogin(false);
                 
                 if (res.status === 'success' && res.role !== 'portal_lock') { 
-                    handleSetUserRole(res.role);
+                    // FIX 2: Corrected from handleSetUserRole to changeUserRole 
+                    changeUserRole(res.role);
                     setShowRoleLogin(false); 
                     unlockScroll(); 
                     setRolePinInput(''); 
@@ -2491,7 +2508,10 @@
                         </button>
                     </footer>
 
-                    {/* OVERLAYS & MODALS */}
+                    {/* ==================================== */}
+                    {/* OVERLAYS & MODALS (FIXED & RENDERED) */}
+                    {/* ==================================== */}
+                    
                     {showNewsFlyer && (
                         <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in overflow-y-auto no-print">
                             <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative transform animate-slide-up flex flex-col border border-slate-200 my-auto shrink-0">
@@ -2627,6 +2647,386 @@
                                             {isSubmitting ? 'Broadcasting...' : 'Publish to News Feed'}
                                         </button>
                                     </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* NEW MISSING MODALS ADDED HERE TO PREVENT SCROLL LOCK BUGS */}
+
+                    {customAlert.isOpen && (
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print">
+                            <div className="bg-white rounded-[2rem] shadow-2xl p-8 w-full max-w-sm text-center animate-slide-up border border-slate-200">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 border ${customAlert.type === 'error' ? 'bg-red-50 text-red-500 border-red-100' : 'bg-tdmh-blue text-white border-blue-900 shadow-md'}`}>
+                                    {customAlert.type === 'error' ? <Icons.AlertCircle className="w-8 h-8" /> : <Icons.CheckCircle className="w-8 h-8" />}
+                                </div>
+                                <h3 className="text-2xl font-black text-slate-800 mb-2">{customAlert.title}</h3>
+                                <p className="text-slate-500 mb-8 whitespace-pre-wrap leading-relaxed">{customAlert.message}</p>
+                                <button onClick={() => {setCustomAlert({ ...customAlert, isOpen: false }); unlockScroll();}} className={`w-full font-black uppercase tracking-widest text-sm py-4 rounded-xl transition-all shadow-md ${customAlert.type === 'error' ? 'bg-slate-800 text-white hover:bg-black' : 'bg-tdmh-blue text-white hover:bg-blue-900'}`}>
+                                    Acknowledge
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {showRoleLogin && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-slate-200 animate-slide-up relative">
+                                <button onClick={() => {setShowRoleLogin(false); setRolePinInput(''); setRoleLoginFeedback(null); unlockScroll();}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2 rounded-full hover:bg-slate-50 transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                <div className="w-16 h-16 bg-blue-50 border border-blue-100 text-tdmh-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <Icons.Lock className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-2xl font-black mb-2 tracking-tight text-slate-800">Staff Login</h3>
+                                <p className="text-sm text-slate-500 mb-6">Enter your authorized role PIN.</p>
+                                {roleLoginFeedback && (
+                                    <div className="mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all bg-red-50 text-red-600 border border-red-200">
+                                        {roleLoginFeedback.text}
+                                    </div>
+                                )}
+                                <form onSubmit={submitRoleLogin}>
+                                    <input type="password" value={rolePinInput} onChange={(e) => setRolePinInput(e.target.value)} className="w-full p-4 text-center text-2xl tracking-[0.5em] font-black border-2 border-slate-200 rounded-xl focus:border-tdmh-blue outline-none mb-6 transition-colors" placeholder="••••" autoFocus />
+                                    <button type="submit" disabled={isVerifyingLogin} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg transition-colors disabled:opacity-50">
+                                        {isVerifyingLogin ? 'Verifying...' : 'Login Securely'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {deptAuthModal.isOpen && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-sm w-full text-center border border-slate-200 animate-slide-up relative">
+                                <button onClick={() => {setDeptAuthModal({...deptAuthModal, isOpen: false, pinInput: '', feedback: null}); unlockScroll();}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2 rounded-full hover:bg-slate-50 transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                <div className="w-16 h-16 bg-blue-50 border border-blue-100 text-tdmh-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                    <Icons.Lock className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-xl font-black mb-2 tracking-tight text-slate-800 leading-tight">{deptAuthModal.targetDept?.Name || 'Department'}</h3>
+                                <p className="text-xs text-slate-500 mb-6">Enter department PIN to unlock internal tools.</p>
+                                {deptAuthModal.feedback && (
+                                    <div className={`mb-6 text-sm font-bold p-3 rounded-lg shadow-sm transition-all ${deptAuthModal.feedback.type === 'error' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-emerald-50 text-emerald-600 border border-emerald-200'}`}>
+                                        {deptAuthModal.feedback.text}
+                                    </div>
+                                )}
+                                <form onSubmit={submitDeptAuth}>
+                                    <input type="password" value={deptAuthModal.pinInput} onChange={(e) => setDeptAuthModal({...deptAuthModal, pinInput: e.target.value})} className="w-full p-4 text-center text-2xl tracking-[0.5em] font-black border-2 border-slate-200 rounded-xl focus:border-tdmh-blue outline-none mb-6 transition-colors" placeholder="••••" autoFocus />
+                                    <button type="submit" disabled={deptAuthModal.isLoading} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg transition-colors disabled:opacity-50">
+                                        {deptAuthModal.isLoading ? 'Verifying...' : 'Unlock Tools'}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {showAddMemo && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 sm:p-8 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print overflow-y-auto">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-2xl w-full my-auto border border-slate-200 relative animate-slide-up">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-blue-50 text-tdmh-blue rounded-xl flex items-center justify-center border border-blue-100"><Icons.FileText className="w-6 h-6"/></div>
+                                        <div>
+                                            <h3 className="text-xl font-black leading-tight text-slate-800">{memoRequestMode ? 'Request Memo Modification' : (editMemoRef ? 'Edit Existing Memo' : 'Draft New Memo')}</h3>
+                                            <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest mt-0.5">{editMemoRef ? `REF: ${editMemoRef}` : 'Official Record'}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => {setShowAddMemo(false); unlockScroll();}} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-800 rounded-full transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <form onSubmit={handleNativeMemoSubmit} className="space-y-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div><label className="block text-xs font-bold mb-2 uppercase text-slate-500 tracking-wider">To (Department) <span className="text-red-500">*</span></label><input required value={memoData.forDept} onChange={e=>setMemoData({...memoData, forDept: e.target.value})} className="w-full p-3.5 border border-slate-300 focus:border-tdmh-blue outline-none transition-colors rounded-xl font-bold text-sm" placeholder="e.g. All Staff"/></div>
+                                        <div><label className="block text-xs font-bold mb-2 uppercase text-slate-500 tracking-wider">From (Name) <span className="text-red-500">*</span></label><input required value={memoData.fromName} onChange={e=>setMemoData({...memoData, fromName: e.target.value})} className="w-full p-3.5 border border-slate-300 focus:border-tdmh-blue outline-none transition-colors rounded-xl font-bold text-sm" placeholder="e.g. HR Dept" /></div>
+                                    </div>
+                                    <div><label className="block text-xs font-bold mb-2 uppercase text-slate-500 tracking-wider">Subject Title <span className="text-red-500">*</span></label><input required value={memoData.subject} onChange={e=>setMemoData({...memoData, subject: e.target.value})} className="w-full p-3.5 border border-slate-300 focus:border-tdmh-blue outline-none transition-colors rounded-xl font-bold text-sm" placeholder="Brief subject description" /></div>
+                                    <div><label className="block text-xs font-bold mb-2 uppercase text-slate-500 tracking-wider">Urgency Level</label>
+                                        <select value={memoData.urgency} onChange={e=>setMemoData({...memoData, urgency: e.target.value})} className="w-full p-3.5 border border-slate-300 focus:border-tdmh-blue outline-none transition-colors rounded-xl font-bold text-sm bg-white">
+                                            <option value="Normal">Normal</option><option value="High">High (Red Tag)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider">Message Body <span className="text-red-500">*</span></label> 
+                                            <button type="button" onClick={handleFixGrammar} className="text-[10px] bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 px-3 py-1 rounded font-bold uppercase tracking-widest transition-colors flex items-center gap-1.5"><Icons.Sparkles className="w-3 h-3"/> Fix Formatting</button>
+                                        </div>
+                                        <textarea required value={memoData.body} onChange={e=>setMemoData({...memoData, body: e.target.value})} className="w-full p-4 border border-slate-300 focus:border-tdmh-blue outline-none transition-colors rounded-xl h-40 text-sm leading-relaxed text-slate-700" placeholder="Type standard paragraph format here..."></textarea>
+                                    </div>
+                                    <button type="submit" disabled={isSubmitting || isFixingGrammar} className="w-full bg-tdmh-blue hover:bg-blue-900 text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg transition-all hover:-translate-y-1 disabled:opacity-50">
+                                        {isSubmitting ? 'Routing...' : (memoRequestMode ? 'Submit Modification Request' : 'Generate Official Memo')}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {viewingMemo && (
+                        <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print overflow-y-auto">
+                            <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-3xl w-full my-auto printable-memo relative border border-slate-200">
+                                <div className="flex justify-between items-start mb-8 no-print">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-slate-100 p-2.5 rounded-lg border border-slate-200"><Icons.FileText className="w-6 h-6 text-slate-600"/></div>
+                                        <h3 className="text-2xl font-black text-slate-800 leading-none">Record Viewer</h3>
+                                    </div>
+                                    <button onClick={() => {setViewingMemo(null); unlockScroll();}} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-800 rounded-full transition-colors"><Icons.X className="w-6 h-6"/></button>
+                                </div>
+                                <div className="border-b-4 border-slate-800 pb-6 mb-8 mt-2">
+                                    <div className="text-center mb-8 hidden print:block">
+                                        <h1 className="text-2xl font-black">TAYTAY DOCTORS MULTISPECIALTY HOSPITAL</h1>
+                                        <p className="text-sm">Official Memorandum</p>
+                                    </div>
+                                    <h1 className="text-4xl font-black uppercase tracking-widest mb-6 print:hidden">Memorandum</h1>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm font-bold text-slate-800">
+                                        <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">TO:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.For || viewingMemo[2]}</span></div>
+                                        <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">FROM:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.From || viewingMemo[3]}</span></div>
+                                        <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">DATE:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.Date || viewingMemo[1]}</span></div>
+                                        <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">REF NO:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo['Ref No'] || viewingMemo[0]}</span></div>
+                                        <div className="col-span-1 md:col-span-2 flex items-center mt-2"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">SUBJECT:</span> <span className="border-b border-slate-200 w-full pb-1 font-black text-base uppercase">{viewingMemo.Subject || viewingMemo[4]}</span></div>
+                                    </div>
+                                </div>
+                                <div className="whitespace-pre-wrap text-slate-800 leading-relaxed min-h-[250px] mb-12 text-justify">
+                                    {viewingMemo.Body || viewingMemo[5]}
+                                </div>
+                                <div className="no-print border-t border-slate-200 pt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                    <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+                                        <button onClick={() => setSignModalOpen(true)} className="flex-1 sm:flex-none bg-tdmh-blue text-white px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs shadow-md hover:bg-blue-900 transition-colors flex items-center justify-center gap-2">
+                                            <Icons.PenTool className="w-4 h-4"/> Sign
+                                        </button>
+                                        <button onClick={handlePrintMemo} className="flex-1 sm:flex-none bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-black uppercase tracking-widest text-xs shadow-sm border border-slate-200 hover:bg-slate-200 transition-colors flex items-center justify-center gap-2">
+                                            <Icons.Download className="w-4 h-4"/> Print / PDF
+                                        </button>
+                                    </div>
+                                    {userRole === 'admin' && (String(viewingMemo.Status || viewingMemo[6]).toUpperCase().includes('PENDING')) && (
+                                        <button onClick={() => handleApproveMemo(viewingMemo['Ref No'] || viewingMemo[0])} disabled={isApprovingMemo} className="w-full sm:w-auto bg-tdmh-green text-white px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs shadow-md hover:bg-green-700 transition-colors disabled:opacity-50">
+                                            {isApprovingMemo ? 'Approving...' : 'Approve to Live'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {signModalOpen && (
+                        <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-md w-full border border-slate-200 animate-slide-up relative">
+                                <button onClick={() => {setSignModalOpen(false);}} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800 p-2 bg-slate-50 rounded-full transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="bg-blue-50 text-tdmh-blue p-2.5 rounded-xl border border-blue-100"><Icons.PenTool className="w-6 h-6"/></div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-800 leading-tight">Acknowledge Memo</h3>
+                                        <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mt-0.5">Attach E-Signature</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 mb-6">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Full Name <span className="text-red-500">*</span></label>
+                                        <input type="text" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none" placeholder="e.g. Juan Dela Cruz" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 block">Department <span className="text-red-500">*</span></label>
+                                        <input type="text" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none" placeholder="e.g. HR" />
+                                    </div>
+                                </div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 block">Draw Signature Below <span className="text-red-500">*</span></label>
+                                <SignaturePad onSave={handleSignatureSubmit} onCancel={() => setSignModalOpen(false)} />
+                            </div>
+                        </div>
+                    )}
+
+                    {showAdminConsole && (
+                        <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-fade-in no-print overflow-y-auto">
+                            <div className="bg-slate-900 p-6 md:p-10 rounded-[2rem] shadow-2xl max-w-5xl w-full my-auto border border-slate-700 animate-slide-up relative">
+                                <button onClick={() => {setShowAdminConsole(false); unlockScroll();}} className="absolute top-6 right-6 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-2.5 rounded-full transition-colors shadow-sm"><Icons.X className="w-6 h-6"/></button>
+                                
+                                <div className="flex items-center gap-4 mb-8 border-b border-slate-700 pb-6">
+                                    <div className="w-14 h-14 bg-red-500/20 text-red-400 rounded-2xl flex items-center justify-center border border-red-500/30 shadow-inner">
+                                        <Icons.Shield className="w-8 h-8" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-3xl font-black text-white tracking-tight leading-none">Admin Console</h3>
+                                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Master Oversight Terminal</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-3 border-b border-slate-700 mb-6">
+                                    <button onClick={() => setAdminConsoleTab('dcc')} className={`px-6 py-3 font-black text-sm uppercase tracking-widest rounded-t-xl transition-colors ${adminConsoleTab === 'dcc' ? 'bg-slate-800 text-blue-400 border-b-4 border-blue-500' : 'text-slate-400 hover:bg-slate-800 border-b-4 border-transparent'}`}>
+                                        DCC Queue {pendingDccRequests.length > 0 && <span className="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[10px]">{pendingDccRequests.length}</span>}
+                                    </button>
+                                    <button onClick={() => setAdminConsoleTab('memos')} className={`px-6 py-3 font-black text-sm uppercase tracking-widest rounded-t-xl transition-colors ${adminConsoleTab === 'memos' ? 'bg-slate-800 text-blue-400 border-b-4 border-blue-500' : 'text-slate-400 hover:bg-slate-800 border-b-4 border-transparent'}`}>
+                                        Memos {pendingMemosList.length > 0 && <span className="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[10px]">{pendingMemosList.length}</span>}
+                                    </button>
+                                    <button onClick={() => setAdminConsoleTab('inquiries')} className={`px-6 py-3 font-black text-sm uppercase tracking-widest rounded-t-xl transition-colors ${adminConsoleTab === 'inquiries' ? 'bg-slate-800 text-blue-400 border-b-4 border-blue-500' : 'text-slate-400 hover:bg-slate-800 border-b-4 border-transparent'}`}>
+                                        Tickets {openInquiries.length > 0 && <span className="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[10px]">{openInquiries.length}</span>}
+                                    </button>
+                                    <button onClick={() => setAdminConsoleTab('memoRequests')} className={`px-6 py-3 font-black text-sm uppercase tracking-widest rounded-t-xl transition-colors ${adminConsoleTab === 'memoRequests' ? 'bg-slate-800 text-blue-400 border-b-4 border-blue-500' : 'text-slate-400 hover:bg-slate-800 border-b-4 border-transparent'}`}>
+                                        Mod Requests {pendingMemoRequests.length > 0 && <span className="ml-2 bg-red-500 text-white px-2 py-0.5 rounded-md text-[10px]">{pendingMemoRequests.length}</span>}
+                                    </button>
+                                </div>
+
+                                <div className="min-h-[300px] max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                                    {adminConsoleTab === 'dcc' && (
+                                        <div className="space-y-4">
+                                            {pendingDccRequests.length === 0 ? (
+                                                <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+                                                    <Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" />
+                                                    <p className="text-slate-400 font-bold">No pending document requests.</p>
+                                                </div>
+                                            ) : pendingDccRequests.map((r, i) => (
+                                                <div key={i} className="p-6 border border-slate-700 rounded-2xl bg-slate-800 shadow-sm flex flex-col md:flex-row md:items-center gap-6">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-[10px] font-black tracking-widest uppercase bg-slate-700 text-slate-300 px-2.5 py-1 rounded border border-slate-600">{r['Tracking ID'] || r[0]}</span>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase bg-yellow-900/30 text-yellow-500 px-2.5 py-1 rounded border border-yellow-700/50">Pending Review</span>
+                                                        </div>
+                                                        <h4 className="text-lg font-black text-white mb-1">{r.Title || r[2]}</h4>
+                                                        <p className="text-sm font-bold text-slate-400">Contact: {r.Email || r[1]}</p>
+                                                    </div>
+                                                    <form onSubmit={(e) => handleResolveDCC(e, r['Tracking ID'] || r[0])} className="flex flex-col sm:flex-row gap-3 items-end md:items-center bg-slate-900/50 p-4 rounded-xl border border-slate-700 shrink-0">
+                                                        <div className="w-full sm:w-auto">
+                                                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest block mb-1">Attach Stamped File</label>
+                                                            <input type="file" name="stampedFile" className="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer" required />
+                                                        </div>
+                                                        <button type="submit" disabled={isResolving === (r['Tracking ID'] || r[0])} className="w-full sm:w-auto bg-tdmh-green text-white px-6 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest shadow-md hover:bg-green-600 transition-colors disabled:opacity-50">
+                                                            {isResolving === (r['Tracking ID'] || r[0]) ? 'Uploading...' : 'Resolve'}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {adminConsoleTab === 'memos' && (
+                                        <div className="space-y-4">
+                                            {pendingMemosList.length === 0 ? (
+                                                <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+                                                    <Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" />
+                                                    <p className="text-slate-400 font-bold">No pending memos for approval.</p>
+                                                </div>
+                                            ) : pendingMemosList.map((m, i) => (
+                                                <div key={i} className="p-6 border border-slate-700 rounded-2xl bg-slate-800 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <span className="text-[10px] font-black tracking-widest uppercase bg-slate-700 text-slate-300 px-2.5 py-1 rounded border border-slate-600">{m['Ref No'] || m[0]}</span>
+                                                            <span className="text-[10px] font-black tracking-widest uppercase bg-yellow-900/30 text-yellow-500 px-2.5 py-1 rounded border border-yellow-700/50">Pending Approval</span>
+                                                        </div>
+                                                        <h4 className="text-lg font-black text-white mb-1">{m.Subject || m[4]}</h4>
+                                                        <p className="text-sm font-bold text-slate-400">From: {m.From || m[3]} • For: {m.For || m[2]}</p>
+                                                    </div>
+                                                    <div className="flex gap-3 w-full md:w-auto">
+                                                        <button onClick={() => setViewingMemo(m)} className="flex-1 md:flex-none px-6 py-2.5 bg-slate-700 text-white text-xs uppercase tracking-widest font-black rounded-lg border border-slate-600 hover:bg-slate-600 transition-colors shadow-sm">Review</button>
+                                                        <button onClick={() => handleApproveMemo(m['Ref No'] || m[0])} disabled={isApprovingMemo} className="flex-1 md:flex-none px-6 py-2.5 bg-tdmh-green text-white text-xs uppercase tracking-widest font-black rounded-lg hover:bg-green-600 transition-colors shadow-md disabled:opacity-50">Approve to Live</button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {adminConsoleTab === 'inquiries' && (
+                                        <div className="space-y-4">
+                                            {openInquiries.length === 0 ? (
+                                                <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+                                                    <Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" />
+                                                    <p className="text-slate-400 font-bold">No open support tickets.</p>
+                                                </div>
+                                            ) : openInquiries.map((inq, i) => (
+                                                <div key={i} className="p-6 border border-slate-700 rounded-2xl bg-slate-800 shadow-sm flex flex-col gap-4">
+                                                    <div className="flex justify-between items-center mb-2 border-b border-slate-700 pb-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 bg-slate-700 rounded-xl flex items-center justify-center text-slate-300"><Icons.MessageCircle className="w-5 h-5"/></div>
+                                                            <div>
+                                                                <h4 className="font-black text-white text-sm">Ticket: {inq['Ticket ID'] || inq[0]}</h4>
+                                                                <span className="text-[10px] font-bold tracking-widest uppercase text-slate-400">{inq.Category || inq[3]}</span>
+                                                            </div>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-slate-300 bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-600">{inq.Email || inq[2]}</span>
+                                                    </div>
+                                                    <p className="text-sm bg-slate-900/50 p-4 rounded-xl text-slate-300 leading-relaxed border border-slate-700 italic">"{inq.Message || inq[5]}"</p>
+                                                    <form onSubmit={(e) => handleResolveInquiry(e, inq['Ticket ID'] || inq[0])} className="flex flex-col sm:flex-row gap-3 pt-2">
+                                                        <input type="text" placeholder="Type resolution reply here to automatically email user..." value={adminReplyData.reply} onChange={(e) => setAdminReplyData({reply: e.target.value})} className="flex-1 p-3 bg-slate-900 border border-slate-700 text-white rounded-xl text-sm outline-none focus:border-blue-500 placeholder-slate-500" required />
+                                                        <button type="submit" disabled={isResolving === (inq['Ticket ID'] || inq[0])} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-md hover:bg-blue-700 transition-colors disabled:opacity-50">
+                                                            {isResolving === (inq['Ticket ID'] || inq[0]) ? 'Sending...' : 'Send Reply & Resolve'}
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {adminConsoleTab === 'memoRequests' && (
+                                        <div className="space-y-4">
+                                            {pendingMemoRequests.length === 0 ? (
+                                                <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700">
+                                                    <Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" />
+                                                    <p className="text-slate-400 font-bold">No pending modification requests.</p>
+                                                </div>
+                                            ) : pendingMemoRequests.map((req, i) => (
+                                                <div key={i} className="p-6 border border-slate-700 rounded-2xl bg-slate-800 shadow-sm flex flex-col gap-4">
+                                                    <div className="flex justify-between items-start border-b border-slate-700 pb-4">
+                                                        <div>
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <span className="text-[10px] font-black tracking-widest uppercase bg-slate-700 text-slate-300 px-2.5 py-1 rounded border border-slate-600">REQ: {req['Request ID'] || req[0]}</span>
+                                                                <span className="text-[10px] font-black tracking-widest uppercase bg-blue-900/50 text-blue-400 px-2.5 py-1 rounded border border-blue-800/50">{req['Request Type'] || req[2]}</span>
+                                                            </div>
+                                                            <h4 className="text-lg font-black text-white mb-1">Target Memo: {req['Target Ref No'] || req[1]}</h4>
+                                                            <p className="text-sm font-bold text-slate-400">Requested By: {req['Requested By'] || req[3]}</p>
+                                                        </div>
+                                                    </div>
+                                                    {(req['Request Type'] || req[2]) === 'EDIT' && (
+                                                        <div className="bg-slate-900/50 p-4 rounded-xl text-slate-300 text-sm border border-slate-700 whitespace-pre-wrap">
+                                                            <strong className="text-white block mb-2">Proposed Changes:</strong>
+                                                            {req['New Data JSON'] || req[5]}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex gap-3 pt-2">
+                                                        <button onClick={() => handleResolveMemoRequest(req['Request ID'] || req[0], 'APPROVE')} disabled={isResolving === (req['Request ID'] || req[0])} className="flex-1 bg-tdmh-green text-white px-6 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest shadow-md hover:bg-green-600 transition-colors disabled:opacity-50">
+                                                            {isResolving === (req['Request ID'] || req[0]) ? 'Processing...' : 'Approve & Apply'}
+                                                        </button>
+                                                        <button onClick={() => handleResolveMemoRequest(req['Request ID'] || req[0], 'REJECT')} disabled={isResolving === (req['Request ID'] || req[0])} className="flex-1 bg-red-600 text-white px-6 py-2.5 rounded-lg font-black text-xs uppercase tracking-widest shadow-md hover:bg-red-700 transition-colors disabled:opacity-50">
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showSupportChat && (
+                        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-2xl max-w-md w-full border border-slate-200 relative animate-slide-up">
+                                <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-blue-50 text-tdmh-blue rounded-xl flex items-center justify-center border border-blue-100"><Icons.MessageCircle className="w-6 h-6"/></div>
+                                        <div>
+                                            <h3 className="text-xl font-black text-slate-800 leading-tight">Admin Support</h3>
+                                            <p className="text-[10px] font-bold text-slate-500 tracking-widest uppercase mt-0.5">Help & Inquiries</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => {setShowSupportChat(false); unlockScroll();}} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-800 rounded-full transition-colors"><Icons.X className="w-5 h-5"/></button>
+                                </div>
+                                <form onSubmit={handleInquirySubmit} className="space-y-4">
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Your Dept Email <span className="text-red-500">*</span></label>
+                                        <input type="email" required placeholder="dept@tdmh.com" value={inquiryData.email} onChange={e=>setInquiryData({...inquiryData, email: e.target.value})} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Inquiry Category <span className="text-red-500">*</span></label>
+                                        <select value={inquiryData.category} onChange={e=>setInquiryData({...inquiryData, category: e.target.value})} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none bg-white">
+                                            <option>General Help</option>
+                                            <option>Bug Report</option>
+                                            <option>Feature Request</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Reference No. (Optional)</label>
+                                        <input type="text" placeholder="e.g. CQI-1234" value={inquiryData.refNo} onChange={e=>setInquiryData({...inquiryData, refNo: e.target.value})} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none" />
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1.5">Message <span className="text-red-500">*</span></label>
+                                        <textarea required placeholder="Describe your issue or request here..." value={inquiryData.message} onChange={e=>setInquiryData({...inquiryData, message: e.target.value})} className="w-full p-4 text-sm border border-slate-300 rounded-xl h-28 focus:border-tdmh-blue outline-none resize-none"></textarea>
+                                    </div>
+                                    <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-blue text-white font-black uppercase tracking-widest text-sm py-4 rounded-xl shadow-lg hover:bg-blue-900 transition-transform hover:-translate-y-1 disabled:opacity-50 mt-2">
+                                        {isSubmitting ? 'Sending...' : 'Submit Ticket'}
+                                    </button>
                                 </form>
                             </div>
                         </div>
