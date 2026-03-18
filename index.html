@@ -365,6 +365,13 @@
             const openInquiries = useMemo(() => inquiries.filter(i => String(i.Status || i[6]).toUpperCase().includes('OPEN')), [inquiries]);
             const currentMemoSigs = useMemo(() => viewingMemo ? signatures.filter(s => (s['Memo Ref No'] || s[0]) === (viewingMemo['Ref No'] || viewingMemo[0])) : [], [viewingMemo, signatures]);
             const pendingMemoRequests = useMemo(() => memoRequests.filter(r => String(r.Status || r.status || r[6] || '').toUpperCase().includes('PENDING')), [memoRequests]);
+            
+            // NEW: News Queue logic
+            const pendingNews = useMemo(() => newsList.filter(n => String(n.Status || n[6] || '').toUpperCase() === 'PENDING REVIEW'), [newsList]);
+            const visibleNews = useMemo(() => newsList.filter(n => {
+                const status = String(n.Status || n[6] || '').toUpperCase();
+                return status === 'APPROVED' || status === ''; 
+            }), [newsList]);
 
             const TABS = [
                 { id: 'home', label: 'Dashboard', icon: 'Home' },
@@ -595,6 +602,23 @@
                 if (res.status === 'success') { showAlert("Request Processed", `The modification request has been ${actionVal === 'APPROVE' ? 'Approved & Applied' : 'Rejected'}.`, "success"); fetchDatabase(true); } 
                 else showAlert("Error", res.message || "Failed to process request.", "error"); 
             };
+            
+            // NEW: Approve and Reject handlers for News
+            const handleApproveNews = async (id) => {
+                setIsResolving(id);
+                const res = await sendPostRequest({ action: 'approveNews', id: id });
+                setIsResolving(null);
+                if (res.status === 'success') { showAlert("News Approved", `The announcement has been published to the live portal.`, "success"); fetchDatabase(true); }
+                else showAlert("Error", "Failed to approve news.", "error");
+            };
+
+            const handleRejectNews = async (id) => {
+                setIsResolving(id);
+                const res = await sendPostRequest({ action: 'rejectNews', id: id });
+                setIsResolving(null);
+                if (res.status === 'success') { showAlert("News Rejected", `The announcement has been rejected and archived.`, "success"); fetchDatabase(true); }
+                else showAlert("Error", "Failed to reject news.", "error");
+            };
 
             const handleSignatureSubmit = async (signatureBase64) => {
                 if (!signatureBase64) return showAlert("Missing Signature", "Please physically draw your signature on the pad before confirming.", "error"); 
@@ -610,7 +634,7 @@
                 e.preventDefault(); setIsSubmitting(true);
                 const res = await sendPostRequest({ action: 'addNews', title: newsData.title, content: newsData.content, type: newsData.type, author: userRole });
                 setIsSubmitting(false);
-                if (res.status === 'success') { showAlert("News Published", "The announcement has been posted successfully.", "success"); setShowAddNews(false); unlockScroll(); setNewsData({ title: '', content: '', type: 'Standard' }); fetchDatabase(true); } 
+                if (res.status === 'success') { showAlert("News Submitted", "The announcement has been submitted to the Admin queue for approval.", "success"); setShowAddNews(false); unlockScroll(); setNewsData({ title: '', content: '', type: 'Standard' }); fetchDatabase(true); } 
                 else showAlert("Error", "Failed to post news.", "error"); 
             };
 
@@ -746,6 +770,9 @@
                 } catch(e) { setTrackResult({ error: "Network error tracking request." }); }
                 setIsTracking(false);
             };
+
+            // Function for printing memo
+            const handlePrintMemo = () => { window.print(); };
 
             // --- LOADING SCREEN ---
             if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
@@ -894,8 +921,8 @@
                                 )}
                             </div>
                             <div className="space-y-6 max-w-4xl mx-auto">
-                                {newsList.length === 0 && <p className="text-slate-500 italic text-center py-8">No news posted yet.</p>}
-                                {newsList.map((n, i) => (
+                                {visibleNews.length === 0 && <p className="text-slate-500 italic text-center py-8">No news posted yet.</p>}
+                                {visibleNews.map((n, i) => (
                                     <div key={n.id || i} className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm relative group hover:shadow-md transition-shadow">
                                         {(userRole === 'admin' || userRole === 'dept_head') && (
                                             <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1208,12 +1235,13 @@
                                     {userRole === 'admin' && (
                                         <button onClick={() => setShowAdminConsole(true)} className="relative p-2 md:p-2.5 rounded-lg bg-white/10 border border-white/20 hover:bg-white/20 transition-colors" title="Admin Control Center">
                                             <Icons.Shield className="w-5 h-5" />
-                                            {/* NEW: Colored Badges for Admin Notifications */}
                                             <div className="absolute -top-1.5 -right-1.5 flex flex-wrap gap-0.5 justify-end w-6">
                                                 {pendingDccRequests.length > 0 && <span className="w-2.5 h-2.5 bg-red-500 rounded-full border border-tdmh-blue animate-pulse"></span>}
                                                 {pendingMemosList.length > 0 && <span className="w-2.5 h-2.5 bg-orange-500 rounded-full border border-tdmh-blue animate-pulse"></span>}
                                                 {pendingMemoRequests.length > 0 && <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full border border-tdmh-blue animate-pulse"></span>}
                                                 {openInquiries.length > 0 && <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full border border-tdmh-blue animate-pulse"></span>}
+                                                {/* NEW: Pulse indicator for News Approval */}
+                                                {pendingNews.length > 0 && <span className="w-2.5 h-2.5 bg-blue-400 rounded-full border border-tdmh-blue animate-pulse"></span>}
                                             </div>
                                         </button>
                                     )}
@@ -1352,7 +1380,7 @@
                             <FormInput as="textarea" label="Full Message Body" value={newsData.content} onChange={e=>setNewsData({...newsData, content: e.target.value})} required placeholder="Type the full announcement details here..." />
                             <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
                                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Posting as: <span className="text-tdmh-blue">{userRole}</span></p>
-                                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-tdmh-blue text-white font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg disabled:opacity-50 text-sm">{isSubmitting ? 'Broadcasting...' : 'Publish to News Feed'}</button>
+                                <button type="submit" disabled={isSubmitting} className="w-full sm:w-auto bg-tdmh-blue text-white font-black uppercase tracking-widest px-8 py-4 rounded-xl shadow-lg disabled:opacity-50 text-sm">{isSubmitting ? 'Sending to Queue...' : 'Submit for Approval'}</button>
                             </div>
                         </form>
                     </Modal>
@@ -1441,6 +1469,7 @@
                                 <div className="flex flex-wrap gap-3 border-b border-slate-700 mb-6 overflow-x-auto no-scrollbar">
                                     {[
                                         {id: 'dcc', label: 'DCC Queue', count: pendingDccRequests.length},
+                                        {id: 'news', label: 'News Queue', count: pendingNews.length}, // NEW NEWS TAB
                                         {id: 'memos', label: 'Memos', count: pendingMemosList.length},
                                         {id: 'inquiries', label: 'Inquiries', count: openInquiries.length},
                                         {id: 'memoRequests', label: 'Memo Requests', count: pendingMemoRequests.length}
@@ -1490,6 +1519,26 @@
                                                 </div>
                                             ))}
                                         </div>
+                                    )}
+                                    {/* NEW: NEWS APPROVAL TAB CONTENT */}
+                                    {adminConsoleTab === 'news' && (
+                                        pendingNews.length === 0 ? <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700"><Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" /><p className="text-slate-400 font-bold">No pending news announcements.</p></div> :
+                                        pendingNews.map((n, i) => (
+                                            <div key={i} className="p-6 border border-slate-700 rounded-2xl bg-slate-800 flex flex-col md:flex-row justify-between md:items-center gap-6">
+                                                <div>
+                                                    <div className="flex gap-2 mb-2">
+                                                        <span className="text-[10px] font-black uppercase bg-slate-700 text-slate-300 px-2.5 py-1 rounded">{n.ID || n[0]}</span>
+                                                        <span className="text-[10px] font-black uppercase bg-yellow-900/30 text-yellow-500 px-2.5 py-1 rounded border border-yellow-700/50">Pending Approval</span>
+                                                    </div>
+                                                    <h4 className="text-lg font-black text-white mb-1">{n.Title || n[3]}</h4>
+                                                    <p className="text-sm font-bold text-slate-400">Type: {n.Type || n[2]} • Author: {n.Author || n[5]}</p>
+                                                </div>
+                                                <div className="flex gap-3 w-full md:w-auto">
+                                                    <button onClick={() => handleApproveNews(n.ID || n[0])} disabled={isResolving === (n.ID || n[0])} className="flex-1 md:flex-none px-6 py-2.5 bg-tdmh-green text-white text-xs font-black rounded-lg disabled:opacity-50">Approve</button>
+                                                    <button onClick={() => handleRejectNews(n.ID || n[0])} disabled={isResolving === (n.ID || n[0])} className="flex-1 md:flex-none px-6 py-2.5 bg-red-600 text-white text-xs font-black rounded-lg disabled:opacity-50">Reject</button>
+                                                </div>
+                                            </div>
+                                        ))
                                     )}
                                     {adminConsoleTab === 'memos' && (
                                         pendingMemosList.length === 0 ? <div className="text-center py-16 bg-slate-800/50 rounded-2xl border border-slate-700"><Icons.CheckCircle className="w-12 h-12 text-tdmh-green mx-auto mb-3 opacity-50" /><p className="text-slate-400 font-bold">No pending memos for approval.</p></div> :
