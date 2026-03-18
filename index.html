@@ -207,19 +207,19 @@
         };
 
         // --- OPTIMIZED FORM INPUT COMPONENT ---
-        const FormInput = ({ label, type = "text", value, onChange, placeholder, required = false, as = "input", options = [], disabled = false, className = "", multiple = false }) => (
+        const FormInput = ({ label, name, type = "text", value, onChange, placeholder, required = false, as = "input", options = [], disabled = false, className = "", multiple = false }) => (
             <div className={`mb-4 ${className}`}>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">{label} {required && <span className="text-red-500">*</span>}</label>
                 {as === "select" ? (
-                    <select value={value} onChange={onChange} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none bg-white transition-colors">
+                    <select name={name} value={value} onChange={onChange} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none bg-white transition-colors">
                         {options.map(o => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
                     </select>
                 ) : as === "textarea" ? (
-                    <textarea value={value} onChange={onChange} placeholder={placeholder} required={required} disabled={disabled} className="w-full p-4 text-sm border border-slate-300 rounded-xl h-28 focus:border-tdmh-blue outline-none resize-y transition-colors"></textarea>
+                    <textarea name={name} value={value} onChange={onChange} placeholder={placeholder} required={required} disabled={disabled} className="w-full p-4 text-sm border border-slate-300 rounded-xl h-28 focus:border-tdmh-blue outline-none resize-y transition-colors"></textarea>
                 ) : type === "file" ? (
-                    <input type="file" onChange={onChange} accept={placeholder} required={required} disabled={disabled} multiple={multiple} className="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:bg-emerald-50 file:text-tdmh-green file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 transition-colors cursor-pointer border border-slate-200 p-1 rounded-2xl" />
+                    <input name={name} type="file" onChange={onChange} accept={placeholder} required={required} disabled={disabled} multiple={multiple} className="block w-full text-sm text-slate-500 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:bg-emerald-50 file:text-tdmh-green file:border file:border-emerald-200 file:font-bold hover:file:bg-emerald-100 transition-colors cursor-pointer border border-slate-200 p-1 rounded-2xl" />
                 ) : (
-                    <input type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none transition-colors" />
+                    <input name={name} type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none transition-colors" />
                 )}
             </div>
         );
@@ -675,8 +675,13 @@
             // --- MULTIPLE FILES LOGIC ---
             const handleDccUpload = async (e) => {
                 e.preventDefault(); 
-                const email = e.target.email.value; 
-                const title = e.target.title.value; 
+                
+                // Safety check: grab values either from the name attribute or fallback to querying the input type
+                const emailInput = e.target.email || e.target.querySelector('input[type="email"]');
+                const titleInput = e.target.title || e.target.querySelector('input[placeholder="e.g. Daily Temperature Log"]');
+                
+                const email = emailInput?.value; 
+                const title = titleInput?.value; 
                 const files = Array.from(fileInputRef.current.files);
                 
                 if (!email || !title || files.length === 0) return showAlert("Missing Fields", "Please fill in all requested fields and attach a file.", "error"); 
