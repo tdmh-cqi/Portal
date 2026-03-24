@@ -16,7 +16,12 @@
         extend: {
           fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'], serif: ['"Playfair Display"', 'serif'] },
           colors: { tdmh: { blue: '#1e3a8a', green: '#16a34a', dark: '#0f172a', surface: '#f4f7f9', border: '#e2e8f0' } },
-          animation: { 'fade-in': 'fadeIn 0.3s ease-out forwards', 'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards', 'pulse-slow': 'pulse 3s infinite', 'spin-slow': 'spin 3s linear infinite' },
+          animation: { 
+            'fade-in': 'fadeIn 0.3s ease-out forwards', 
+            'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards', 
+            'pulse-slow': 'pulse 3s infinite', 
+            'spin-slow': 'spin 3s linear infinite' 
+          },
           keyframes: {
             fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
             slideUp: { '0%': { opacity: '0', transform: 'translateY(30px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
@@ -37,15 +42,40 @@
     .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.03); border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    .structured-card { background-color: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border-radius: 1.5rem; }
-    .bg-pattern { background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 20px 20px; }
+    .structured-card { 
+      background-color: rgba(255, 255, 255, 0.95); 
+      backdrop-filter: blur(10px); 
+      border: 1px solid #e2e8f0; 
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
+      border-radius: 1.5rem; 
+    }
+    .bg-pattern { 
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px); 
+      background-size: 20px 20px; 
+    }
     
     @media print {
       body * { visibility: hidden; }
       .printable-memo, .printable-memo * { visibility: visible; }
-      .printable-memo { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; box-shadow: none; border: none; border-radius: 0; min-height: 100vh; background: white; z-index: 99999; }
+      .printable-memo { 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important; 
+        height: auto !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        background: white !important; 
+        box-shadow: none !important; 
+        border: none !important; 
+      }
+      .fixed.inset-0 { 
+        position: absolute !important; 
+        overflow: visible !important; 
+        background: transparent !important; 
+      }
       .no-print { display: none !important; }
-      body { background: white; }
+      body { background: white !important; }
     }
   </style>
 </head>
@@ -58,7 +88,9 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwnnGfhhzSwRVwzoq7JJG9ZzkLmTG7VnR69TM1vf_OHWUxvBfHspy6SpEqTUQguqlW3/exec";
 
     const SvgIcon = ({ className, children }) => (
-      <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        {children}
+      </svg>
     );
 
     const Icons = {
@@ -111,18 +143,21 @@
 
     const getToolIcon = (iStr, fStr) => {
       let s = String(iStr || '').toLowerCase().trim();
-      if (!s && fStr) s = String(fStr).toLowerCase().trim();
+      if (!s && fStr) {
+        s = String(fStr).toLowerCase().trim();
+      }
       if (s.includes('form') || s.includes('paper') || s.includes('pen') || s.includes('sheet') || s.includes('report')) return Icons.FileText;
       if (s.includes('computer') || s.includes('monitor') || s.includes('laptop') || s.includes('it ')) return Icons.Monitor;
       if (s.includes('infectious') || s.includes('shield') || s.includes('safety') || s.includes('risk')) return Icons.Shield;
       if (s.includes('medical') || s.includes('stethoscope') || s.includes('clinical')) return Icons.Stethoscope;
       if (s.includes('person') || s.includes('head') || s.includes('user') || s.includes('people') || s.includes('attendance')) return Icons.Users;
+      
       const exactMatch = Object.keys(Icons).find(k => k.toLowerCase() === s);
       return exactMatch ? Icons[exactMatch] : Icons.Folder; 
     };
 
     const getDriveImage = (url) => {
-      if(!url) return '';
+      if (!url) return '';
       const match = String(url).match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
       return match && match[1] ? `https://lh3.googleusercontent.com/d/${match[1]}` : String(url);
     };
@@ -132,10 +167,20 @@
       let d = new Date(String(dateVal).trim());
       if (!isNaN(d.getTime())) {
         const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        return { month: monthNames[d.getMonth()], day: d.getDate().toString().padStart(2, '0'), year: d.getFullYear(), full: d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) };
+        return { 
+          month: monthNames[d.getMonth()], 
+          day: d.getDate().toString().padStart(2, '0'), 
+          year: d.getFullYear(), 
+          full: d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) 
+        };
       }
       const parts = String(dateVal).trim().split(' ');
-      return { month: parts[0] ? parts[0].substring(0, 3).toUpperCase() : 'N/A', day: parts[1] ? parts[1].replace(',', '') : '--', year: parts[2] ? parts[2] : '----', full: String(dateVal) };
+      return { 
+        month: parts[0] ? parts[0].substring(0, 3).toUpperCase() : 'N/A', 
+        day: parts[1] ? parts[1].replace(',', '') : '--', 
+        year: parts[2] ? parts[2] : '----', 
+        full: String(dateVal) 
+      };
     };
 
     const Modal = ({ isOpen, onClose, title, icon: IconCmp, subtitle, children, maxWidth = "max-w-md", iconColor = "text-tdmh-blue", iconBg = "bg-blue-50 border-blue-100" }) => {
@@ -143,10 +188,16 @@
       return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print overflow-y-auto" onClick={onClose}>
           <div className={`bg-white rounded-[2rem] shadow-2xl w-full ${maxWidth} p-8 relative animate-slide-up border border-slate-200 my-auto shrink-0`} onClick={e => e.stopPropagation()}>
-            <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
+            <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200 shadow-sm">
+              <Icons.X className="w-5 h-5"/>
+            </button>
             {(title || IconCmp) && (
               <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                {IconCmp && <div className={`w-12 h-12 ${iconBg} ${iconColor} rounded-xl flex items-center justify-center border`}><IconCmp className="w-6 h-6"/></div>}
+                {IconCmp && (
+                  <div className={`w-12 h-12 ${iconBg} ${iconColor} rounded-xl flex items-center justify-center border`}>
+                    <IconCmp className="w-6 h-6"/>
+                  </div>
+                )}
                 <div>
                   <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">{title}</h3>
                   {subtitle && <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">{subtitle}</p>}
@@ -161,7 +212,9 @@
 
     const FormInput = ({ label, name, type = "text", value, onChange, placeholder, required = false, as = "input", options = [], disabled = false, className = "", multiple = false }) => (
       <div className={`mb-4 ${className}`}>
-        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">{label} {required && <span className="text-red-500">*</span>}</label>
+        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
         {as === "select" ? (
           <select name={name} value={value} onChange={onChange} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none bg-white transition-colors">
             {options.map(o => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
@@ -183,8 +236,15 @@
       useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#0f172a';
-        const resizeCanvas = () => { canvas.width = canvas.parentElement.clientWidth; canvas.height = 150; };
+        ctx.lineWidth = 3; 
+        ctx.lineCap = 'round'; 
+        ctx.strokeStyle = '#0f172a';
+        
+        const resizeCanvas = () => { 
+          canvas.width = canvas.parentElement.clientWidth; 
+          canvas.height = 150; 
+        };
+        
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
         return () => window.removeEventListener('resize', resizeCanvas);
@@ -192,26 +252,77 @@
 
       const getCoordinates = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
-        if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        if (e.touches && e.touches.length > 0) {
+          return { 
+            x: e.touches[0].clientX - rect.left, 
+            y: e.touches[0].clientY - rect.top 
+          };
+        }
+        return { 
+          x: e.clientX - rect.left, 
+          y: e.clientY - rect.top 
+        };
       };
 
-      const startDrawing = (e) => { e.preventDefault(); setIsDrawing(true); const { x, y } = getCoordinates(e); canvasRef.current.getContext('2d').beginPath(); canvasRef.current.getContext('2d').moveTo(x, y); };
-      const draw = (e) => { e.preventDefault(); if (!isDrawing) return; const { x, y } = getCoordinates(e); canvasRef.current.getContext('2d').lineTo(x, y); canvasRef.current.getContext('2d').stroke(); };
-      const stopDrawing = () => { setIsDrawing(false); canvasRef.current.getContext('2d').closePath(); };
-      const clearCanvas = () => { canvasRef.current.getContext('2d').clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); };
+      const startDrawing = (e) => { 
+        e.preventDefault(); 
+        setIsDrawing(true); 
+        const { x, y } = getCoordinates(e); 
+        canvasRef.current.getContext('2d').beginPath(); 
+        canvasRef.current.getContext('2d').moveTo(x, y); 
+      };
+      
+      const draw = (e) => { 
+        e.preventDefault(); 
+        if (!isDrawing) return; 
+        const { x, y } = getCoordinates(e); 
+        canvasRef.current.getContext('2d').lineTo(x, y); 
+        canvasRef.current.getContext('2d').stroke(); 
+      };
+      
+      const stopDrawing = () => { 
+        setIsDrawing(false); 
+        canvasRef.current.getContext('2d').closePath(); 
+      };
+      
+      const clearCanvas = () => { 
+        canvasRef.current.getContext('2d').clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
+      };
 
       return (
         <div className="w-full">
           <div className="border-2 border-slate-300 rounded-xl overflow-hidden bg-slate-50 mb-3 relative cursor-crosshair">
-            <canvas ref={canvasRef} onMouseDown={startDrawing} onMouseMove={draw} onMouseUp={stopDrawing} onMouseLeave={stopDrawing} onTouchStart={startDrawing} onTouchMove={draw} onTouchEnd={stopDrawing} className="w-full touch-none" />
-            <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">Sign Here</div>
+            <canvas 
+              ref={canvasRef} 
+              onMouseDown={startDrawing} 
+              onMouseMove={draw} 
+              onMouseUp={stopDrawing} 
+              onMouseLeave={stopDrawing} 
+              onTouchStart={startDrawing} 
+              onTouchMove={draw} 
+              onTouchEnd={stopDrawing} 
+              className="w-full touch-none" 
+            />
+            <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">
+              Sign Here
+            </div>
           </div>
           <div className="flex justify-between gap-3">
-            <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Clear</button>
+            <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+              Clear
+            </button>
             <div className="flex gap-2">
-              <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
-              <button type="button" onClick={() => { const blank = document.createElement('canvas'); blank.width = canvasRef.current.width; blank.height = canvasRef.current.height; onSave(canvasRef.current.toDataURL() === blank.toDataURL() ? null : canvasRef.current.toDataURL('image/png')); }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">Confirm Signature</button>
+              <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
+                Cancel
+              </button>
+              <button type="button" onClick={() => { 
+                const blank = document.createElement('canvas'); 
+                blank.width = canvasRef.current.width; 
+                blank.height = canvasRef.current.height; 
+                onSave(canvasRef.current.toDataURL() === blank.toDataURL() ? null : canvasRef.current.toDataURL('image/png')); 
+              }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">
+                Confirm Signature
+              </button>
             </div>
           </div>
         </div>
@@ -222,9 +333,21 @@
       const [userRole, setUserRole] = useState(() => localStorage.getItem('tdmh_role') || 'guest');
       const [activeTab, setActiveTab] = useState(() => localStorage.getItem('tdmh_tab') || 'home');
 
-      const changeUserRole = (role) => { setUserRole(role); localStorage.setItem('tdmh_role', role); };
-      const changeActiveTab = (tab) => { setActiveTab(tab); localStorage.setItem('tdmh_tab', tab); };
-      const handleLogout = () => { changeUserRole('guest'); changeActiveTab('home'); setMobileMenuOpen(false); };
+      const changeUserRole = (role) => { 
+        setUserRole(role); 
+        localStorage.setItem('tdmh_role', role); 
+      };
+      
+      const changeActiveTab = (tab) => { 
+        setActiveTab(tab); 
+        localStorage.setItem('tdmh_tab', tab); 
+      };
+      
+      const handleLogout = () => { 
+        changeUserRole('guest'); 
+        changeActiveTab('home'); 
+        setMobileMenuOpen(false); 
+      };
 
       const [isSyncing, setIsSyncing] = useState(true);
       const [globalPinRequired, setGlobalPinRequired] = useState(false);
@@ -297,6 +420,7 @@
       const [inquiryData, setInquiryData] = useState({ email: '', category: 'General Help', refNo: '', message: '' });
       const [adminReplyData, setAdminReplyData] = useState({ reply: '' });
       const [monitoringData, setMonitoringData] = useState({ name: '', link: '', description: '' });
+      
       const [contentData, setContentData] = useState({ contentType: 'Universal', title: '', description: '', link: '', moduleNum: '', color: 'blue', icon: 'FileText' });
       const [securityData, setSecurityData] = useState({ type: 'Role', target: 'Admin', newPin: '' });
       const [toolReqData, setToolReqData] = useState({ toolName: '', description: '', link: '' });
@@ -312,8 +436,9 @@
 
       const [showAddMemo, setShowAddMemo] = useState(false);
       const [viewingMemo, setViewingMemo] = useState(null); 
-      const [signModalOpen, setSignModalOpen] = useState(false);
-      const [memoData, setMemoData] = useState({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+      const [signModalOpen, setSignModalOpen] = useState(false); 
+
+      const [memoData, setMemoData] = useState({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
       const [signData, setSignData] = useState({ name: '', dept: '' });
       const [isFixingGrammar, setIsFixingGrammar] = useState(false);
       const [isApprovingMemo, setIsApprovingMemo] = useState(false);
@@ -327,9 +452,13 @@
       const openInquiries = useMemo(() => inquiries.filter(i => String(i.Status || i[6]).toUpperCase().includes('OPEN')), [inquiries]);
       const currentMemoSigs = useMemo(() => viewingMemo ? signatures.filter(s => (s['Memo Ref No'] || s[0]) === (viewingMemo['Ref No'] || viewingMemo[0])) : [], [viewingMemo, signatures]);
       const pendingMemoRequests = useMemo(() => memoRequests.filter(r => String(r.Status || r.status || r[6] || '').toUpperCase().includes('PENDING')), [memoRequests]);
+      
       const pendingNews = useMemo(() => newsList.filter(n => String(n.Status || n[6] || '').toUpperCase() === 'PENDING REVIEW'), [newsList]);
       const pendingToolRequests = useMemo(() => toolRequests.filter(r => String(r.Status || r.status || r[6] || '').toUpperCase() === 'PENDING'), [toolRequests]); 
-      const visibleNews = useMemo(() => newsList.filter(n => { const status = String(n.Status || n[6] || '').toUpperCase(); return status === 'APPROVED' || status === ''; }), [newsList]);
+      const visibleNews = useMemo(() => newsList.filter(n => {
+        const status = String(n.Status || n[6] || '').toUpperCase();
+        return status === 'APPROVED' || status === ''; 
+      }), [newsList]);
 
       const TABS = [
         { id: 'home', label: 'Dashboard', icon: 'Home' },
@@ -343,12 +472,26 @@
         { id: 'census', label: 'Census Entry', icon: 'Activity' }
       ];
 
-      const unlockScroll = () => { document.body.classList.remove('modal-open'); document.body.style.overflow = 'auto'; };
+      const unlockScroll = () => { 
+        document.body.classList.remove('modal-open'); 
+        document.body.style.overflow = 'auto'; 
+      };
 
       useEffect(() => {
         const showTimer = setTimeout(() => setShowChatTooltip(false), 10000); 
-        const interval = setInterval(() => { setShowChatTooltip(prev => { if(!prev) { setTimeout(() => setShowChatTooltip(false), 10000); return true; } return prev; }); }, 60000); 
-        return () => { clearTimeout(showTimer); clearInterval(interval); };
+        const interval = setInterval(() => {
+          setShowChatTooltip(prev => { 
+            if(!prev) { 
+              setTimeout(() => setShowChatTooltip(false), 10000); 
+              return true; 
+            } 
+            return prev; 
+          });
+        }, 60000); 
+        return () => { 
+          clearTimeout(showTimer); 
+          clearInterval(interval); 
+        };
       }, []);
 
       useEffect(() => {
@@ -357,23 +500,46 @@
       }, []);
 
       useEffect(() => {
+        const syncInterval = setInterval(() => {
+          fetchDatabase(true); 
+        }, 30000);
+        return () => clearInterval(syncInterval);
+      }, []);
+
+      useEffect(() => {
         const hasModal = mobileMenuOpen || showNewsFlyer || showRoleLogin || showAdminConsole || showAddEvent || showEditEvent || showAddNews || showAddMonitoring || showAddContent || showSecurityModal || showAddToolReq || slideshowIndex !== null || qrLightbox !== null || customAlert.isOpen || showAddMemo || viewingMemo !== null || signModalOpen || deptAuthModal.isOpen || showSupportChat;
-        hasModal ? document.body.classList.add('modal-open') : unlockScroll();
+        
+        if (hasModal) {
+          document.body.classList.add('modal-open');
+        } else {
+          unlockScroll();
+        }
+        
         return unlockScroll;
       }, [mobileMenuOpen, showNewsFlyer, showRoleLogin, showAdminConsole, showAddEvent, showEditEvent, showAddNews, showAddMonitoring, showAddContent, showSecurityModal, showAddToolReq, slideshowIndex, qrLightbox, customAlert.isOpen, showAddMemo, viewingMemo, signModalOpen, deptAuthModal.isOpen, showSupportChat]);
 
       useEffect(() => {
         if (slideshow.length <= 1 || slideshowIndex !== null) return;
-        const timer = setInterval(() => { setCurrentSlide((prev) => (prev + 1) % slideshow.length); }, 5000);
+        const timer = setInterval(() => {
+          setCurrentSlide((prev) => (prev + 1) % slideshow.length);
+        }, 5000);
         return () => clearInterval(timer);
       }, [slideshow.length, slideshowIndex]);
 
       useEffect(() => {
         const handleKeyDown = (e) => {
-          if (e.key === 'Escape') { setSlideshowIndex(null); setQrLightbox(null); unlockScroll(); }
+          if (e.key === 'Escape') { 
+            setSlideshowIndex(null); 
+            setQrLightbox(null); 
+            unlockScroll(); 
+          }
           if (slideshowIndex !== null) {
-            if (e.key === 'ArrowRight') setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
-            if (e.key === 'ArrowLeft') setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
+            if (e.key === 'ArrowRight') {
+              setSlideshowIndex((prev) => (prev + 1) % slideshow.length);
+            }
+            if (e.key === 'ArrowLeft') {
+              setSlideshowIndex((prev) => prev === 0 ? slideshow.length - 1 : prev - 1);
+            }
           }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -383,58 +549,127 @@
       useEffect(() => {
         const container = tabsContainerRef.current;
         if (!container) return;
-        const handleWheel = (e) => { e.preventDefault(); container.scrollLeft += e.deltaY; };
+        
+        const handleWheel = (e) => { 
+          e.preventDefault(); 
+          container.scrollLeft += e.deltaY; 
+        };
+        
         container.addEventListener('wheel', handleWheel, { passive: false });
         return () => container.removeEventListener('wheel', handleWheel);
       }, []);
       
       const scrollTabs = (direction) => {
-        if (tabsContainerRef.current) tabsContainerRef.current.scrollBy({ left: direction === 'left' ? -250 : 250, behavior: 'smooth' });
+        if (tabsContainerRef.current) {
+          tabsContainerRef.current.scrollBy({ left: direction === 'left' ? -250 : 250, behavior: 'smooth' });
+        }
       };
 
       const populateData = (data) => {
         setGlobalPinRequired(data.globalPinRequired === true);
-        if (data.deptPinRequired !== undefined) setDeptPinRequired(data.deptPinRequired === true);
-        if (!data.globalPinRequired) setGlobalUnlocked(true);
+        if (data.deptPinRequired !== undefined) {
+          setDeptPinRequired(data.deptPinRequired === true);
+        }
+        if (!data.globalPinRequired) {
+          setGlobalUnlocked(true);
+        }
+        
         setCensus(data.census || []);
         
         if (data.news && data.news.length > 0) {
           setNewsList(data.news);
           if(!localStorage.getItem('tdmh_welcome_seen') && data.news.some(n => String(n.Title || n.title || n[3] || '').includes('V2 is Live'))) {
-            setShowNewsFlyer(true); localStorage.setItem('tdmh_welcome_seen', 'true');
+            setShowNewsFlyer(true); 
+            localStorage.setItem('tdmh_welcome_seen', 'true');
           }
         }
         
-        const safeDepts = (data.departments || []).map(d => ({ ...d, HasPassword: d.HasPassword || (d.Password && String(d.Password).trim() !== '') ? true : false }));
-        setDepartments(safeDepts); setDccLogbook(data.dccLogbook || []); setSystemLogs(data.systemLogs || []); setMonitoring(data.monitoring || []); setToolRequests(data.requests || []); setTools(data.tools || []); setCalendar(data.calendar || []); setUniversalForms(data.universalForms || []); setIsoRequirements(data.isoRequirements || []); setAgimat(data.agimat || []); setDccQueue(data.dccQueue || []); setMemos(data.memos || []); setSignatures(data.signatures || []); setInquiries(data.inquiries || []); setMemoRequests(data.memoRequests || []);
-        if (data.slideshow) setSlideshow(data.slideshow.filter(s => String(s['Active (Yes/No)'] || '').trim().toUpperCase() === 'YES'));
+        const safeDepts = (data.departments || []).map(d => ({ 
+          ...d, 
+          HasPassword: d.HasPassword || (d.Password && String(d.Password).trim() !== '') ? true : false 
+        }));
+        
+        setDepartments(safeDepts); 
+        setDccLogbook(data.dccLogbook || []); 
+        setSystemLogs(data.systemLogs || []); 
+        setMonitoring(data.monitoring || []); 
+        setToolRequests(data.requests || []); 
+        setTools(data.tools || []); 
+        setCalendar(data.calendar || []); 
+        setUniversalForms(data.universalForms || []); 
+        setIsoRequirements(data.isoRequirements || []); 
+        setAgimat(data.agimat || []); 
+        setDccQueue(data.dccQueue || []); 
+        setMemos(data.memos || []); 
+        setSignatures(data.signatures || []); 
+        setInquiries(data.inquiries || []); 
+        setMemoRequests(data.memoRequests || []);
+        
+        if (data.slideshow) {
+          setSlideshow(data.slideshow.filter(s => String(s['Active (Yes/No)'] || '').trim().toUpperCase() === 'YES'));
+        }
       };
 
       const fetchDatabase = async (isBackgroundSync = false) => {
-        if (!isBackgroundSync) setIsSyncing(true);
         if (!isBackgroundSync) {
-          try { const cache = JSON.parse(localStorage.getItem('tdmh_cqi_portal_cache')); if (cache && cache.data) { populateData(cache.data); setIsSyncing(false); } } catch(e) {}
+          setIsSyncing(true);
         }
+        if (!isBackgroundSync) {
+          try { 
+            const cache = JSON.parse(localStorage.getItem('tdmh_cqi_portal_cache')); 
+            if (cache && cache.data) { 
+              populateData(cache.data); 
+              setIsSyncing(false); 
+            } 
+          } catch(e) { }
+        }
+        
         try {
-          if (isBackgroundSync) setIsSyncing(true); 
+          if (isBackgroundSync) {
+            setIsSyncing(true); 
+          }
           const response = await fetch(API_URL + "?action=sync", { redirect: "follow" }).catch(() => ({ ok: false }));
           if (response && response.ok) {
             const result = await response.json();
-            if (result.status === 'success') { localStorage.setItem('tdmh_cqi_portal_cache', JSON.stringify(result)); populateData(result.data); }
-          } else if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true);
-        } catch (error) { if (!localStorage.getItem('tdmh_cqi_portal_cache')) setGlobalUnlocked(true); }
+            if (result.status === 'success') { 
+              localStorage.setItem('tdmh_cqi_portal_cache', JSON.stringify(result)); 
+              populateData(result.data); 
+            }
+          } else if (!localStorage.getItem('tdmh_cqi_portal_cache')) {
+            setGlobalUnlocked(true);
+          }
+        } catch (error) { 
+          if (!localStorage.getItem('tdmh_cqi_portal_cache')) {
+            setGlobalUnlocked(true);
+          }
+        }
         setIsSyncing(false);
       };
 
-      useEffect(() => { fetchDatabase(); }, []);
+      useEffect(() => { 
+        fetchDatabase(); 
+      }, []);
 
       const sendPostRequest = async (payload) => {
-        if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") { showAlert("System Offline", "The database is currently running in offline developer mode.", "error"); return {status: 'success'}; }
+        if (API_URL === "YOUR_APPS_SCRIPT_WEB_APP_URL_HERE") { 
+          showAlert("System Offline", "The database is currently running in offline developer mode.", "error"); 
+          return {status: 'success'}; 
+        }
         try {
-          const response = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), redirect: "follow" }).catch(() => ({ ok: false }));
-          if (response && response.ok) return await response.json();
+          const response = await fetch(API_URL, { 
+            method: "POST", 
+            headers: { "Content-Type": "text/plain;charset=utf-8" }, 
+            body: JSON.stringify(payload), 
+            redirect: "follow" 
+          }).catch(() => ({ ok: false }));
+          
+          if (response && response.ok) {
+            return await response.json();
+          }
           return {status: 'error', message: 'Failed to parse JSON response from server.'};
-        } catch (e) { return {status: 'error', message: e.toString()}; }
+        } catch (e) { 
+          return {status: 'error', message: e.toString()}; 
+        }
       };
 
       const handleDeptClick = (dept) => {
@@ -449,341 +684,659 @@
       const submitDeptAuth = async (e) => {
         e.preventDefault();
         setDeptAuthModal(prev => ({...prev, isLoading: true}));
+        
         const deptId = deptAuthModal.targetDept.ID || deptAuthModal.targetDept.id || deptAuthModal.targetDept.Name || deptAuthModal.targetDept.name;
         const res = await sendPostRequest({ action: 'verifyDeptPin', pin: deptAuthModal.pinInput, deptId: deptId });
+        
         if (res.status === 'success') {
           setDeptAuthModal(prev => ({ ...prev, isLoading: false, feedback: {type: 'success', text: 'Access Granted'} }));
-          setTimeout(() => { setSelectedDept(deptAuthModal.targetDept); setDeptAuthModal({ isOpen: false, targetDept: null, pinInput: '', isLoading: false, feedback: null }); }, 800);
+          setTimeout(() => { 
+            setSelectedDept(deptAuthModal.targetDept); 
+            setDeptAuthModal({ isOpen: false, targetDept: null, pinInput: '', isLoading: false, feedback: null }); 
+          }, 800);
         } else {
           setDeptAuthModal(prev => ({ ...prev, isLoading: false, pinInput: '', feedback: {type: 'error', text: 'Incorrect Department Password'} }));
-          setTimeout(() => { setDeptAuthModal(prev => ({...prev, feedback: null})) }, 3000);
+          setTimeout(() => {
+            setDeptAuthModal(prev => ({...prev, feedback: null}))
+          }, 3000);
         }
       };
 
       const handleToggleDeptPin = async () => {
-        if (isTogglingLock) return; setIsTogglingLock(true);
-        const prevVal = deptPinRequired; setDeptPinRequired(!prevVal);
+        if (isTogglingLock) return; 
+        setIsTogglingLock(true);
+        
+        const prevVal = deptPinRequired; 
+        setDeptPinRequired(!prevVal);
+        
         const res = await sendPostRequest({ action: 'toggleDeptPin' });
         setIsTogglingLock(false);
-        if (res.status === 'success') { setDeptPinRequired(res.newState); } 
-        else { setDeptPinRequired(prevVal); showAlert("Error", "Failed to toggle Department PIN requirement. Check connection.", "error"); }
+        
+        if (res.status === 'success') { 
+          setDeptPinRequired(res.newState); 
+        } else { 
+          setDeptPinRequired(prevVal); 
+          showAlert("Error", "Failed to toggle Department PIN requirement. Check connection.", "error"); 
+        }
       };
 
       const handleInquirySubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
-        const res = await sendPostRequest({ action: 'submitInquiry', email: inquiryData.email, category: inquiryData.category, refNo: inquiryData.refNo, message: inquiryData.message });
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
+        const res = await sendPostRequest({ 
+          action: 'submitInquiry', 
+          email: inquiryData.email, 
+          category: inquiryData.category, 
+          refNo: inquiryData.refNo, 
+          message: inquiryData.message 
+        });
+        
         setIsSubmitting(false);
+        
         if (res.status === 'success') {
           showAlert("Ticket Submitted", `Your inquiry has been sent to Admin support. Ticket ID: ${res.ticketId}\n\nYou will receive a reply to your email.`, "success");
-          setShowSupportChat(false); setInquiryData({ email: '', category: 'General Help', refNo: '', message: '' }); fetchDatabase(true); 
-        } else { showAlert("Submission Failed", "Failed to submit inquiry.", "error"); }
+          setShowSupportChat(false); 
+          setInquiryData({ email: '', category: 'General Help', refNo: '', message: '' }); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Submission Failed", "Failed to submit inquiry.", "error"); 
+        }
       };
 
       const handleResolveInquiry = async (e, ticketId) => {
-        e.preventDefault(); setIsResolving(ticketId);
+        e.preventDefault(); 
+        setIsResolving(ticketId);
+        
         setInquiries(prev => prev.map(i => (i['Ticket ID'] || i[0]) === ticketId ? {...i, Status: 'RESOLVED', 6: 'RESOLVED'} : i));
         const res = await sendPostRequest({ action: 'resolveInquiry', ticketId: ticketId, reply: adminReplyData.reply });
+        
         setIsResolving(null);
-        if (res.status === 'success') { setAdminReplyData({reply: ''}); fetchDatabase(true); } 
-        else { fetchDatabase(true); showAlert("Error", "Failed to resolve ticket.", "error"); } 
+        
+        if (res.status === 'success') { 
+          setAdminReplyData({reply: ''}); 
+          fetchDatabase(true); 
+        } else { 
+          fetchDatabase(true); 
+          showAlert("Error", "Failed to resolve ticket.", "error"); 
+        } 
       };
 
       const handleFixGrammar = () => {
-        if (!memoData.body.trim()) { showAlert("Missing Content", "Please type something in the memo body first before fixing grammar.", "error"); return; }
+        if (!memoData.body.trim()) { 
+          showAlert("Missing Content", "Please type something in the memo body first before fixing grammar.", "error"); 
+          return; 
+        }
+        
         setIsFixingGrammar(true);
         setTimeout(() => {
-          let text = memoData.body.replace(/ +/g, ' ').replace(/ \s*([,.;?!:])/g, '$1').replace(/([,.;?!:])([a-zA-Z])/g, '$1 $2').replace(/(^\s*|[.?!]\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase()).replace(/\n{3,}/g, '\n\n'); 
-          setMemoData({...memoData, body: text.trim()}); setIsFixingGrammar(false);
+          let text = memoData.body
+            .replace(/ +/g, ' ')
+            .replace(/ \s*([,.;?!:])/g, '$1')
+            .replace(/([,.;?!:])([a-zA-Z])/g, '$1 $2')
+            .replace(/(^\s*|[.?!]\s+)([a-z])/g, (match, p1, p2) => p1 + p2.toUpperCase())
+            .replace(/\n{3,}/g, '\n\n'); 
+          
+          setMemoData({...memoData, body: text.trim()}); 
+          setIsFixingGrammar(false);
         }, 600); 
       };
 
       const handleNativeMemoSubmit = async (e) => {
         e.preventDefault(); 
-        if (memoRequestMode && !requesterName.trim()) { return showAlert("Missing Details", "Please enter your Name and Department so the Admin knows who is requesting this edit.", "error"); }
+        
+        if (memoRequestMode && !requesterName.trim()) {
+          return showAlert("Missing Details", "Please enter your Name and Department so the Admin knows who is requesting this edit.", "error");
+        }
+        
         setIsSubmitting(true);
+        
         let payload = memoRequestMode && editMemoRef 
-          ? { action: 'requestMemoAction', requestType: 'EDIT', refNo: editMemoRef, requestedBy: requesterName.trim(), newData: { forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body } }
-          : { action: editMemoRef ? 'updateMemo' : 'generateMemo', refNo: editMemoRef, forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body };
+          ? { action: 'requestMemoAction', requestType: 'EDIT', refNo: editMemoRef, requestedBy: requesterName.trim(), newData: { deptCode: memoData.deptCode, forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body } }
+          : { action: editMemoRef ? 'updateMemo' : 'generateMemo', refNo: editMemoRef, deptCode: memoData.deptCode, forDept: memoData.forDept, fromName: memoData.fromName, subject: memoData.subject, urgency: memoData.urgency, body: memoData.body };
         
         const res = await sendPostRequest(payload);
         setIsSubmitting(false);
         
         if(res.status === 'success') {
-          if (memoRequestMode) { showAlert("Modification Request Sent", `Your edit request for Memo ${editMemoRef} has been sent to the Master Admin for review.\nReq ID: ${res.reqId}`, "success"); } 
-          else { showAlert(editMemoRef ? "Memo Updated" : "Memo Sent for Approval", editMemoRef ? `Memo ${editMemoRef} has been successfully updated in the database.` : `Your digital memo has been generated and routed to the Admin queue for final review.\n\nTracking Ref: ${res.refNo}`, "success"); }
-          setShowAddMemo(false); setEditMemoRef(null); setViewingMemo(null); setMemoRequestMode(false); setRequesterName(''); unlockScroll(); setMemoData({ forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); fetchDatabase(true); 
-        } else { showAlert("Submission Failed", "Failed to process memo in database.", "error"); }
+          if (memoRequestMode) {
+            showAlert("Modification Request Sent", `Your edit request for Memo ${editMemoRef} has been sent to the Master Admin for review.\nReq ID: ${res.reqId}`, "success");
+          } else {
+            showAlert(editMemoRef ? "Memo Updated" : "Memo Sent for Approval", editMemoRef ? `Memo ${editMemoRef} has been successfully updated in the database.` : `Your digital memo has been generated and routed to the Admin queue for final review.\n\nTracking Ref: ${res.refNo}`, "success");
+          }
+          
+          setShowAddMemo(false); 
+          setEditMemoRef(null); 
+          setViewingMemo(null); 
+          setMemoRequestMode(false); 
+          setRequesterName(''); 
+          unlockScroll(); 
+          setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Submission Failed", "Failed to process memo in database.", "error"); 
+        }
       };
 
       const handleApproveMemo = async (refNo) => {
         setIsApprovingMemo(true);
+        
         setMemos(prev => prev.map(m => (m['Ref No'] || m[0]) === refNo ? {...m, Status: 'APPROVED', 6: 'APPROVED'} : m));
         setViewingMemo(null); 
+        
         const res = await sendPostRequest({ action: 'approveMemo', refNo: refNo });
         setIsApprovingMemo(false);
-        if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Approval Failed", "Failed to approve memo.", "error"); } 
+        
+        if (res.status === 'success') { 
+          fetchDatabase(true); 
+        } else { 
+          fetchDatabase(true); 
+          showAlert("Approval Failed", "Failed to approve memo.", "error"); 
+        } 
       };
 
       const handleArchiveMemo = async (refNo) => {
         if(userRole === 'admin') {
-          if(!window.confirm(`Are you sure you want to Archive (Delete) memo ${refNo}? It will be hidden from the portal.`)) return;
+          if(!window.confirm(`Are you sure you want to Archive (Delete) memo ${refNo}? It will be hidden from the portal.`)) {
+            return;
+          }
+          
           setIsApprovingMemo(true);
           setMemos(prev => prev.map(m => (m['Ref No'] || m[0]) === refNo ? {...m, Status: 'ARCHIVED', 6: 'ARCHIVED'} : m));
           setViewingMemo(null);
+          
           const res = await sendPostRequest({ action: 'archiveMemo', refNo: refNo });
           setIsApprovingMemo(false);
-          if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Archive Failed", "Failed to archive memo.", "error"); } 
+          
+          if (res.status === 'success') { 
+            fetchDatabase(true); 
+          } else { 
+            fetchDatabase(true); 
+            showAlert("Archive Failed", "Failed to archive memo.", "error"); 
+          } 
         } else {
           const reqName = window.prompt(`You are requesting to ARCHIVE memo ${refNo}.\n\nPlease enter your Name and Department for the Master Admin to review:`);
-          if (!reqName || !reqName.trim()) return;
+          
+          if (!reqName || !reqName.trim()) {
+            return;
+          }
+          
           setIsApprovingMemo(true);
           const res = await sendPostRequest({ action: 'requestMemoAction', requestType: 'ARCHIVE', refNo: refNo, requestedBy: reqName.trim() });
           setIsApprovingMemo(false);
-          if (res.status === 'success') { showAlert("Archive Request Sent", `Your request to archive Memo ${refNo} has been sent to the Master Admin.\nReq ID: ${res.reqId}`, "success"); setViewingMemo(null); fetchDatabase(true); } 
-          else { showAlert("Request Failed", "Failed to send archive request.", "error"); }
+          
+          if (res.status === 'success') { 
+            showAlert("Archive Request Sent", `Your request to archive Memo ${refNo} has been sent to the Master Admin.\nReq ID: ${res.reqId}`, "success"); 
+            setViewingMemo(null); 
+            fetchDatabase(true); 
+          } else {
+            showAlert("Request Failed", "Failed to send archive request.", "error"); 
+          }
         }
       };
 
       const handleResolveMemoRequest = async (reqId, actionVal) => {
         setIsResolving(reqId);
+        
         setMemoRequests(prev => prev.map(r => (r['Request ID'] || r[0]) === reqId ? {...r, Status: actionVal, 6: actionVal} : r));
+        
         const res = await sendPostRequest({ action: 'resolveMemoRequest', reqId: reqId, action: actionVal });
         setIsResolving(null);
-        if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Error", res.message || "Failed to process request.", "error"); } 
+        
+        if (res.status === 'success') { 
+          fetchDatabase(true); 
+        } else { 
+          fetchDatabase(true); 
+          showAlert("Error", res.message || "Failed to process request.", "error"); 
+        } 
       };
       
       const handleApproveNews = async (id) => {
         setIsResolving(id);
         setNewsList(prev => prev.map(n => (n.ID || n[0]) === id ? {...n, Status: 'APPROVED', 6: 'APPROVED'} : n));
+        
         const res = await sendPostRequest({ action: 'approveNews', id: id });
         setIsResolving(null);
-        if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Error", "Failed to approve news.", "error"); }
+        
+        if (res.status === 'success') { 
+          fetchDatabase(true); 
+        } else { 
+          fetchDatabase(true); 
+          showAlert("Error", "Failed to approve news.", "error"); 
+        }
       };
 
       const handleRejectNews = async (id) => {
         setIsResolving(id);
         setNewsList(prev => prev.map(n => (n.ID || n[0]) === id ? {...n, Status: 'REJECTED', 6: 'REJECTED'} : n));
+        
         const res = await sendPostRequest({ action: 'rejectNews', id: id });
         setIsResolving(null);
-        if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Error", "Failed to reject news.", "error"); }
+        
+        if (res.status === 'success') { 
+          fetchDatabase(true); 
+        } else { 
+          fetchDatabase(true); 
+          showAlert("Error", "Failed to reject news.", "error"); 
+        }
       };
 
       const handleAddMonitoringSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const newSys = { 'System Name': monitoringData.name, 'Link': monitoringData.link, 'Description': monitoringData.description };
         const prevMon = [...monitoring];
         setMonitoring(prev => [...prev, newSys]); 
+        
         const res = await sendPostRequest({ action: 'addMonitoring', systemName: monitoringData.name, link: monitoringData.link, description: monitoringData.description });
         setIsSubmitting(false);
-        if (res.status === 'success') { setShowAddMonitoring(false); setMonitoringData({ name: '', link: '', description: '' }); fetchDatabase(true); } 
-        else { setMonitoring(prevMon); showAlert("Error", "Failed to add system.", "error"); } 
+        
+        if (res.status === 'success') { 
+          setShowAddMonitoring(false); 
+          setMonitoringData({ name: '', link: '', description: '' }); 
+          fetchDatabase(true); 
+        } else { 
+          setMonitoring(prevMon); 
+          showAlert("Error", "Failed to add system.", "error"); 
+        } 
       };
 
       const handleAddContentSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'addContent', ...contentData, author: userRole });
         setIsSubmitting(false);
+        
         if(res.status === 'success') {
           showAlert("Content Added", `Successfully published to ${contentData.contentType}.`, "success");
-          setShowAddContent(false); setContentData({ contentType: 'Universal', title: '', description: '', link: '', moduleNum: '', color: 'blue', icon: 'FileText' }); fetchDatabase(true);
-        } else { showAlert("Error", "Failed to add content.", "error"); }
+          setShowAddContent(false); 
+          setContentData({ contentType: 'Universal', title: '', description: '', link: '', moduleNum: '', color: 'blue', icon: 'FileText' }); 
+          fetchDatabase(true);
+        } else {
+          showAlert("Error", "Failed to add content.", "error");
+        }
       };
 
       const handleSecuritySubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'updateSecurityPin', type: securityData.type, target: securityData.target, newPin: securityData.newPin });
         setIsSubmitting(false);
+        
         if(res.status === 'success') {
           showAlert("Security Updated", `The PIN for ${securityData.target} has been changed.`, "success");
-          setShowSecurityModal(false); setSecurityData({ type: 'Role', target: 'Admin', newPin: '' }); fetchDatabase(true);
-        } else { showAlert("Error", res.message || "Failed to update PIN.", "error"); }
+          setShowSecurityModal(false); 
+          setSecurityData({ type: 'Role', target: 'Admin', newPin: '' }); 
+          fetchDatabase(true);
+        } else {
+          showAlert("Error", res.message || "Failed to update PIN.", "error");
+        }
       };
 
       const handleToolRequestSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault();
+        setIsSubmitting(true);
         const deptName = selectedDept['Name'] || selectedDept.Name || 'Admin / Unknown';
-        const payload = { action: 'addToolRequest', requestingDept: deptName, toolName: toolReqData.toolName, description: toolReqData.description, link: toolReqData.link, scope: deptName };
+        
+        const payload = {
+          action: 'addToolRequest',
+          requestingDept: deptName,
+          toolName: toolReqData.toolName,
+          description: toolReqData.description,
+          link: toolReqData.link,
+          scope: deptName
+        };
+        
         const res = await sendPostRequest(payload);
         setIsSubmitting(false);
+        
         if (res.status === 'success') {
           showAlert("Request Submitted", "Your tool request has been successfully sent to the Admin queue for approval.", "success");
-          setShowAddToolReq(false); setToolReqData({ toolName: '', description: '', link: '' }); fetchDatabase(true);
-        } else { showAlert("Error", "Failed to submit tool request. Check connection.", "error"); }
+          setShowAddToolReq(false);
+          setToolReqData({ toolName: '', description: '', link: '' });
+          fetchDatabase(true);
+        } else {
+          showAlert("Error", "Failed to submit tool request. Check connection.", "error");
+        }
       };
 
       const handleResolveToolRequest = async (req, actionVal) => {
-        const timestamp = req.Timestamp || req[0]; const toolName = req['Tool Name'] || req[2];
+        const timestamp = req.Timestamp || req[0];
+        const toolName = req['Tool Name'] || req[2];
         setIsResolving(timestamp + toolName);
+        
         setToolRequests(prev => prev.map(r => ((r.Timestamp || r[0]) === timestamp && (r['Tool Name'] || r[2]) === toolName) ? {...r, Status: actionVal, 6: actionVal} : r));
-        const res = await sendPostRequest({ action: 'resolveToolRequest', timestamp: timestamp, toolName: toolName, action: actionVal });
+        
+        const res = await sendPostRequest({ 
+          action: 'resolveToolRequest', 
+          timestamp: timestamp, 
+          toolName: toolName, 
+          action: actionVal 
+        });
+        
         setIsResolving(null);
-        if (res.status === 'success') { fetchDatabase(true); } else { fetchDatabase(true); showAlert("Error", res.message || "Failed to process tool request.", "error"); }
+        
+        if (res.status === 'success') {
+          fetchDatabase(true);
+        } else {
+          fetchDatabase(true);
+          showAlert("Error", res.message || "Failed to process tool request.", "error");
+        }
       };
 
       const handleSignatureSubmit = async (signatureBase64) => {
-        if (!signatureBase64) { return showAlert("Missing Signature", "Please physically draw your signature on the pad before confirming.", "error"); }
-        if (!signData.name.trim() || !signData.dept.trim()) { return showAlert("Missing Details", "Please enter your full name and department.", "error"); }
+        if (!signatureBase64) {
+          return showAlert("Missing Signature", "Please physically draw your signature on the pad before confirming.", "error"); 
+        }
+        if (!signData.name.trim() || !signData.dept.trim()) {
+          return showAlert("Missing Details", "Please enter your full name and department.", "error"); 
+        }
+        
         setIsSubmitting(true);
-        const res = await sendPostRequest({ action: 'submitSignature', refNo: viewingMemo['Ref No'] || viewingMemo[0], name: signData.name, dept: signData.dept, signature: signatureBase64 });
+        const res = await sendPostRequest({ 
+          action: 'submitSignature', 
+          refNo: viewingMemo['Ref No'] || viewingMemo[0], 
+          name: signData.name, 
+          dept: signData.dept, 
+          signature: signatureBase64 
+        });
         setIsSubmitting(false);
+        
         if (res.status === 'success') { 
           showAlert("Acknowledgment Saved", `Thank you, ${signData.name}!\n\nYour digital signature has been saved to the receiving record.`, "success"); 
-          setSignModalOpen(false); setSignData({name: '', dept: ''}); fetchDatabase(true); 
-        } else { showAlert("Network Error", "Failed to save signature.", "error"); }
+          setSignModalOpen(false); 
+          setSignData({name: '', dept: ''}); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Network Error", "Failed to save signature.", "error"); 
+        }
       };
 
       const handleAddNewsSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'addNews', title: newsData.title, content: newsData.content, type: newsData.type, author: userRole });
         setIsSubmitting(false);
+        
         if (res.status === 'success') { 
           showAlert("News Submitted", "The announcement has been submitted to the Admin queue for approval.", "success"); 
-          setShowAddNews(false); unlockScroll(); setNewsData({ title: '', content: '', type: 'Standard' }); fetchDatabase(true); 
-        } else { showAlert("Error", "Failed to post news.", "error"); }
+          setShowAddNews(false); 
+          unlockScroll(); 
+          setNewsData({ title: '', content: '', type: 'Standard' }); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Error", "Failed to post news.", "error"); 
+        }
       };
 
       const handleEventSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'addEvent', title: eventData.title, date: eventData.date, time: eventData.time, eventType: eventData.eventType });
         setIsSubmitting(false);
+        
         if (res.status === 'success') { 
           showAlert("Event Scheduled", "The event has been successfully added to the Master Calendar.", "success"); 
-          setShowAddEvent(false); unlockScroll(); setEventData({ title: '', date: '', time: '', eventType: 'Event / General' }); fetchDatabase(true); 
-        } else { showAlert("Network Error", "Failed to add event.", "error"); }
+          setShowAddEvent(false); 
+          unlockScroll(); 
+          setEventData({ title: '', date: '', time: '', eventType: 'Event / General' }); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Network Error", "Failed to add event.", "error"); 
+        }
       };
 
       const handleEditEventSubmit = async (e) => {
-        e.preventDefault(); setIsSubmitting(true);
+        e.preventDefault(); 
+        setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'editEventTime', dateText: editEventData.oldDateText, title: editEventData.oldTitle, newTime: editEventData.newTime });
         setIsSubmitting(false);
+        
         if (res.status === 'success') { 
           showAlert("Time Updated", "The event time has been successfully updated.", "success"); 
-          setShowEditEvent(false); unlockScroll(); setEditEventData({ oldDateText: '', oldTitle: '', newTime: '' }); fetchDatabase(true); 
-        } else { showAlert("Update Failed", "Could not locate event.", "error"); }
+          setShowEditEvent(false); 
+          unlockScroll(); 
+          setEditEventData({ oldDateText: '', oldTitle: '', newTime: '' }); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Update Failed", "Could not locate event.", "error"); 
+        }
       };
 
       const handleGlobalUnlock = async (e) => { 
-        e.preventDefault(); setIsVerifyingLogin(true);
+        e.preventDefault(); 
+        setIsVerifyingLogin(true);
+        
         const res = await sendPostRequest({ action: 'verifyPin', pin: globalPinInput });
         setIsVerifyingLogin(false);
+        
         if (res.status === 'success') { 
           setGlobalPinFeedback({ type: 'success', text: 'Verification Successful. Unlocking...' }); 
-          setTimeout(() => { setGlobalUnlocked(true); setGlobalPinFeedback(null); }, 1000); 
+          setTimeout(() => { 
+            setGlobalUnlocked(true); 
+            setGlobalPinFeedback(null); 
+          }, 1000); 
         } else { 
           setGlobalPinFeedback({ type: 'error', text: 'Invalid Site PIN. Please check your credentials.' }); 
-          setGlobalPinInput(''); setTimeout(() => setGlobalPinFeedback(null), 3000); 
+          setGlobalPinInput(''); 
+          setTimeout(() => setGlobalPinFeedback(null), 3000); 
         } 
       };
 
       const submitRoleLogin = async (e) => {
-        e.preventDefault(); setIsVerifyingLogin(true);
+        e.preventDefault(); 
+        setIsVerifyingLogin(true);
+        
         const res = await sendPostRequest({ action: 'verifyPin', pin: rolePinInput });
         setIsVerifyingLogin(false);
+        
         if (res.status === 'success' && res.role !== 'portal_lock') { 
-          changeUserRole(res.role); setShowRoleLogin(false); unlockScroll(); setRolePinInput(''); setRoleLoginFeedback(null);
-          if (pendingAction === 'census' && (res.role === 'admin' || res.role === 'admitting')) { changeActiveTab('census'); setMobileMenuOpen(false); setSelectedDept(null); } 
-          else if (pendingAction === 'admin' && res.role === 'admin') { setShowAdminConsole(true); setMobileMenuOpen(false); } 
-          else if (pendingAction === 'add_event' && (res.role === 'admin' || res.role === 'dept_head')) { setShowAddEvent(true); } 
-          else if (pendingAction === 'add_news' && (res.role === 'admin' || res.role === 'dept_head')) { setShowAddNews(true); } 
-          else if (pendingAction === 'add_memo' && (res.role === 'admin' || res.role === 'dept_head')) { setShowAddMemo(true); }
+          changeUserRole(res.role); 
+          setShowRoleLogin(false); 
+          unlockScroll(); 
+          setRolePinInput(''); 
+          setRoleLoginFeedback(null);
+          
+          if (pendingAction === 'census' && (res.role === 'admin' || res.role === 'admitting')) { 
+            changeActiveTab('census'); 
+            setMobileMenuOpen(false); 
+            setSelectedDept(null); 
+          } else if (pendingAction === 'admin' && res.role === 'admin') { 
+            setShowAdminConsole(true); 
+            setMobileMenuOpen(false); 
+          } else if (pendingAction === 'add_event' && (res.role === 'admin' || res.role === 'dept_head')) { 
+            setShowAddEvent(true); 
+          } else if (pendingAction === 'add_news' && (res.role === 'admin' || res.role === 'dept_head')) { 
+            setShowAddNews(true); 
+          } else if (pendingAction === 'add_memo' && (res.role === 'admin' || res.role === 'dept_head')) { 
+            setShowAddMemo(true); 
+          }
+          
           setPendingAction(null);
         } else { 
           setRoleLoginFeedback({ type: 'error', text: 'Invalid PIN or insufficient permissions.' }); 
-          setRolePinInput(''); setTimeout(() => setRoleLoginFeedback(null), 3000); 
+          setRolePinInput(''); 
+          setTimeout(() => setRoleLoginFeedback(null), 3000); 
         }
       };
 
       const handleSecureAction = (actionType) => {
-        setShowAddEvent(false); setShowAddNews(false); setShowAddMemo(false); setViewingMemo(null); setShowEditEvent(false);
+        setShowAddEvent(false); 
+        setShowAddNews(false); 
+        setShowAddMemo(false); 
+        setViewingMemo(null); 
+        setShowEditEvent(false);
+        
         const requireRole = (roles, fallbackAction) => {
           if (roles.includes(userRole)) {
-            if(fallbackAction === 'census') { changeActiveTab('census'); setMobileMenuOpen(false); setSelectedDept(null); }
-            else if(fallbackAction === 'admin') { setShowAdminConsole(true); setMobileMenuOpen(false); }
-            else if(fallbackAction === 'add_event') { setShowAddEvent(true); }
-            else if(fallbackAction === 'add_news') { setShowAddNews(true); }
-            else if(fallbackAction === 'add_memo') { setShowAddMemo(true); }
+            if(fallbackAction === 'census') { 
+              changeActiveTab('census'); 
+              setMobileMenuOpen(false); 
+              setSelectedDept(null); 
+            } else if(fallbackAction === 'admin') { 
+              setShowAdminConsole(true); 
+              setMobileMenuOpen(false); 
+            } else if(fallbackAction === 'add_event') {
+              setShowAddEvent(true); 
+            } else if(fallbackAction === 'add_news') {
+              setShowAddNews(true); 
+            } else if(fallbackAction === 'add_memo') {
+              setShowAddMemo(true); 
+            }
           } else { 
-            setPendingAction(fallbackAction); setShowRoleLogin(true); 
+            setPendingAction(fallbackAction); 
+            setShowRoleLogin(true); 
           }
         };
         
-        if (actionType === 'census') requireRole(['admin', 'admitting'], 'census');
-        else if (actionType === 'admin') requireRole(['admin'], 'admin');
-        else if (actionType === 'add_event') requireRole(['admin', 'dept_head'], 'add_event');
-        else if (actionType === 'add_news') requireRole(['admin', 'dept_head'], 'add_news');
-        else if (actionType === 'add_memo') requireRole(['admin', 'dept_head'], 'add_memo');
-        else { changeActiveTab(actionType); setMobileMenuOpen(false); setSelectedDept(null); }
+        if (actionType === 'census') {
+          requireRole(['admin', 'admitting'], 'census');
+        } else if (actionType === 'admin') {
+          requireRole(['admin'], 'admin');
+        } else if (actionType === 'add_event') {
+          requireRole(['admin', 'dept_head'], 'add_event');
+        } else if (actionType === 'add_news') {
+          requireRole(['admin', 'dept_head'], 'add_news');
+        } else if (actionType === 'add_memo') {
+          requireRole(['admin', 'dept_head'], 'add_memo');
+        } else { 
+          changeActiveTab(actionType); 
+          setMobileMenuOpen(false); 
+          setSelectedDept(null); 
+        }
       };
 
       const handleDccUpload = async (e) => {
         e.preventDefault(); 
+        
         const emailInput = e.target.email || e.target.querySelector('input[type="email"]');
         const titleInput = e.target.title || e.target.querySelector('input[placeholder="e.g. Daily Temperature Log"]');
-        const email = emailInput?.value; const title = titleInput?.value; const files = Array.from(fileInputRef.current.files);
+        const email = emailInput?.value; 
+        const title = titleInput?.value; 
+        const files = Array.from(fileInputRef.current.files);
         
-        if (!email || !title || files.length === 0) return showAlert("Missing Fields", "Please fill in all requested fields and attach a file.", "error"); 
+        if (!email || !title || files.length === 0) {
+          return showAlert("Missing Fields", "Please fill in all requested fields and attach a file.", "error"); 
+        }
+        
         for (let file of files) {
-          if (file.size > 35 * 1024 * 1024) return showAlert("File Too Large", `The file "${file.name}" exceeds the 35MB safe upload limit.\nPlease compress any images inside your document.`, "error"); 
-          if (file.type === "application/pdf") return showAlert("Invalid File Type", `PDFs are blocked for draft submissions (${file.name}). Please upload an editable format (.docx, .xlsx).`, "error"); 
+          if (file.size > 35 * 1024 * 1024) {
+            return showAlert("File Too Large", `The file "${file.name}" exceeds the 35MB safe upload limit.\nPlease compress any images inside your document.`, "error"); 
+          }
+          if (file.type === "application/pdf") {
+            return showAlert("Invalid File Type", `PDFs are blocked for draft submissions (${file.name}). Please upload an editable format (.docx, .xlsx).`, "error"); 
+          }
         }
 
         setIsSubmitting(true);
         let successCount = 0;
+        
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          const base64 = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(file); });
+          const base64 = await new Promise(resolve => { 
+            const reader = new FileReader(); 
+            reader.onload = () => resolve(reader.result.split(',')[1]); 
+            reader.readAsDataURL(file); 
+          });
+          
           const fileTitle = files.length > 1 ? `${title} (Part ${i+1})` : title;
           const res = await sendPostRequest({ action: "submitDCC", email: email, title: fileTitle, fileName: file.name, mimeType: file.type, fileBase64: base64 });
-          if (res.status === 'success') successCount++;
+          
+          if (res.status === 'success') {
+            successCount++;
+          }
         }
 
         setIsSubmitting(false);
+        
         if (successCount > 0) { 
           showAlert("Submission Successful", `Successfully pushed ${successCount} document(s) to the CQI Queue.\n\nReceipts have been emailed to you.`, "success"); 
-          e.target.reset(); fetchDatabase(true); 
+          e.target.reset(); 
+          fetchDatabase(true); 
         }
       };
 
       const handleResolveDCC = async (e, r) => {
-        e.preventDefault(); const file = e.target.stampedFile.files[0];
+        e.preventDefault(); 
+        
+        const file = e.target.stampedFile.files[0];
         const targetTrackingId = r['Tracking ID'] || r[0];
-        if (!targetTrackingId || !file) return showAlert("Missing Details", "Please select a stamped file to upload.", "error"); 
+        
+        if (!targetTrackingId || !file) {
+          return showAlert("Missing Details", "Please select a stamped file to upload.", "error"); 
+        }
         
         const reader = new FileReader();
         reader.onload = async () => {
-          setIsResolving(targetTrackingId); const base64 = reader.result.split(',')[1];
-          const prevQueue = [...dccQueue]; const prevLogbook = [...dccLogbook];
+          setIsResolving(targetTrackingId); 
+          const base64 = reader.result.split(',')[1];
+          
+          const prevQueue = [...dccQueue]; 
+          const prevLogbook = [...dccLogbook];
           
           setDccQueue(prev => prev.map(item => (item['Tracking ID'] || item[0]) === targetTrackingId ? {...item, Status: 'RESOLVED', 4: 'RESOLVED'} : item));
           setDccLogbook(prev => [...prev, { 'Tracking ID': targetTrackingId, 'Form Title': r.Title || r['Title'] || r[3], 'Dept Email': r['Dept Email'] || r.Email || r[2], 'Date Received': r.Timestamp || r['Timestamp'] || r[1], 'Date Accomplished': new Date().toISOString(), 'Status': 'RESOLVED & EMAILED' }]);
 
           const res = await sendPostRequest({ action: "resolveDCC", trackingId: targetTrackingId, stampedFileName: file.name, mimeType: file.type, stampedFileBase64: base64 });
           setIsResolving(null);
-          if (res.status === 'success') { e.target.reset(); fetchDatabase(true); } 
-          else { setDccQueue(prevQueue); setDccLogbook(prevLogbook); showAlert("Resolution Failed", "Failed to resolve request. Check network connection.", "error"); }
+          
+          if (res.status === 'success') { 
+            e.target.reset(); 
+            fetchDatabase(true); 
+          } else { 
+            setDccQueue(prevQueue); 
+            setDccLogbook(prevLogbook); 
+            showAlert("Resolution Failed", "Failed to resolve request. Check network connection.", "error"); 
+          }
         };
         reader.readAsDataURL(file);
       };
 
       const handleSaveCensus = async () => {
         setIsSubmitting(true);
+        
         const res = await sendPostRequest({ action: 'updateCensus', updates: census.map(c => ({ department: c.Department || c[0], count: c['Patient Count'] || c[1] })) });
         setIsSubmitting(false);
-        if (res.status === 'success') { showAlert("Census Updated", "The patient census has been successfully published to the main dashboard.", "success"); fetchDatabase(true); } 
-        else showAlert("Update Failed", "Could not connect to the database to update the census.", "error"); 
+        
+        if (res.status === 'success') { 
+          showAlert("Census Updated", "The patient census has been successfully published to the main dashboard.", "success"); 
+          fetchDatabase(true); 
+        } else {
+          showAlert("Update Failed", "Could not connect to the database to update the census.", "error"); 
+        }
       };
 
       const handleTrackRequest = async (e) => {
-        e.preventDefault(); if (!trackQuery) return; setIsTracking(true);
+        e.preventDefault(); 
+        
+        if (!trackQuery) return; 
+        setIsTracking(true);
+        
         try {
           const response = await fetch(`${API_URL}?action=trackRequest&query=${encodeURIComponent(trackQuery)}`, { redirect: "follow" }).catch(() => ({ ok: false }));
-          if (response && response.ok) { const result = await response.json(); setTrackResult(result.status === 'success' ? result.data : { error: result.message }); } 
-          else setTrackResult({ 'Tracking ID': trackQuery, 'Title': 'System Test Form', 'Status': 'PENDING REVIEW' }); 
-        } catch(e) { setTrackResult({ error: "Network error tracking request." }); }
+          
+          if (response && response.ok) { 
+            const result = await response.json(); 
+            setTrackResult(result.status === 'success' ? result.data : { error: result.message }); 
+          } else {
+            setTrackResult({ 'Tracking ID': trackQuery, 'Title': 'System Test Form', 'Status': 'PENDING REVIEW' }); 
+          }
+        } catch(e) { 
+          setTrackResult({ error: "Network error tracking request." }); 
+        }
+        
         setIsTracking(false);
       };
 
-      const handlePrintMemo = () => { window.print(); };
+      const handlePrintMemo = () => { 
+        window.print(); 
+      };
 
       if (isSyncing && !globalUnlocked && !localStorage.getItem('tdmh_cqi_portal_cache')) {
         return (
@@ -1019,7 +1572,7 @@
                           <div className="flex gap-2 mt-3 w-full sm:w-auto">
                             <button onClick={(e) => { 
                               e.stopPropagation(); 
-                              setMemoData({ forDept: m.For || m[2], fromName: m.From || m[3], subject: m.Subject || m[4], body: m.Body || m[5], urgency: m.Urgency || m[7] || 'Normal' }); 
+                              setMemoData({ deptCode: (m['Ref No'] || m[0]).split('-')[0], forDept: m.For || m[2], fromName: m.From || m[3], subject: m.Subject || m[4], body: m.Body || m[5], urgency: m.Urgency || m[7] || 'Normal' }); 
                               setEditMemoRef(m['Ref No'] || m[0]); 
                               setMemoRequestMode(userRole !== 'admin'); 
                               setShowAddMemo(true); 
@@ -1163,6 +1716,7 @@
                     <button onClick={() => setSelectedDept(null)} className="p-2 bg-slate-100 hover:bg-tdmh-blue hover:text-white rounded-lg text-slate-600 transition-colors shadow-sm"><Icons.ChevronLeft className="w-6 h-6" /></button>
                     <h2 className="text-2xl font-black text-slate-800 flex items-center gap-3 tracking-tight">{selectedDept['Name'] || selectedDept.Name} Forms & Tools</h2>
                   </div>
+                  
                   {(userRole === 'admin' || userRole === 'dept_head') && (
                     <button onClick={() => setShowAddToolReq(true)} className="bg-tdmh-blue text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-blue-900 transition-colors shadow-sm w-full sm:w-auto">
                       <Icons.Plus className="w-4 h-4"/> Request New Tool
@@ -1204,6 +1758,7 @@
                     IconCmp = catStr.includes('admin') || catStr.includes('finance') ? Icons.Users : catStr.includes('medical') || catStr.includes('ward') ? Icons.Stethoscope : Icons.Box; 
                   }
                   const colorTheme = DEPT_COLORS[i % DEPT_COLORS.length];
+                  
                   const hasLock = dept.HasPassword || (dept.Password && dept.Password.toString().trim() !== '');
 
                   return (
@@ -1486,6 +2041,12 @@
           </div>
 
           {/* OPTIMIZED REUSABLE MODALS */}
+
+          <Modal isOpen={signModalOpen} onClose={() => setSignModalOpen(false)} title="Sign Memorandum" subtitle={`Acknowledging REF: ${viewingMemo ? (viewingMemo['Ref No'] || viewingMemo[0]) : ''}`} icon={Icons.PenTool} maxWidth="max-w-md">
+            <FormInput label="Full Name" value={signData.name} onChange={e=>setSignData({...signData, name: e.target.value})} required placeholder="e.g. Juan Dela Cruz" />
+            <FormInput label="Department / Position" value={signData.dept} onChange={e=>setSignData({...signData, dept: e.target.value})} required placeholder="e.g. Cardiology" />
+            <SignaturePad onSave={handleSignatureSubmit} onCancel={() => setSignModalOpen(false)} />
+          </Modal>
           
           <Modal isOpen={showAddToolReq} onClose={() => setShowAddToolReq(false)} title="Request New Tool" subtitle={`For ${selectedDept?.Name || 'Department'}`} icon={Icons.Box} maxWidth="max-w-md">
             <form onSubmit={handleToolRequestSubmit}>
@@ -1630,6 +2191,11 @@
               {memoRequestMode && (
                 <FormInput label="Requested By (Name / Department)" value={requesterName} onChange={e=>setRequesterName(e.target.value)} required placeholder="e.g. Dr. Smith (Cardiology)" className="bg-blue-50 p-4 rounded-xl border border-blue-100" />
               )}
+              
+              {!editMemoRef && (
+                <FormInput label="Originating Dept Code" value={memoData.deptCode} onChange={e=>setMemoData({...memoData, deptCode: e.target.value.toUpperCase()})} required placeholder="e.g. CQI, HR, IT" className="mb-4" />
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormInput label="To (Department)" value={memoData.forDept} onChange={e=>setMemoData({...memoData, forDept: e.target.value})} required placeholder="e.g. All Staff"/>
                 <FormInput label="From (Name)" value={memoData.fromName} onChange={e=>setMemoData({...memoData, fromName: e.target.value})} required placeholder="e.g. HR Dept" />
@@ -1652,14 +2218,17 @@
           {viewingMemo && (
             <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print overflow-y-auto" onClick={() => setViewingMemo(null)}>
               <div className="bg-white p-8 md:p-12 rounded-[2rem] shadow-2xl max-w-3xl w-full my-auto printable-memo relative border border-slate-200" onClick={e => e.stopPropagation()}>
+                
                 <div className="flex justify-between items-start mb-8 no-print">
                   <div className="flex items-center gap-3"><div className="bg-slate-100 p-2.5 rounded-lg border"><Icons.FileText className="w-6 h-6 text-slate-600"/></div><h3 className="text-2xl font-black text-slate-800">Record Viewer</h3></div>
                   <button onClick={() => setViewingMemo(null)} className="p-2 bg-slate-50 text-slate-400 hover:text-slate-800 rounded-full"><Icons.X className="w-6 h-6"/></button>
                 </div>
-                <div className="border-b-4 border-slate-800 pb-6 mb-8 mt-2">
-                  <div className="text-center mb-8 hidden print:block"><h1 className="text-2xl font-black">TAYTAY DOCTORS MULTISPECIALTY HOSPITAL</h1><p className="text-sm">Official Memorandum</p></div>
-                  <h1 className="text-4xl font-black uppercase tracking-widest mb-6 print:hidden">Memorandum</h1>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm font-bold text-slate-800">
+                
+                <div className="border-b-4 border-slate-800 pb-6 mb-8 mt-2 text-center">
+                  <img src="https://raw.githubusercontent.com/tdmh-cqi/Portal/main/images%20logo/tdmh-logo.png" alt="TDMH Logo" className="h-20 md:h-24 mx-auto mb-4 object-contain" />
+                  <h1 className="text-3xl md:text-4xl font-black uppercase tracking-widest text-slate-800">Memorandum</h1>
+                  <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mt-1 mb-8">(Inter-Office Letter)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm font-bold text-slate-800 text-left">
                     <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">TO:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.For || viewingMemo[2]}</span></div>
                     <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">FROM:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.From || viewingMemo[3]}</span></div>
                     <div className="flex items-center"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">DATE:</span> <span className="border-b border-slate-200 w-full pb-1">{viewingMemo.Date || viewingMemo[1]}</span></div>
@@ -1667,7 +2236,9 @@
                     <div className="col-span-full flex items-center mt-2"><span className="text-slate-400 w-24 shrink-0 uppercase tracking-widest text-xs">SUBJECT:</span> <span className="border-b border-slate-200 w-full pb-1 font-black text-base uppercase">{viewingMemo.Subject || viewingMemo[4]}</span></div>
                   </div>
                 </div>
+                
                 <div className="whitespace-pre-wrap text-slate-800 leading-relaxed min-h-[250px] mb-12 text-justify">{viewingMemo.Body || viewingMemo[5]}</div>
+                
                 <div className="no-print border-t border-slate-200 pt-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
                   <div className="flex flex-wrap gap-3 w-full sm:w-auto">
                     <button onClick={() => setSignModalOpen(true)} className="flex-1 sm:flex-none bg-tdmh-blue text-white px-6 py-3 rounded-xl font-black uppercase text-xs flex items-center justify-center gap-2"><Icons.PenTool className="w-4 h-4"/> Sign</button>
@@ -2013,6 +2584,7 @@
                           {(req['Request Type'] || req[2]) === 'EDIT' && (
                             <div className="bg-slate-900/50 p-4 rounded-xl text-slate-300 text-sm border border-slate-700 whitespace-pre-wrap">
                               <strong className="text-white block mb-2">Proposed Changes:</strong>
+                              <br/>
                               {req['New Data JSON'] || req[5]}
                             </div>
                           )}
