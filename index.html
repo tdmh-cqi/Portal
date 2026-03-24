@@ -416,8 +416,8 @@
       const [viewingMemo, setViewingMemo] = useState(null); 
       const [signModalOpen, setSignModalOpen] = useState(false); 
 
-      // Memo Data state with Department Code prefix
-      const [memoData, setMemoData] = useState({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+      // FIXED: Dept Code is initially blank
+      const [memoData, setMemoData] = useState({ deptCode: '', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
       const [signData, setSignData] = useState({ name: '', dept: '' });
       const [isFixingGrammar, setIsFixingGrammar] = useState(false);
       const [isApprovingMemo, setIsApprovingMemo] = useState(false);
@@ -791,7 +791,7 @@
           setMemoRequestMode(false); 
           setRequesterName(''); 
           unlockScroll(); 
-          setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+          setMemoData({ deptCode: '', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
           fetchDatabase(true); 
         } else {
           showAlert("Submission Failed", "Failed to process memo in database.", "error"); 
@@ -1135,6 +1135,9 @@
           } else if (pendingAction === 'add_news' && (res.role === 'admin' || res.role === 'dept_head')) { 
             setShowAddNews(true); 
           } else if (pendingAction === 'add_memo' && (res.role === 'admin' || res.role === 'dept_head')) { 
+            // FIXED: Wipes old memo data clean on fresh open
+            setMemoData({ deptCode: '', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+            setEditMemoRef(null);
             setShowAddMemo(true); 
           }
           
@@ -1167,8 +1170,8 @@
             } else if(fallbackAction === 'add_news') {
               setShowAddNews(true); 
             } else if(fallbackAction === 'add_memo') {
-              // Wipes old memo data clean on fresh open
-              setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+              // FIXED: Wipes old memo data clean on fresh open
+              setMemoData({ deptCode: '', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
               setEditMemoRef(null);
               setShowAddMemo(true); 
             }
@@ -1523,12 +1526,7 @@
                     <Icons.Activity className="w-4 h-4" /> {visibleMemos.length} Active Records
                   </div>
                   {(userRole === 'admin' || userRole === 'dept_head') && (
-                    <button onClick={() => { 
-                      setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
-                      setEditMemoRef(null);
-                      setMemoRequestMode(userRole !== 'admin'); 
-                      setShowAddMemo(true); 
-                    }} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-blue-900 transition-colors">
+                    <button onClick={() => { setMemoRequestMode(userRole !== 'admin'); setShowAddMemo(true); }} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-blue-900 transition-colors">
                       <Icons.Plus className="w-4 h-4" /> New Memo
                     </button>
                   )}
@@ -2181,7 +2179,7 @@
               setEditMemoRef(null); 
               setMemoRequestMode(false); 
               setRequesterName('');
-              setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+              setMemoData({ deptCode: '', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
             }} 
             title={memoRequestMode ? 'Request Memo Edit' : (editMemoRef ? 'Edit Existing Memo' : 'Draft New Memo')} 
             subtitle={editMemoRef ? `REF: ${editMemoRef}` : 'Official Record'} 
@@ -2194,7 +2192,12 @@
               )}
               
               {!editMemoRef && !memoRequestMode && (
-                <FormInput label="Originating Dept Code" value={memoData.deptCode} onChange={e=>setMemoData({...memoData, deptCode: e.target.value.toUpperCase()})} required placeholder="e.g. CQI, HR, IT" className="mb-4" />
+                <div className="mb-5 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                  <FormInput label="Originating Dept Code" value={memoData.deptCode} onChange={e=>setMemoData({...memoData, deptCode: e.target.value.toUpperCase()})} required placeholder="e.g. HR, IT, CQI" className="mb-2" />
+                  <p className="text-[10px] text-slate-500 font-bold italic leading-relaxed">
+                    * Please enter your Department Acronym. This will be used to automatically generate your official Tracking Reference Number (e.g., entering "HR" creates "HR-03-2026-01").
+                  </p>
+                </div>
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2585,6 +2588,7 @@
                           {(req['Request Type'] || req[2]) === 'EDIT' && (
                             <div className="bg-slate-900/50 p-4 rounded-xl text-slate-300 text-sm border border-slate-700 whitespace-pre-wrap">
                               <strong className="text-white block mb-2">Proposed Changes:</strong>
+                              <br/>
                               {req['New Data JSON'] || req[5]}
                             </div>
                           )}
