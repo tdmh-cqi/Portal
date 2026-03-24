@@ -157,7 +157,7 @@
     };
 
     const getDriveImage = (url) => {
-      if (!url) return '';
+      if(!url) return '';
       const match = String(url).match(/(?:file\/d\/|id=)([a-zA-Z0-9_-]+)/);
       return match && match[1] ? `https://lh3.googleusercontent.com/d/${match[1]}` : String(url);
     };
@@ -188,16 +188,10 @@
       return (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in no-print overflow-y-auto" onClick={onClose}>
           <div className={`bg-white rounded-[2rem] shadow-2xl w-full ${maxWidth} p-8 relative animate-slide-up border border-slate-200 my-auto shrink-0`} onClick={e => e.stopPropagation()}>
-            <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200 shadow-sm">
-              <Icons.X className="w-5 h-5"/>
-            </button>
+            <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-800 transition-colors bg-slate-50 p-2 rounded-full border border-slate-200 shadow-sm"><Icons.X className="w-5 h-5"/></button>
             {(title || IconCmp) && (
               <div className="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
-                {IconCmp && (
-                  <div className={`w-12 h-12 ${iconBg} ${iconColor} rounded-xl flex items-center justify-center border`}>
-                    <IconCmp className="w-6 h-6"/>
-                  </div>
-                )}
+                {IconCmp && <div className={`w-12 h-12 ${iconBg} ${iconColor} rounded-xl flex items-center justify-center border`}><IconCmp className="w-6 h-6"/></div>}
                 <div>
                   <h3 className="text-xl md:text-2xl font-black text-slate-800 leading-tight">{title}</h3>
                   {subtitle && <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-0.5">{subtitle}</p>}
@@ -212,9 +206,7 @@
 
     const FormInput = ({ label, name, type = "text", value, onChange, placeholder, required = false, as = "input", options = [], disabled = false, className = "", multiple = false }) => (
       <div className={`mb-4 ${className}`}>
-        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">{label} {required && <span className="text-red-500">*</span>}</label>
         {as === "select" ? (
           <select name={name} value={value} onChange={onChange} required={required} disabled={disabled} className="w-full p-3.5 text-sm font-bold border border-slate-300 rounded-xl focus:border-tdmh-blue outline-none bg-white transition-colors">
             {options.map(o => <option key={o.value || o} value={o.value || o}>{o.label || o}</option>)}
@@ -253,15 +245,9 @@
       const getCoordinates = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
         if (e.touches && e.touches.length > 0) {
-          return { 
-            x: e.touches[0].clientX - rect.left, 
-            y: e.touches[0].clientY - rect.top 
-          };
+          return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
         }
-        return { 
-          x: e.clientX - rect.left, 
-          y: e.clientY - rect.top 
-        };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
       };
 
       const startDrawing = (e) => { 
@@ -303,26 +289,18 @@
               onTouchEnd={stopDrawing} 
               className="w-full touch-none" 
             />
-            <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">
-              Sign Here
-            </div>
+            <div className="absolute bottom-2 left-0 right-0 text-center pointer-events-none text-slate-300 font-bold text-xs uppercase tracking-widest">Sign Here</div>
           </div>
           <div className="flex justify-between gap-3">
-            <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-              Clear
-            </button>
+            <button type="button" onClick={clearCanvas} className="px-4 py-2 text-xs font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Clear</button>
             <div className="flex gap-2">
-              <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">
-                Cancel
-              </button>
+              <button type="button" onClick={onCancel} className="px-4 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Cancel</button>
               <button type="button" onClick={() => { 
                 const blank = document.createElement('canvas'); 
                 blank.width = canvasRef.current.width; 
                 blank.height = canvasRef.current.height; 
                 onSave(canvasRef.current.toDataURL() === blank.toDataURL() ? null : canvasRef.current.toDataURL('image/png')); 
-              }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">
-                Confirm Signature
-              </button>
+              }} className="px-5 py-2 text-xs font-bold text-white bg-tdmh-blue rounded-lg hover:bg-blue-900 transition-colors shadow-md">Confirm Signature</button>
             </div>
           </div>
         </div>
@@ -438,6 +416,7 @@
       const [viewingMemo, setViewingMemo] = useState(null); 
       const [signModalOpen, setSignModalOpen] = useState(false); 
 
+      // Memo Data state with Department Code prefix
       const [memoData, setMemoData] = useState({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
       const [signData, setSignData] = useState({ name: '', dept: '' });
       const [isFixingGrammar, setIsFixingGrammar] = useState(false);
@@ -499,6 +478,7 @@
         return () => clearInterval(timer);
       }, []);
 
+      // Auto-Sync System
       useEffect(() => {
         const syncInterval = setInterval(() => {
           fetchDatabase(true); 
@@ -1187,6 +1167,9 @@
             } else if(fallbackAction === 'add_news') {
               setShowAddNews(true); 
             } else if(fallbackAction === 'add_memo') {
+              // Wipes old memo data clean on fresh open
+              setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+              setEditMemoRef(null);
               setShowAddMemo(true); 
             }
           } else { 
@@ -1540,7 +1523,12 @@
                     <Icons.Activity className="w-4 h-4" /> {visibleMemos.length} Active Records
                   </div>
                   {(userRole === 'admin' || userRole === 'dept_head') && (
-                    <button onClick={() => { setMemoRequestMode(userRole !== 'admin'); setShowAddMemo(true); }} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-blue-900 transition-colors">
+                    <button onClick={() => { 
+                      setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' }); 
+                      setEditMemoRef(null);
+                      setMemoRequestMode(userRole !== 'admin'); 
+                      setShowAddMemo(true); 
+                    }} className="flex items-center justify-center gap-2 bg-tdmh-blue text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-md hover:bg-blue-900 transition-colors">
                       <Icons.Plus className="w-4 h-4" /> New Memo
                     </button>
                   )}
@@ -2186,13 +2174,26 @@
             </form>
           </Modal>
 
-          <Modal isOpen={showAddMemo} onClose={() => {setShowAddMemo(false); setEditMemoRef(null); setMemoRequestMode(false); setRequesterName('');}} title={memoRequestMode ? 'Request Memo Edit' : (editMemoRef ? 'Edit Existing Memo' : 'Draft New Memo')} subtitle={editMemoRef ? `REF: ${editMemoRef}` : 'Official Record'} icon={Icons.FileText} maxWidth="max-w-2xl">
+          <Modal 
+            isOpen={showAddMemo} 
+            onClose={() => {
+              setShowAddMemo(false); 
+              setEditMemoRef(null); 
+              setMemoRequestMode(false); 
+              setRequesterName('');
+              setMemoData({ deptCode: 'CQI', forDept: '', fromName: '', subject: '', urgency: 'Normal', body: '' });
+            }} 
+            title={memoRequestMode ? 'Request Memo Edit' : (editMemoRef ? 'Edit Existing Memo' : 'Draft New Memo')} 
+            subtitle={editMemoRef ? `REF: ${editMemoRef}` : 'Official Record'} 
+            icon={Icons.FileText} 
+            maxWidth="max-w-2xl"
+          >
             <form onSubmit={handleNativeMemoSubmit}>
               {memoRequestMode && (
                 <FormInput label="Requested By (Name / Department)" value={requesterName} onChange={e=>setRequesterName(e.target.value)} required placeholder="e.g. Dr. Smith (Cardiology)" className="bg-blue-50 p-4 rounded-xl border border-blue-100" />
               )}
               
-              {!editMemoRef && (
+              {!editMemoRef && !memoRequestMode && (
                 <FormInput label="Originating Dept Code" value={memoData.deptCode} onChange={e=>setMemoData({...memoData, deptCode: e.target.value.toUpperCase()})} required placeholder="e.g. CQI, HR, IT" className="mb-4" />
               )}
 
@@ -2584,7 +2585,6 @@
                           {(req['Request Type'] || req[2]) === 'EDIT' && (
                             <div className="bg-slate-900/50 p-4 rounded-xl text-slate-300 text-sm border border-slate-700 whitespace-pre-wrap">
                               <strong className="text-white block mb-2">Proposed Changes:</strong>
-                              <br/>
                               {req['New Data JSON'] || req[5]}
                             </div>
                           )}
