@@ -590,10 +590,11 @@
         } else showAlert("Submission Failed", "Failed to submit inquiry.", "error"); 
       };
 
+      // 🚀 FRONTEND FIX: Action updated to specific 'resolveInquiry'
       const handleResolveInquiry = async (e, ticketId) => {
         e.preventDefault(); setIsResolving(ticketId);
         setInquiries(prev => prev.map(i => (i['Ticket ID'] || i[0]) === ticketId ? {...i, Status: 'RESOLVED', 6: 'RESOLVED'} : i));
-        const res = await sendPostRequest({ action: 'updateStatus', sheet: 'Inquiries', idCol: 0, idVal: ticketId, statusCol: 6, newStatus: 'RESOLVED', extra: { col: 7, val: adminReplyData.reply } });
+        const res = await sendPostRequest({ action: 'resolveInquiry', ticketId: ticketId, reply: adminReplyData.reply });
         setIsResolving(null);
         if (res.status === 'success') { setAdminReplyData({reply: ''}); fetchDatabase(true); } 
         else { fetchDatabase(true); showAlert("Error", "Failed to resolve ticket.", "error"); } 
@@ -626,23 +627,25 @@
         } else showAlert("Submission Failed", "Failed to process memo.", "error"); 
       };
 
+      // 🚀 FRONTEND FIX: Action updated to specific 'approveMemo'
       const handleApproveMemo = async (refNo) => {
         setIsApprovingMemo(true);
         setMemos(prev => prev.map(m => (m['Ref No'] || m[0]) === refNo ? {...m, Status: 'APPROVED', 6: 'APPROVED'} : m));
         setViewingMemo(null); 
-        const res = await sendPostRequest({ action: 'updateStatus', sheet: 'Memos', idCol: 0, idVal: refNo, statusCol: 6, newStatus: 'APPROVED' });
+        const res = await sendPostRequest({ action: 'approveMemo', refNo: refNo });
         setIsApprovingMemo(false);
         if (res.status === 'success') fetchDatabase(true); 
         else { fetchDatabase(true); showAlert("Approval Failed", "Failed to approve memo.", "error"); } 
       };
 
+      // 🚀 FRONTEND FIX: Action updated to specific 'archiveMemo'
       const handleArchiveMemo = async (refNo) => {
         if(userRole === 'admin') {
           if(!window.confirm(`Are you sure you want to Archive (Delete) memo ${refNo}?`)) return;
           setIsApprovingMemo(true);
           setMemos(prev => prev.map(m => (m['Ref No'] || m[0]) === refNo ? {...m, Status: 'ARCHIVED', 6: 'ARCHIVED'} : m));
           setViewingMemo(null);
-          const res = await sendPostRequest({ action: 'updateStatus', sheet: 'Memos', idCol: 0, idVal: refNo, statusCol: 6, newStatus: 'ARCHIVED' });
+          const res = await sendPostRequest({ action: 'archiveMemo', refNo: refNo });
           setIsApprovingMemo(false);
           if (res.status === 'success') fetchDatabase(true); else { fetchDatabase(true); showAlert("Archive Failed", "Failed to archive memo.", "error"); } 
         } else {
@@ -665,18 +668,20 @@
         else { fetchDatabase(true); showAlert("Error", res.message || "Failed to process request.", "error"); } 
       };
       
+      // 🚀 FRONTEND FIX: Action updated to specific 'approveNews'
       const handleApproveNews = async (id) => {
         setIsResolving(id);
         setNewsList(prev => prev.map(n => (n.ID || n[0]) === id ? {...n, Status: 'APPROVED', 6: 'APPROVED'} : n));
-        const res = await sendPostRequest({ action: 'updateStatus', sheet: 'News', idCol: 0, idVal: id, statusCol: 6, newStatus: 'APPROVED' });
+        const res = await sendPostRequest({ action: 'approveNews', id: id });
         setIsResolving(null);
         if (res.status === 'success') fetchDatabase(true); else { fetchDatabase(true); showAlert("Error", "Failed to approve news.", "error"); }
       };
 
+      // 🚀 FRONTEND FIX: Action updated to specific 'rejectNews'
       const handleRejectNews = async (id) => {
         setIsResolving(id);
         setNewsList(prev => prev.map(n => (n.ID || n[0]) === id ? {...n, Status: 'REJECTED', 6: 'REJECTED'} : n));
-        const res = await sendPostRequest({ action: 'updateStatus', sheet: 'News', idCol: 0, idVal: id, statusCol: 6, newStatus: 'REJECTED' });
+        const res = await sendPostRequest({ action: 'rejectNews', id: id });
         setIsResolving(null);
         if (res.status === 'success') fetchDatabase(true); else { fetchDatabase(true); showAlert("Error", "Failed to reject news.", "error"); }
       };
@@ -877,6 +882,7 @@
         setIsTracking(false);
       };
 
+      // 🚀 RESTORED: Restored missing print function
       const handlePrintMemo = () => { 
         window.print(); 
       };
@@ -1505,7 +1511,6 @@
             )}
           </Modal>
 
-          {/* 🚀 BUG FIX: Added QR Modal that was missing */}
           <Modal isOpen={!!qrLightbox} onClose={() => setQrLightbox(null)} title={qrLightbox?.title || "QR Code"} iconName="QrCode" maxWidth="max-w-sm">
             {qrLightbox && (
               <div className="flex flex-col items-center justify-center pb-2">
@@ -1640,6 +1645,7 @@
             <form onSubmit={handleInquirySubmit}>
               <FormInput label="Your Dept Email" type="email" value={inquiryData.email} onChange={e=>setInquiryData({...inquiryData, email: e.target.value})} required placeholder="dept@tdmh.com" />
               <FormInput as="select" label="Inquiry Category" value={inquiryData.category} onChange={e=>setInquiryData({...inquiryData, category: e.target.value})} options={["General Help", "Bug Report", "Feature Request"]} />
+              <FormInput label="Reference No. (Optional)" value={inquiryData.refNo} onChange={e=>setInquiryData({...inquiryData, refNo: e.target.value})} placeholder="e.g. CQI-260327-001" />
               <FormInput as="textarea" label="Message" value={inquiryData.message} onChange={e=>setInquiryData({...inquiryData, message: e.target.value})} required placeholder="Describe your issue or request here..." />
               <button type="submit" disabled={isSubmitting} className="w-full bg-tdmh-blue text-white font-black uppercase tracking-widest py-4 rounded-xl shadow-lg disabled:opacity-50 mt-2 text-sm">{isSubmitting ? 'Sending...' : 'Submit Inquiry'}</button>
             </form>
